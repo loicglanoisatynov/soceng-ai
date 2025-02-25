@@ -6,4 +6,4 @@ pour rentrer dans l'image en cours de fonctionnement : `docker exec -it 916d12bd
 
 lançable aussi comme objet golang indépendant : `go run bin/main.go start`
 
-test
+test2
