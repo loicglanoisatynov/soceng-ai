@@ -1,5 +1,15 @@
 package env
 
+var (
+	BINPATH = "./bin/"
+)
+
+const (
+	PID_FILE = "socengai-server.pid"
+	PROCESS  = "socengai-server"
+	PID_PATH = "./internals/server/env/" + PID_FILE
+)
+
 var dev_mode bool
 
 func SetDevMode(mode bool) {

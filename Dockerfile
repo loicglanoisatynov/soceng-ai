@@ -7,9 +7,9 @@ COPY . .
 
 RUN go mod download
 
-RUN go build -o ./bin/main ./cmd/main/main.go
+RUN go build -o ./bin/main ./ctrl-cmd/main/main.go
 
-RUN go build -o ./bin/server ./cmd/server/main.go
+RUN go build -o ./bin/server ./ctrl-cmd/server/main.go
 
 # RUN echo "[Unit]" >> /etc/systemd/system/server.service
 # RUN echo "Description=Serveur d'ingénierie sociale" >> /etc/systemd/system/server.service
