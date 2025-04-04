@@ -2,21 +2,25 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
 	"os"
+
+	_ "github.com/mattn/go-sqlite3" // Import the SQLite driver
 )
 
 var db_name string = "database.db"
+
 var db *sql.DB = nil
 
 func Init_DB() {
 	// Si la base de données n'existe pas, la créer
 	if _, err := os.Stat(Get_DB_path()); os.IsNotExist(err) {
 		create_DB()
+		fmt.Println("Database created")
 	} else {
 		Set_DB(Get_DB_path())
 	}
 
-	// Vérifier si la base de données est ouverte
 }
 
 func Set_DB(name string) {
@@ -60,20 +64,16 @@ func create_DB() {
 		panic(err)
 	}
 
-	// Créer les tables
 	create_Tables()
-
 }
 
 func create_Tables() {
-	// Créer les tables
-	schema, err := os.ReadFile("schema.sql")
+	schema, err := os.ReadFile("./database/schema.sql")
 
 	if err != nil {
 		panic(err)
 	}
 
-	// Génère la base de données à partir du schéma SQL
 	_, err = db.Exec(string(schema))
 
 	if err != nil {
