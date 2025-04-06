@@ -21,8 +21,7 @@ func init() {
 		newRoute("GET", "/routes", routes_index_handler),
 		newRoute("GET", "/", handlers.Home),
 		newRoute("POST", "/create-user", registering.Register_user),
-		newRoute("GET", "/read-user", registering.Read_user),
-		newRoute("PUT", "/update-user", registering.Update_user),
+		// newRoute("PUT", "/update-user", registering.Update_user),
 		newRoute("DELETE", "/delete-user", registering.Delete_user),
 
 		// newRoute("GET", "/contact", contact),

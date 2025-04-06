@@ -17,6 +17,10 @@ type Registering_request struct {
 	Email    string `json:"email"`
 }
 
+type Delete_user_request struct {
+	Username string `json:"username"`
+}
+
 type Registering_response struct {
 	Status  bool   `json:"status"`
 	Message string `json:"message"`
@@ -64,87 +68,63 @@ func is_register_request_valid(request Registering_request) (bool, string) {
 	return true, ""
 }
 
-func Read_user(w http.ResponseWriter, r *http.Request) {
-	request := Registering_request{}
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	_, err := users.Get_user(database.Get_DB(), "username", request.Username)
-	if err != nil {
-		http.Error(w, "User not found", http.StatusNotFound)
-		fmt.Fprintf(w, "User not found: %s", request.Username)
-		return
-	}
-
-	response := Registering_response{
-		Status:  true,
-		Message: "User found",
-	}
-	json.NewEncoder(w).Encode(response)
-	fmt.Fprintf(w, "User found: %s", request.Username)
-}
-
-func Update_user(w http.ResponseWriter, r *http.Request) {
-	request := Registering_request{}
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	user, err := users.Get_user(database.Get_DB(), "username", request.Username)
-	if err != nil {
-		http.Error(w, "User not found", http.StatusNotFound)
-		return
-	}
-
-	if valid, msg := isValidEmail(request.Email); !valid {
-		http.Error(w, msg, http.StatusBadRequest)
-		return
-	} else if valid, msg := IsValidPassword(request.Password); !valid {
-		http.Error(w, msg, http.StatusBadRequest)
-		return
-	}
-
-	user.Email = request.Email
-	user.Password = request.Password
-
-	if err := users.Update_user(database.Get_DB(), user); err != nil {
-		http.Error(w, "Failed to update user", http.StatusInternalServerError)
-		return
-	}
-
-	response := Registering_response{
-		Status:  true,
-		Message: "User updated successfully",
-	}
-	json.NewEncoder(w).Encode(response)
-}
-
 func Delete_user(w http.ResponseWriter, r *http.Request) {
-	request := Registering_request{}
+	request := Delete_user_request{}
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Error decoding JSON: %s\n"+err.Error(), http.StatusBadRequest)
+		fmt.Printf("Error decoding JSON: %s\n", err.Error())
 		return
 	}
 
-	user, err := users.Get_user(database.Get_DB(), "username", request.Username)
+	cookie, err := r.Cookie("socengai-auth")
 	if err != nil {
+		http.Error(w, "Cookie not found", http.StatusUnauthorized)
+		return
+	}
+
+	if !logging.IsCookieValid(cookie.Value) {
+		http.Error(w, "Invalid cookie", http.StatusUnauthorized)
+		return
+	}
+
+	user_id := users.Get_user_id_by_username_or_email(request.Username)
+	if user_id == -1 {
 		http.Error(w, "User not found", http.StatusNotFound)
 		return
 	}
 
-	if err := users.Delete_user(database.Get_DB(), user.ID); err != nil {
-		http.Error(w, "Failed to delete user", http.StatusInternalServerError)
+	if !logging.Delete_cookie(cookie.Value) {
+		http.Error(w, "Failed to delete cookie", http.StatusInternalServerError)
 		return
 	}
 
+	if err := users.Delete_user(database.Get_DB(), user_id); err != nil {
+		http.Error(w, "Failed to delete user: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:   "socengai-auth",
+		Value:  "",
+		MaxAge: -1,
+	})
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	response := Registering_response{
 		Status:  true,
 		Message: "User deleted successfully",
 	}
-	json.NewEncoder(w).Encode(response)
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, "Failed to encode response: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Write([]byte("User deleted successfully"))
+
+	fmt.Println("User deleted successfully")
+	fmt.Println("Cookie deleted successfully")
+	fmt.Println("Cookie deleted from browser successfully")
+	fmt.Println("User deleted from database successfully")
 }
 
 func isUserValid(username string) (bool, string) {

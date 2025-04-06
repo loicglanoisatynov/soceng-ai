@@ -22,13 +22,29 @@ func IssueCookie(identifier string) string {
 		fmt.Println("Error registering cookie in database: ", err)
 		return ""
 	}
-	fmt.Println("Cookie registered in database")
 	return cookie
 }
 
 func IsCookieValid(cookie string) bool {
 	id := db_cookies.Get_user_id_by_cookie(cookie)
 	if id == -1 {
+		return false
+	}
+	return true
+}
+
+func Delete_cookie(cookie string) bool {
+	id := db_cookies.Get_user_id_by_cookie(cookie)
+
+	fmt.Println("ID: ", id)
+	fmt.Println("Cookie: ", cookie)
+
+	if id == -1 {
+		return false
+	}
+	err := db_cookies.Delete_cookie(id, cookie)
+	if err != nil {
+		fmt.Println("Error deleting cookie from database: ", err)
 		return false
 	}
 	return true

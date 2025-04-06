@@ -25,11 +25,11 @@ func Register_cookie(user_id int, cookie string) error {
 
 func get_next_available_id() int {
 	db := database.Get_DB()
-	var id int
+	id := 0
 	err := db.QueryRow("SELECT MAX(id) FROM cookies").Scan(&id)
-	if err != nil {
+	if err != nil && err.Error() != "sql: Scan error on column index 0, name \"MAX(id)\": converting NULL to int is unsupported" {
 		fmt.Println("Error getting next available ID:", err)
-		return 1
+		return -1
 	}
 	return id + 1
 }
@@ -44,4 +44,14 @@ func Get_user_id_by_cookie(cookie string) int {
 		return -1
 	}
 	return user_id
+}
+
+func Delete_cookie(user_id int, cookie string) error {
+	db := database.Get_DB()
+	query := "DELETE FROM cookies WHERE user_id = ? AND cookie_value = ?"
+	_, err := db.Exec(query, user_id, cookie)
+	if err != nil {
+		return err
+	}
+	return nil
 }
