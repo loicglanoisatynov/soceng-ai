@@ -7,6 +7,7 @@ import (
 	"regexp"
 	database "soceng-ai/database"
 	users "soceng-ai/database/tables/users"
+	"soceng-ai/internals/server/handlers/logging"
 	"strings"
 )
 
@@ -22,46 +23,45 @@ type Registering_response struct {
 }
 
 func Register_user(w http.ResponseWriter, r *http.Request) {
-
 	request := Registering_request{}
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		fmt.Fprintf(w, "Error decoding JSON: %s", err.Error())
-		fmt.Println("Error decoding JSON: %s", err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Error decoding JSON: %s\n"+err.Error(), http.StatusBadRequest)
+		fmt.Printf("Error decoding JSON: %s\n", err.Error())
+		return
+	}
+	valid, err := is_register_request_valid(request)
+
+	if !valid {
+		http.Error(w, "Invalid request : "+err, http.StatusBadRequest)
+	}
+
+	user := users.User{
+		Username: request.Username,
+		Email:    request.Email,
+		Password: request.Password,
+	}
+
+	if err := users.Create_user(database.Get_DB(), user); err != nil {
+		http.Error(w, "Failed to create user : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	cookie := logging.IssueCookie(user.Username)
+	http.SetCookie(w, &http.Cookie{
+		Name:  "socengai-auth",
+		Value: cookie,
+	})
+}
+
+func is_register_request_valid(request Registering_request) (bool, string) {
 	if valid, msg := isUserValid(request.Username); !valid {
-		fmt.Println("User already exists: %s", request.Username)
-
-		http.Error(w, msg, http.StatusConflict)
-		return
+		return false, msg
 	} else if valid, msg := isValidEmail(request.Email); !valid {
-		fmt.Println("Invalid email: %s", msg)
-
-		http.Error(w, msg, http.StatusBadRequest)
-		return
+		return false, msg
 	} else if valid, msg := IsValidPassword(request.Password); !valid {
-		fmt.Println("Invalid password: %s", msg)
-
-		http.Error(w, msg, http.StatusBadRequest)
-		return
-	} else {
-		fmt.Println("Creating user: %s", request.Username)
-
-		user := users.User{
-			Username: request.Username,
-			Email:    request.Email,
-			Password: request.Password,
-		}
-
-		if err := users.Create_user(database.Get_DB(), user); err != nil {
-			fmt.Fprintf(w, "Error creating user: %s", err.Error())
-			http.Error(w, "Failed to create user", http.StatusInternalServerError)
-			return
-		}
-
+		return false, msg
 	}
+	return true, ""
 }
 
 func Read_user(w http.ResponseWriter, r *http.Request) {
@@ -151,8 +151,10 @@ func isUserValid(username string) (bool, string) {
 	user, err := users.Get_user(database.Get_DB(), "username", username)
 	if err == nil && user.ID != 0 {
 		return false, "Username already exists"
-	} else if len(username) < 3 || len(username) > 20 {
-		return false, "Username length must be between 3 and 20 characters"
+	} else if len(username) < 1 || len(username) > 30 {
+		return false, "Username length must be between 1 and 30 characters"
+	} else if strings.ContainsAny(username, "!@#$%^&*()_+[]{}|;':\",.<>?/~`") {
+		return false, "Username cannot contain special characters"
 	}
 	return true, ""
 }

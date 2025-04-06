@@ -1,6 +1,9 @@
 package users
 
-import "database/sql"
+import (
+	"database/sql"
+	"soceng-ai/database"
+)
 
 type User struct {
 	ID       int    `json:"id"`
@@ -67,4 +70,18 @@ func Get_next_id(db *sql.DB) (int, error) {
 	}
 
 	return id + 1, nil
+}
+
+func Get_user_id_by_username_or_email(identifier string) int {
+	var id int
+	db := database.Get_DB()
+	query := "SELECT id FROM users WHERE username = $1 OR email = $2"
+
+	row := db.QueryRow(query, identifier, identifier)
+	err := row.Scan(&id)
+	if err != nil {
+		return 0
+	}
+
+	return id
 }
