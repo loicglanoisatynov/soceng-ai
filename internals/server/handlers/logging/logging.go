@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"net/http"
 	database "soceng-ai/database"
-	db_cookies "soceng-ai/database/tables/cookies"
-	db_users "soceng-ai/database/tables/users"
+	db_cookies "soceng-ai/database/tables/db_cookies"
+	db_users "soceng-ai/database/tables/db_users"
 )
 
 type Login_request struct {
@@ -17,7 +17,8 @@ type Login_request struct {
 }
 
 type Logout_request struct {
-	Cookie string `json:"cookie"`
+	Username string `json:"username"`
+	Cookie   string `json:"cookie"`
 }
 
 type Login_response struct {
@@ -47,16 +48,16 @@ func IssueCookie(identifier string) string {
 	return cookie
 }
 
-func IsCookieValid(cookie string) bool {
-	id := db_cookies.Get_user_id_by_cookie(cookie)
+func IsCookieValid(username string, cookie string) bool {
+	id := db_cookies.Get_user_id_by_cookie(username, cookie)
 	if id == -1 {
 		return false
 	}
 	return true
 }
 
-func Delete_cookie(cookie string) bool {
-	id := db_cookies.Get_user_id_by_cookie(cookie)
+func Delete_cookie(username string, cookie string) bool {
+	id := db_cookies.Get_user_id_by_cookie(username, cookie)
 
 	fmt.Println("ID: ", id)
 	fmt.Println("Cookie: ", cookie)
@@ -99,10 +100,13 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error issuing cookie", http.StatusInternalServerError)
 		return
 	}
-
 	http.SetCookie(w, &http.Cookie{
 		Name:  "socengai-auth",
 		Value: cookie,
+	})
+	http.SetCookie(w, &http.Cookie{
+		Name:  "socengai-username",
+		Value: user.Username,
 	})
 
 	response := Login_response{
@@ -126,12 +130,12 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !IsCookieValid(cookie.Value) {
+	if !IsCookieValid(request.Username, cookie.Value) {
 		http.Error(w, "Invalid cookie", http.StatusUnauthorized)
 		return
 	}
 
-	if !Delete_cookie(cookie.Value) {
+	if !Delete_cookie(request.Username, cookie.Value) {
 		http.Error(w, "Error deleting cookie", http.StatusInternalServerError)
 		return
 	}

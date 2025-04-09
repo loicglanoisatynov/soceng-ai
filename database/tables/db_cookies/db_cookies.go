@@ -1,4 +1,4 @@
-package cookies
+package db_cookies
 
 import (
 	"fmt"
@@ -34,10 +34,10 @@ func get_next_available_id() int {
 	return id + 1
 }
 
-func Get_user_id_by_cookie(cookie string) int {
+func Get_user_id_by_cookie(username string, cookie string) int {
 	db := database.Get_DB()
 	var user_id int
-	query := "SELECT user_id FROM cookies WHERE cookie_value = ?"
+	query := "SELECT user_id FROM cookies WHERE cookie_value = ? AND user_id = (SELECT id FROM users WHERE username = ?)"
 	err := db.QueryRow(query, cookie).Scan(&user_id)
 	if err != nil {
 		fmt.Println("Error getting user ID by cookie:", err)
@@ -54,4 +54,23 @@ func Delete_cookie(user_id int, cookie string) error {
 		return err
 	}
 	return nil
+}
+
+func Is_cookie_valid(username string, cookie string) bool {
+	db := database.Get_DB()
+	var user_id int
+	query := "SELECT id FROM users WHERE username = ?"
+	err := db.QueryRow(query, username).Scan(&user_id)
+	if err != nil {
+		fmt.Println("Error getting user ID by username:", err)
+		return false
+	}
+	query = "SELECT COUNT(*) FROM cookies WHERE cookie_value = ? AND user_id = ?"
+	var count int
+	err = db.QueryRow(query, cookie, user_id).Scan(&count)
+	if err != nil {
+		fmt.Println("Error checking cookie validity:", err)
+		return false
+	}
+	return count > 0
 }

@@ -1,8 +1,9 @@
-package users
+package db_users
 
 import (
 	"database/sql"
 	"soceng-ai/database"
+	"time"
 )
 
 type User struct {
@@ -13,9 +14,10 @@ type User struct {
 }
 
 func Create_user(db *sql.DB, user User) error {
-	query := "INSERT INTO users (id, username, email, passwd) VALUES ($1, $2, $3, $4)"
+	query := "INSERT INTO users (id, username, email, passwd, created_at) VALUES ($1, $2, $3, $4, $5)"
+	time := time.Now().Format("2006-01-02 15:04:05")
 	id, _ := Get_next_id(db)
-	_, err := db.Exec(query, id, user.Username, user.Email, user.Password)
+	_, err := db.Exec(query, id, user.Username, user.Email, user.Password, time)
 	if err != nil {
 		return err
 	}

@@ -6,6 +6,7 @@ import (
 	"regexp"
 	handlers "soceng-ai/internals/server/handlers"
 	handlers_logging "soceng-ai/internals/server/handlers/logging"
+	profiles_handling "soceng-ai/internals/server/handlers/profiles_handling"
 	"soceng-ai/internals/server/handlers/registering"
 )
 
@@ -25,12 +26,9 @@ func init() {
 		newRoute("DELETE", "/delete-user", registering.Delete_user),
 		newRoute("POST", "/login", handlers_logging.Login),
 		newRoute("DELETE", "/logout", handlers_logging.Logout),
+		newRoute("PUT", "/edit-profile", profiles_handling.Edit_profile),
 
 		// newRoute("GET", "/contact", contact),
-		// newRoute("GET", "/api/widgets", apiGetWidgets),
-		// newRoute("POST", "/api/widgets", apiCreateWidget),
-		// newRoute("POST", "/api/widgets/([^/]+)", apiUpdateWidget),
-		// newRoute("POST", "/api/widgets/([^/]+)/parts", apiCreateWidgetPart),
 		// newRoute("GET", "/([^/]+)/admin", widgetAdmin),
 		// newRoute("POST", "/([^/]+)/image", widgetImage),
 	}

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"regexp"
 	database "soceng-ai/database"
-	users "soceng-ai/database/tables/users"
+	db_users "soceng-ai/database/tables/db_users"
 	"soceng-ai/internals/server/handlers/logging"
 	"strings"
 )
@@ -39,18 +39,22 @@ func Register_user(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request : "+err, http.StatusBadRequest)
 	}
 
-	user := users.User{
+	user := db_users.User{
 		Username: request.Username,
 		Email:    request.Email,
 		Password: request.Password,
 	}
 
-	if err := users.Create_user(database.Get_DB(), user); err != nil {
+	if err := db_users.Create_user(database.Get_DB(), user); err != nil {
 		http.Error(w, "Failed to create user : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	cookie := logging.IssueCookie(user.Username)
+	http.SetCookie(w, &http.Cookie{
+		Name:  "socengai-username",
+		Value: user.Username,
+	})
 	http.SetCookie(w, &http.Cookie{
 		Name:  "socengai-auth",
 		Value: cookie,
@@ -82,27 +86,32 @@ func Delete_user(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !logging.IsCookieValid(cookie.Value) {
+	if !logging.IsCookieValid(request.Username, cookie.Value) {
 		http.Error(w, "Invalid cookie", http.StatusUnauthorized)
 		return
 	}
 
-	user_id := users.Get_user_id_by_username_or_email(request.Username)
+	user_id := db_users.Get_user_id_by_username_or_email(request.Username)
 	if user_id == -1 {
 		http.Error(w, "User not found", http.StatusNotFound)
 		return
 	}
 
-	if !logging.Delete_cookie(cookie.Value) {
+	if !logging.Delete_cookie(request.Username, cookie.Value) {
 		http.Error(w, "Failed to delete cookie", http.StatusInternalServerError)
 		return
 	}
 
-	if err := users.Delete_user(database.Get_DB(), user_id); err != nil {
+	if err := db_users.Delete_user(database.Get_DB(), user_id); err != nil {
 		http.Error(w, "Failed to delete user: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	http.SetCookie(w, &http.Cookie{
+		Name:   "socengai-username",
+		Value:  "",
+		MaxAge: -1,
+	})
 	http.SetCookie(w, &http.Cookie{
 		Name:   "socengai-auth",
 		Value:  "",
@@ -120,15 +129,10 @@ func Delete_user(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write([]byte("User deleted successfully"))
-
-	fmt.Println("User deleted successfully")
-	fmt.Println("Cookie deleted successfully")
-	fmt.Println("Cookie deleted from browser successfully")
-	fmt.Println("User deleted from database successfully")
 }
 
 func isUserValid(username string) (bool, string) {
-	user, err := users.Get_user(database.Get_DB(), "username", username)
+	user, err := db_users.Get_user(database.Get_DB(), "username", username)
 	if err == nil && user.ID != 0 {
 		return false, "Username already exists"
 	} else if len(username) < 1 || len(username) > 30 {
@@ -148,7 +152,7 @@ func isValidEmail(email string) (bool, string) {
 		return false, "Invalid email format"
 	} else if strings.Contains(email, " ") {
 		return false, "Email cannot contain spaces"
-	} else if user, err := users.Get_user(database.Get_DB(), "email", email); err == nil && user.ID != 0 {
+	} else if user, err := db_users.Get_user(database.Get_DB(), "email", email); err == nil && user.ID != 0 {
 		return false, "Email already exists"
 	}
 
