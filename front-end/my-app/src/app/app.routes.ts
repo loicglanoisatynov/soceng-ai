@@ -31,5 +31,6 @@ export const routes: Routes = [
     path: 'challenge',
     loadComponent: () => import('./challenge/challenge/challenge.component').then(m => m.ChallengeComponent)
   },
+  // Wildcard
   { path: '**', redirectTo: 'home' }
 ];
