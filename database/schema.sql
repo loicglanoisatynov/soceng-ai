@@ -20,3 +20,12 @@ CREATE TABLE profiles (
     biography VARCHAR(255),
     avatar VARCHAR(255)
 );
+
+CREATE TABLE challenges (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    description TEXT NOT NULL,
+    flag VARCHAR(255) NOT NULL,
+    difficulty VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

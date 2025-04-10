@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
-	handlers "soceng-ai/internals/server/handlers"
+
+	"soceng-ai/internals/server/handlers"
 	handlers_logging "soceng-ai/internals/server/handlers/logging"
 	profiles_handling "soceng-ai/internals/server/handlers/profiles_handling"
-	"soceng-ai/internals/server/handlers/registering"
+	registering "soceng-ai/internals/server/handlers/registering"
 )
 
 var routes []Route
@@ -28,14 +29,10 @@ func init() {
 		newRoute("DELETE", "/logout", handlers_logging.Logout),
 		newRoute("PUT", "/edit-profile", profiles_handling.Edit_profile),
 
-		// newRoute("GET", "/contact", contact),
-		// newRoute("GET", "/([^/]+)/admin", widgetAdmin),
-		// newRoute("POST", "/([^/]+)/image", widgetImage),
+		// ✅ Utilise directement handlers pour CreateChallenge
+		newRoute("POST", "/create-challenge", handlers.CreateChallenge),
 	}
 }
-
-// newRoute("GET", "/([^/]+)/admin", widgetAdmin),
-// newRoute("POST", "/([^/]+)/image", widgetImage),
 
 func Set_routes(new_routes []Route) {
 	routes = new_routes
