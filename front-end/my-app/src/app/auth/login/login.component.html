@@ -1,25 +1,26 @@
 <!-- src/app/auth/login/login.component.html -->
-<div
-  class="min-h-screen bg-cover bg-center flex flex-col"
-  style="background-image: url('/assets/images/bg-login.jpg')"
->
-  <div class="flex-grow flex items-center justify-center px-4">
+<div class="relative min-h-screen pb-100">
+  <!-- L’image en arrière‑plan, centrée sur la partie basse et étendue jusqu’au footer -->
+  <img
+    src="/assets/images/bg-login.jpg"
+    alt="Background login"
+    class="absolute inset-0 w-full h-full object-cover"
+  />
+
+  <!-- Conteneur du formulaire -->
+  <div class="relative z-10 flex items-center justify-center min-h-screen px-4">
     <div
-      class="w-full max-w-md bg-[#4a009f] p-10 border border-[#FF8600] border-[3px] rounded-2xl shadow-[0_20px_30px_rgba(0,0,0,0.1)] backdrop-blur-md"
+      class="w-full max-w-md bg-[#4a009f] p-10 border-3 border-[#FF8600] rounded-2xl shadow-[0_20px_30px_rgba(0,0,0,0.1)] backdrop-blur-md"
     >
       <!-- Titre -->
-      <h1
-        class="text-[30px] leading-[14px] font-bold text-[#FF8600] mb-6 text-center"
-      >
+      <h1 class="text-[30px] leading-[14px] font-bold text-[#FF8600] mb-6 text-center">
         Login
       </h1>
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6">
         <!-- Adresse mail -->
         <div>
-          <label
-            class="block text-[14px] font-medium text-[#FF8600] mb-1"
-          >
+          <label class="block text-[14px] font-medium text-[#FF8600] mb-1">
             Adresse mail
           </label>
           <input
@@ -38,9 +39,7 @@
 
         <!-- Mot de passe -->
         <div>
-          <label
-            class="block text-[14px] font-medium text-[#FF8600] mb-1"
-          >
+          <label class="block text-[14px] font-medium text-[#FF8600] mb-1">
             Mot de passe
           </label>
           <input
