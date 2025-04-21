@@ -9,18 +9,30 @@ import (
 func Register_cookie(user_id int, cookie string) error {
 	db := database.Get_DB()
 
+	err := delete_previous_cookies(user_id)
+
 	cookie_id := get_next_available_id()
 	date_timestamp := time.Now()
 	date := date_timestamp.Format("2006-01-02 15:04:05.000000")
 
 	query := "INSERT INTO cookies (id, user_id, cookie_value, created_at, last_access) VALUES (?, ?, ?, ?, ?)"
 
-	_, err := db.Exec(query, cookie_id, user_id, cookie, date, date)
+	_, err = db.Exec(query, cookie_id, user_id, cookie, date, date)
 	if err != nil {
 		return err
 	}
 
 	return err
+}
+
+func delete_previous_cookies(user_id int) error {
+	db := database.Get_DB()
+	query := "DELETE FROM cookies WHERE user_id = ?"
+	_, err := db.Exec(query, user_id)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func get_next_available_id() int {

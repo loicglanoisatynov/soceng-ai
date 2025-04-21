@@ -7,10 +7,11 @@ import (
 )
 
 type User struct {
-	ID       int    `json:"id"`
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	ID         int    `json:"id"`
+	Username   string `json:"username"`
+	Email      string `json:"email"`
+	Password   string `json:"password"`
+	Created_at string `json:"created_at"`
 }
 
 func Create_user(db *sql.DB, user User) error {
@@ -41,7 +42,7 @@ func Get_user(db *sql.DB, by string, value string) (User, error) {
 	var user User
 	query := "SELECT * FROM users WHERE " + by + " = $1"
 	row := db.QueryRow(query, value)
-	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.Password)
+	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.Created_at)
 	if err != nil {
 		return user, err
 	}

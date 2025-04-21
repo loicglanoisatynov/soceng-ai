@@ -2,6 +2,7 @@ package profiles_handling
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"soceng-ai/database/tables/db_cookies"
 	db_profiles "soceng-ai/database/tables/db_profiles"
@@ -42,6 +43,15 @@ func Edit_profile(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
 		http.Error(w, "Invalid request.\nData needed : '{\"username\":\"<username>\", \"email\":\"<email>\", \"password\":\"<password>\", \"biography\":\"<biography>\", \"avatar\":\"<avatar>\"}'\n", http.StatusBadRequest)
+		return
+	}
+
+	cookies := r.Cookies()
+	if len(r.Cookies()) < 2 {
+		http.Error(w, "Missing cookie.\n", http.StatusUnauthorized)
+		return
+	} else if !are_cookies_relevant(cookies) {
+		http.Error(w, "Needed cookies : socengai-username & socengai-auth\n", http.StatusUnauthorized)
 		return
 	}
 
@@ -169,4 +179,14 @@ func Edit_user(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write([]byte("User updated successfully\n"))
+}
+
+func are_cookies_relevant(cookies []*http.Cookie) bool {
+	for _, cookie := range cookies {
+		fmt.Println(cookie.Name)
+		if cookie.Name != "socengai-username" && cookie.Name != "socengai-auth" {
+			return false
+		}
+	}
+	return true
 }
