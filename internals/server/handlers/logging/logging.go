@@ -81,9 +81,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("Username: ", request.Username)
-	fmt.Println("Password: ", request.Password)
-
 	user, err := db_users.Get_user(database.Get_DB(), "username", request.Username)
 	if err != nil {
 		http.Error(w, "Error getting user: %s\n"+err.Error(), http.StatusInternalServerError)

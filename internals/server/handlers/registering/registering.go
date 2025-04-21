@@ -22,7 +22,7 @@ type Delete_user_request struct {
 }
 
 type Registering_response struct {
-	Status  bool   `json:"status"`
+	Status  string `json:"status"`
 	Message string `json:"message"`
 }
 
@@ -36,7 +36,16 @@ func Register_user(w http.ResponseWriter, r *http.Request) {
 	valid, err := is_register_request_valid(request)
 
 	if !valid {
-		http.Error(w, "Invalid request : "+err, http.StatusBadRequest)
+		http.Error(w, err, http.StatusBadRequest)
+		registering_response := Registering_response{
+			Status:  "failure",
+			Message: err,
+		}
+		if err := json.NewEncoder(w).Encode(registering_response); err != nil {
+			http.Error(w, "Failed to encode response: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		return
 	}
 
 	user := db_users.User{
@@ -64,7 +73,7 @@ func Register_user(w http.ResponseWriter, r *http.Request) {
 func is_register_request_valid(request Registering_request) (bool, string) {
 	if valid, msg := isUserValid(request.Username); !valid {
 		return false, msg
-	} else if valid, msg := isValidEmail(request.Email); !valid {
+	} else if valid, msg := IsValidEmail(request.Email); !valid {
 		return false, msg
 	} else if valid, msg := IsValidPassword(request.Password); !valid {
 		return false, msg
@@ -121,7 +130,7 @@ func Delete_user(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	response := Registering_response{
-		Status:  true,
+		Status:  "success",
 		Message: "User deleted successfully",
 	}
 	if err := json.NewEncoder(w).Encode(response); err != nil {
@@ -131,11 +140,47 @@ func Delete_user(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("User deleted successfully"))
 }
 
+// Check_register validates the registration request and returns a JSON response to dynamically check the registration form.
+func Check_register(w http.ResponseWriter, r *http.Request) {
+	request := Registering_request{}
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http.Error(w, "Error decoding JSON: %s\n"+err.Error(), http.StatusBadRequest)
+		fmt.Printf("Error decoding JSON: %s\n", err.Error())
+		return
+	}
+
+	valid, msg := is_register_request_valid(request)
+	if !valid {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		response := Registering_response{
+			Status:  "success",
+			Message: msg,
+		}
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			http.Error(w, "Failed to encode response: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	response := Registering_response{
+		Status:  "success",
+		Message: "Valid request",
+	}
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, "Failed to encode response: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Write([]byte("Valid request"))
+}
+
 func isUserValid(username string) (bool, string) {
-	user, err := db_users.Get_user(database.Get_DB(), "username", username)
-	if err == nil && user.ID != 0 {
+	if db_users.Does_username_exist(username) {
 		return false, "Username already exists"
-	} else if len(username) < 1 || len(username) > 30 {
+	} else if len(username) < 1 || len(username) > 16 {
 		return false, "Username length must be between 1 and 30 characters"
 	} else if strings.ContainsAny(username, "!@#$%^&*()_+[]{}|;':\",.<>?/~`") {
 		return false, "Username cannot contain special characters"
@@ -143,7 +188,7 @@ func isUserValid(username string) (bool, string) {
 	return true, ""
 }
 
-func isValidEmail(email string) (bool, string) {
+func IsValidEmail(email string) (bool, string) {
 	regex := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
 	re := regexp.MustCompile(regex)
 	if len(email) < 5 || len(email) > 50 {
@@ -152,7 +197,7 @@ func isValidEmail(email string) (bool, string) {
 		return false, "Invalid email format"
 	} else if strings.Contains(email, " ") {
 		return false, "Email cannot contain spaces"
-	} else if user, err := db_users.Get_user(database.Get_DB(), "email", email); err == nil && user.ID != 0 {
+	} else if db_users.Does_email_exists(email) {
 		return false, "Email already exists"
 	}
 

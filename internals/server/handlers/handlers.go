@@ -20,7 +20,7 @@ func allowMethod(h http.HandlerFunc, method string) http.HandlerFunc {
 }
 
 func Home(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Welcome to the home page!"))
+	w.Write([]byte("Welcome to the home page!\n"))
 }
 
 func Helloworld(w http.ResponseWriter, r *http.Request) {

@@ -86,3 +86,79 @@ func Get_user_id_by_username_or_email(identifier string) int {
 
 	return id
 }
+
+func Is_password_valid(user_id int, password string) bool {
+	var db_password string
+	db := database.Get_DB()
+	query := "SELECT passwd FROM users WHERE id = $1"
+
+	row := db.QueryRow(query, user_id)
+	err := row.Scan(&db_password)
+	if err != nil {
+		return false
+	}
+
+	if db_password == password {
+		return true
+	} else {
+		return false
+	}
+}
+
+func Update_email(user_id int, email string) bool {
+	db := database.Get_DB()
+	query := "UPDATE users SET email = $1 WHERE id = $2"
+
+	_, err := db.Exec(query, email, user_id)
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+func Update_password(user_id int, new_password string) {
+	db := database.Get_DB()
+	query := "UPDATE users SET passwd = $1 WHERE id = $2"
+
+	_, err := db.Exec(query, new_password, user_id)
+	if err != nil {
+		return
+	}
+}
+
+func Does_username_exist(username string) bool {
+	db := database.Get_DB()
+	query := "SELECT COUNT(*) FROM users WHERE username = $1"
+
+	var count int
+	row := db.QueryRow(query, username)
+	err := row.Scan(&count)
+	if err != nil {
+		return false
+	}
+
+	if count > 0 {
+		return true
+	} else {
+		return false
+	}
+}
+
+func Does_email_exists(email string) bool {
+	db := database.Get_DB()
+	query := "SELECT COUNT(*) FROM users WHERE email = $1"
+
+	var count int
+	row := db.QueryRow(query, email)
+	err := row.Scan(&count)
+	if err != nil {
+		return false
+	}
+
+	if count > 0 {
+		return true
+	} else {
+		return false
+	}
+}
