@@ -1,36 +1,52 @@
 import { Routes } from '@angular/router';
+import { AuthGuard } from './auth/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
+
+  // alias pour /login
+  { path: 'login', redirectTo: 'auth/login', pathMatch: 'full' },
+  // alias pour /signup (facultatif)
+  { path: 'signup', redirectTo: 'auth/signup', pathMatch: 'full' },
+
   {
     path: 'home',
-    loadComponent: () => import('./home/home/home.component').then(m => m.HomeComponent)
+    loadComponent: () =>
+      import('./home/home/home.component').then(m => m.HomeComponent)
   },
   {
     path: 'about',
-    loadComponent: () => import('./about/about/about.component').then(m => m.AboutComponent)
+    loadComponent: () =>
+      import('./about/about/about.component').then(m => m.AboutComponent)
   },
   {
     path: 'auth',
     children: [
       {
         path: 'login',
-        loadComponent: () => import('./auth/login/login.component').then(m => m.LoginComponent)
+        loadComponent: () =>
+          import('./auth/login/login.component').then(m => m.LoginComponent)
       },
       {
         path: 'signup',
-        loadComponent: () => import('./auth/signup/signup.component').then(m => m.SignupComponent)
+        loadComponent: () =>
+          import('./auth/signup/signup.component').then(m => m.SignupComponent)
       }
     ]
   },
   {
     path: 'dashboard',
-    loadComponent: () => import('./dashboard/dashboard/dashboard.component').then(m => m.DashboardComponent)
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./dashboard/dashboard/dashboard.component').then(m => m.DashboardComponent)
   },
   {
     path: 'challenge',
-    loadComponent: () => import('./challenge/challenge/challenge.component').then(m => m.ChallengeComponent)
+    // plus de guard, c'est une page publique
+    loadComponent: () =>
+      import('./challenge/challenge/challenge.component').then(m => m.ChallengeComponent)
   },
+
   // Wildcard
   { path: '**', redirectTo: 'home' }
 ];

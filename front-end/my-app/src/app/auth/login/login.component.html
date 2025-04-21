@@ -1,1 +1,74 @@
-<p>login works!</p>
+<!-- src/app/auth/login/login.component.html -->
+<div
+  class="min-h-screen bg-cover bg-center flex flex-col"
+  style="background-image: url('/assets/images/bg-login.jpg')"
+>
+  <div class="flex-grow flex items-center justify-center px-4">
+    <div
+      class="w-full max-w-md bg-[#4a009f] p-10 border border-[#FF8600] border-[3px] rounded-2xl shadow-[0_20px_30px_rgba(0,0,0,0.1)] backdrop-blur-md"
+    >
+      <!-- Titre -->
+      <h1
+        class="text-[30px] leading-[14px] font-bold text-[#FF8600] mb-6 text-center"
+      >
+        Login
+      </h1>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6">
+        <!-- Adresse mail -->
+        <div>
+          <label
+            class="block text-[14px] font-medium text-[#FF8600] mb-1"
+          >
+            Adresse mail
+          </label>
+          <input
+            type="email"
+            formControlName="email"
+            placeholder="email@exemple.com"
+            class="w-full px-4 py-3 bg-[#AEB8FE] border border-[#FF8600] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8600]"
+          />
+          <p
+            *ngIf="form.get('email')?.touched && form.get('email')?.invalid"
+            class="text-red-600 text-sm mt-1"
+          >
+            Email invalide.
+          </p>
+        </div>
+
+        <!-- Mot de passe -->
+        <div>
+          <label
+            class="block text-[14px] font-medium text-[#FF8600] mb-1"
+          >
+            Mot de passe
+          </label>
+          <input
+            type="password"
+            formControlName="password"
+            placeholder="••••••••"
+            class="w-full px-4 py-3 bg-[#AEB8FE] border border-[#FF8600] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8600]"
+          />
+          <p
+            *ngIf="form.get('password')?.touched && form.get('password')?.invalid"
+            class="text-red-600 text-sm mt-1"
+          >
+            Le mot de passe est requis.
+          </p>
+        </div>
+
+        <!-- Submit -->
+        <button
+          type="submit"
+          [disabled]="loading"
+          class="w-full py-3 text-lg font-medium border border-[#FF8600] rounded-lg text-white bg-[#5C00BF] hover:bg-[#5C00BF] disabled:bg-[#5C00BF]/50 disabled:opacity-50 transition"
+        >
+          {{ loading ? 'Patientez…' : 'Submit' }}
+        </button>
+
+        <!-- Erreur -->
+        <p *ngIf="error" class="text-red-600 text-center mt-4">{{ error }}</p>
+      </form>
+    </div>
+  </div>
+</div>
