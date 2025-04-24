@@ -6,7 +6,7 @@ import (
 )
 
 func Stop() {
-	pid := get_process_id_from_process_name()
+	pid := Get_process_id_from_process_name()
 	if pid == -1 {
 		fmt.Println("No process to stop")
 		return

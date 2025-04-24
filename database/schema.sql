@@ -1,12 +1,22 @@
-CREATE TABLE utilisateurs (
+CREATE TABLE users (
     id SERIAL PRIMARY KEY,
-    nom VARCHAR(50) NOT NULL,
-    email VARCHAR(100) NOT NULL UNIQUE
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    passwd VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE articles (
+CREATE TABLE cookies (
     id SERIAL PRIMARY KEY,
-    titre VARCHAR(100) NOT NULL,
-    contenu TEXT NOT NULL,
-    utilisateur_id INTEGER NOT NULL REFERENCES utilisateurs(id)
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    cookie_value VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_access TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE profiles (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    biography VARCHAR(255),
+    avatar VARCHAR(255)
 );

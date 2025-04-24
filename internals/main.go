@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	database "soceng-ai/database"
 	"soceng-ai/internals/server"
 	"soceng-ai/internals/utils/prompts"
 	"time"
@@ -17,13 +18,14 @@ func main() {
 
 	if len(os.Args) < 2 {
 		os.Args = append(os.Args, "-h")
-		os.Args = append(os.Args, "localhost")
+		os.Args = append(os.Args, "127.0.0.1")
 		os.Args = append(os.Args, "-p")
 		os.Args = append(os.Args, "80")
 	}
 
 	parseArgs(os.Args)
 
+	database.Init_DB()
 	server.StartServer(os.Args)
 }
 
