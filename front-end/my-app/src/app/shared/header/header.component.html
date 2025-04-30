@@ -1,0 +1,46 @@
+<!-- src/app/shared/header/header.component.html -->
+<header
+  class="fixed top-0 left-0 w-screen flex items-center justify-between px-9 py-4 z-50 shadow-[0_20px_30px_0_#5C00BF]"
+  style="background-color: rgba(92, 0, 191, 0.9);"
+>
+  <a routerLink="/home" class="text-3xl font-press text-[#FF8600] hover:opacity-80">
+    The SocEngIA
+  </a>
+
+  <div class="flex items-center space-x-8">
+    <nav class="flex space-x-6">
+      <a routerLink="/challenge" class="text-lg text-[#FF8600] hover:text-white">
+        Challenge
+      </a>
+      <a routerLink="/about" class="text-lg text-[#FF8600] hover:text-white">
+        À propos
+      </a>
+      <a routerLink="/contact" class="text-lg text-[#FF8600] hover:text-white">
+        Contact
+      </a>
+      <a *ngIf="auth.isLoggedIn"
+         routerLink="/dashboard"
+         class="text-lg text-[#FF8600] hover:text-white">
+        Dashboard
+      </a>
+    </nav>
+
+    <div class="flex space-x-4 ml-8">
+      <button *ngIf="showAuthButtons"
+              routerLink="/login"
+              class="w-24 border border-[#FF8600] text-[#FF8600] px-4 py-1 rounded hover:bg-[#FF8600] hover:text-white">
+        Login
+      </button>
+      <button *ngIf="showAuthButtons"
+              routerLink="/signup"
+              class="w-24 border border-[#FF8600] text-[#FF8600] px-4 py-1 rounded hover:bg-[#FF8600] hover:text-white">
+        SignUp
+      </button>
+      <button *ngIf="auth.isLoggedIn"
+              (click)="logout()"
+              class="w-24 border border-red-500 text-red-500 px-4 py-1 rounded hover:bg-red-500 hover:text-white">
+        Logout
+      </button>
+    </div>
+  </div>
+</header>
