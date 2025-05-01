@@ -1,125 +1,87 @@
+<!-- Section Hero -->
 <section
   class="relative w-screen h-[70vh] bg-cover bg-center flex"
-  style="background-image: url('assets/images/boitumelo-fP9VEkZ-L0s-unsplash.jpg'); background-repeat: no-repeat;"
+  style="background-image: url('assets/images/boitumelo-fP9VEkZ-L0s-unsplash.jpg');"
 >
-  <!-- Overlay noir pour assombrir la photo -->
-  <div class="absolute top-0 left-0 w-full h-full bg-black/50 pointer-events-none"></div>
+  <!-- Overlay noir -->
+  <div class="absolute inset-0 bg-black/50 pointer-events-none"></div>
 
-  <div class="absolute top-0 left-20 ml-30 h-full flex flex-col justify-center items-start">
-
+  <div class="absolute top-0 left-20 h-full flex flex-col justify-center items-start">
     <h1 class="text-4xl md:text-5xl font-bold text-orange-400 tracking-wide shadow">
-     A Propos de nous
+      {{ 'ABOUT.HERO.TITLE' | translate }}
     </h1>
     <div class="bg-purple-600 h-2 ml-4 w-10 mt-2"></div>
-    <!-- Texte -->
     <p class="text-base md:text-lg lg:text-xl leading-relaxed text-[#FF8600] max-w-2xl mt-6">
-        Lorem ipsum dolor, sit amet consectetur adipisicing elit. Similique non adipisci deleniti repudiandae maiores quis eaque iste repellendus in magni pariatur iusto dicta nobis eum, dolorum rem, delectus accusamus doloremque!
-     </p>
+      {{ 'ABOUT.HERO.TEXT' | translate }}
+    </p>
   </div>
+
   <div class="relative z-10 flex items-end justify-center w-full text-center text-white p-4">
-    <button 
+    <button
       class="mb-8 text-3xl flex items-center gap-4 px-10 py-4 
              border-[2px] border-[#FF8600] text-[#FF8600] rounded 
-             hover:bg-[#FF8600] hover:text-white 
-             transition-colors duration-200"
+             hover:bg-[#FF8600] hover:text-white transition-colors duration-200"
     >
-      En Savoir +
+      {{ 'ABOUT.HERO.BUTTON' | translate }}
     </button>
   </div>
 </section>
 
+<!-- Section Deux colonnes -->
 <section class="flex h-[700px]">
-    <div class="w-1/2 flex flex-col justify-center items-center p-8 bg-[#2E2E2E]">
-      <p class="text-base md:text-lg leading-relaxed mb-6 text-[#FF8600] text-center">
-        Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod 
-        tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At 
-        vero eos et accusam et justo duo dolores et ea rebum.
-        Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod 
-        tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At 
-        vero eos et accusam et justo duo dolores et ea rebum.
-      </p>
-    </div>
-    <div class="w-1/2 relative overflow-hidden">
-      <img src="assets/images/wesley-ford-0rBYLrHWcFw-unsplash.jpg" 
-           alt="Description de l'image" 
-           class="absolute inset-0 w-full h-full object-cover">
-    </div>
-  </section>
+  <!-- Texte -->
+  <div class="w-1/2 flex flex-col justify-center items-center p-8 bg-[#2E2E2E]">
+    <p class="text-base md:text-lg leading-relaxed mb-6 text-[#FF8600] text-center">
+      {{ 'ABOUT.TWO_COLUMNS.TEXT' | translate }}
+    </p>
+  </div>
+  <!-- Image -->
+  <div class="w-1/2 relative overflow-hidden">
+    <img
+      src="assets/images/wesley-ford-0rBYLrHWcFw-unsplash.jpg"
+      alt="{{ 'ABOUT.TWO_COLUMNS.IMAGE_ALT' | translate }}"
+      class="absolute inset-0 w-full h-full object-cover"
+    />
+  </div>
+</section>
 
-   <!-- Section: La Team -->
+<!-- Section La Team -->
 <section class="py-12 bg-[#2E2E2E] border-[5px] border-[#FF8600]">
-    <div class="max-w-7xl mx-auto px-4">
-      <h2 class="text-center text-4xl font-bold mb-12 text-orange-400 tracking-wide">
-        La Team
-      </h2>
-      <p class="text-center text-base font-bold mb-12 tracking-wide text-orange-400">
-        Lorem ipsum dolor sit amet consectetur, adipisicing elit. A expedita ea nemo sunt asperiores modi, 
-        laboriosam maiores sequi sint praesentium, facilis, saepe dolor ducimus ipsum culpa beatae quod provident sapiente?
-      </p>
-      <div class="grid grid-cols-4 gap-8">
-        
-        <!-- Card 1 -->
+  <div class="max-w-7xl mx-auto px-4">
+    <h2 class="text-center text-4xl font-bold mb-12 text-orange-400 tracking-wide">
+      {{ 'ABOUT.TEAM.TITLE' | translate }}
+    </h2>
+    <p class="text-center text-base font-bold mb-12 tracking-wide text-orange-400">
+      {{ 'ABOUT.TEAM.INTRO' | translate }}
+    </p>
+    <div class="grid grid-cols-4 gap-8">
+      <!-- Carte Team (4 fois) -->
+      <ng-container *ngFor="let card of [1,2,3,4]">
         <div class="bg-white shadow-sm dark:bg-[#2E2E2E]">
           <a href="#">
-            <img class="rounded-t-lg" src="assets/images/shahadat-rahman-BfrQnKBulYQ-unsplash.jpg" alt="Illustration Card 1" />
+            <img
+              class="rounded-t-lg"
+              src="assets/images/shahadat-rahman-BfrQnKBulYQ-unsplash.jpg"
+              alt="{{ 'ABOUT.TEAM.CARD.IMAGE_ALT' | translate }}"
+            />
           </a>
           <div class="p-5 border-[2px] border-[#FF8600]">
             <p class="mb-3 font-normal text-gray-700 dark:text-gray-400 text-center">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Commodi obcaecati cum architecto, at, animi temporibus explicabo dignissimos et aut quod veniam.
+              {{ 'ABOUT.TEAM.CARD.TEXT' | translate }}
             </p>
           </div>
         </div>
-    
-        <!-- Card 2 -->
-        <div class="bg-white shadow-sm dark:bg-[#2E2E2E]">
-          <a href="#">
-            <img class="rounded-t-lg" src="assets/images/shahadat-rahman-BfrQnKBulYQ-unsplash.jpg" alt="Illustration Card 2" />
-          </a>
-          <div class="p-5 border-[2px] border-[#FF8600]">
-            <p class="mb-3 font-normal text-gray-700 dark:text-gray-400 text-center">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Commodi obcaecati cum architecto, at, animi temporibus explicabo dignissimos et aut quod veniam.
-            </p>
-          </div>
-        </div>
-    
-        <!-- Card 3 -->
-        <div class="bg-white shadow-sm dark:bg-[#2E2E2E]">
-          <a href="#">
-            <img class="rounded-t-lg" src="assets/images/shahadat-rahman-BfrQnKBulYQ-unsplash.jpg" alt="Illustration Card 3" />
-          </a>
-          <div class="p-5 border-[2px] border-[#FF8600]">
-            <p class="mb-3 font-normal text-gray-700 dark:text-gray-400 text-center">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Commodi obcaecati cum architecto, at, animi temporibus explicabo dignissimos et aut quod veniam.
-            </p>
-          </div>
-        </div>
-        <!-- Card 4 -->
-        <div class="bg-white shadow-sm dark:bg-[#2E2E2E]">
-          <a href="#">
-            <img class="rounded-t-lg" src="assets/images/shahadat-rahman-BfrQnKBulYQ-unsplash.jpg" alt="Illustration Card 4" />
-          </a>
-          <div class="p-5 border-[2px] border-[#FF8600]">
-            <p class="mb-3 font-normal text-gray-700 dark:text-gray-400 text-center">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Commodi obcaecati cum architecto, at, animi temporibus explicabo dignissimos et aut quod veniam.
-            </p>
-          </div>
-        </div>
-      </div>
-      <div class="relative z-10 flex items-end justify-center w-full text-center text-white p-4">
-        <button 
-          class="mb-8 text-3xl flex items-center gap-4 px-10 py-4 
-                 border-[2px] border-[#FF8600] text-[#FF8600] rounded 
-                 hover:bg-[#FF8600] hover:text-white 
-                 transition-colors duration-200"
-        >
-          En Savoir +
-        </button>
-      </div>
+      </ng-container>
     </div>
-  </section>
-  
-  
-  
-  
-  
-  
+
+    <div class="relative z-10 flex items-end justify-center w-full text-center text-white p-4">
+      <button
+        class="mb-8 text-3xl flex items-center gap-4 px-10 py-4 
+               border-[2px] border-[#FF8600] text-[#FF8600] rounded 
+               hover:bg-[#FF8600] hover:text-white transition-colors duration-200"
+      >
+        {{ 'ABOUT.TEAM.BUTTON' | translate }}
+      </button>
+    </div>
+  </div>
+</section>

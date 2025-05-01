@@ -1,15 +1,20 @@
-// src/app/auth/signup/signup.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { finalize } from 'rxjs/operators';
+import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../auth.service';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-signup',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    TranslateModule
+  ],
   templateUrl: './signup.component.html',
   styleUrls: ['./signup.component.scss']
 })
@@ -37,33 +42,26 @@ export class SignupComponent implements OnInit {
   }
 
   private passwordsMatch(group: FormGroup) {
-    const pass = group.get('password')!.value;
-    const confirm = group.get('confirm')!.value;
-    return pass === confirm ? null : { mismatch: true };
+    return group.get('password')!.value === group.get('confirm')!.value
+      ? null
+      : { mismatch: true };
   }
 
   submit() {
     if (this.form.invalid) {
-      this.error = 'Vérifiez vos informations.';
+      this.error = 'SIGNUP.ERROR.FILL_FIELDS';
       return;
     }
     this.error = null;
     this.loading = true;
 
-    const { name, email, password } = this.form.value as {
-      name: string;
-      email: string;
-      password: string;
-      confirm: string;
-    };
-
+    const { name, email, password } = this.form.value;
     this.auth
       .signup({ name, email, password })
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
-        next: () => this.router.navigate(['/login']),
-        error: (err) =>
-          (this.error = err.error?.message || "Impossible de créer le compte.")
+        next: () => this.router.navigate(['/auth/login']),
+        error: () => (this.error = 'SIGNUP.ERROR.CREATE_FAILED')
       });
   }
 }

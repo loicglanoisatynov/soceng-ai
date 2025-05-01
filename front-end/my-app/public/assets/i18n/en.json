@@ -1,0 +1,160 @@
+{
+    "HEADER": {
+      "TITLE": "The SocEngIA",
+      "CHALLENGE": "Challenge",
+      "ABOUT": "About",
+      "CONTACT": "Contact",
+      "DASHBOARD": "Dashboard",
+      "LOGIN": "Login",
+      "SIGNUP": "Sign Up",
+      "LOGOUT": "Logout"
+    },
+    "ABOUT": {
+      "HERO": {
+        "TITLE": "About Us",
+        "TEXT": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Similique non adipisci deleniti repudiandae maiores quis eaque iste repellendus in magni pariatur.",
+        "BUTTON": "Learn More"
+      },
+      "TWO_COLUMNS": {
+        "TEXT": "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat.",
+        "IMAGE_ALT": "Illustrative photo"
+      },
+      "TEAM": {
+        "TITLE": "The Team",
+        "INTRO": "Lorem ipsum dolor sit amet consectetur, adipisicing elit. A expedita ea nemo sunt asperiores modi.",
+        "CARD": {
+          "IMAGE_ALT": "Member photo",
+          "TEXT": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Commodi obcaecati cum architecto, at, animi temporibus explicabo dignissimos et aut quod veniam."
+        },
+        "BUTTON": "See More"
+      }
+    },
+    "LOGIN": {
+      "TITLE": "Login",
+      "EMAIL_LABEL": "Email address",
+      "EMAIL_PLACEHOLDER": "email@example.com",
+      "PASSWORD_LABEL": "Password",
+      "PASSWORD_PLACEHOLDER": "••••••••",
+      "SUBMIT": "Submit",
+      "PATIENTEZ": "Please wait…",
+      "ERROR": {
+        "FILL_FIELDS": "Please fill in all fields.",
+        "LOGIN_FAILED": "Login failed.",
+        "EMAIL_REQUIRED": "Email is required.",
+        "EMAIL_INVALID": "Invalid email.",
+        "PASSWORD_REQUIRED": "Password is required."
+      }
+    },
+    "SIGNUP": {
+      "TITLE": "Sign Up",
+      "NAME_LABEL": "First/Last Name",
+      "NAME_PLACEHOLDER": "First Last",
+      "EMAIL_LABEL": "Email address",
+      "EMAIL_PLACEHOLDER": "email@example.com",
+      "PASSWORD_LABEL": "Password",
+      "PASSWORD_PLACEHOLDER": "••••••••",
+      "CONFIRM_LABEL": "Confirm password",
+      "CONFIRM_PLACEHOLDER": "••••••••",
+      "SUBMIT": "Create account",
+      "PATIENTEZ": "Please wait…",
+      "ERROR": {
+        "FILL_FIELDS": "Please check your information.",
+        "CREATE_FAILED": "Unable to create account.",
+        "NAME_REQUIRED": "Name is required.",
+        "EMAIL_REQUIRED": "Email is required.",
+        "EMAIL_INVALID": "Invalid email.",
+        "PASSWORD_REQUIRED": "Password is required.",
+        "PASSWORD_MINLENGTH": "Password too short (min. 6 characters).",
+        "CONFIRM_MISMATCH": "Passwords do not match."
+      }
+    },
+    "CHALLENGE": {
+      "HERO": {
+        "TITLE": "Our Challenges",
+        "TEXT": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Similique non adipisci deleniti repudiandae maiores quis.",
+        "BUTTON": "Learn More"
+      },
+      "LIST": {
+        "TITLE": "Challenges",
+        "INTRO": "Lorem ipsum dolor sit amet consectetur, adipisicing elit. A expedita ea nemo sunt asperiores modi.",
+        "CARD": {
+          "IMAGE_ALT": "Challenge preview",
+          "TITLE": "Challenge",
+          "TEXT": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium voluptates molestiae similique."
+        }
+      },
+      "SEASON": {
+        "TITLE": "Seasonal Challenges",
+        "INTRO": "Lorem ipsum dolor sit amet consectetur, adipisicing elit. A expedita ea nemo sunt asperiores modi.",
+        "CARD": {
+          "IMAGE_ALT": "Seasonal illustration",
+          "TITLE": "Challenge",
+          "TEXT": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Commodi obcaecati cum architecto."
+        },
+        "BUTTON": "Learn More"
+      }
+    },
+    "CONTACT": {
+      "TITLE": "Contact Us",
+      "NAME_LABEL": "Name",
+      "NAME_PLACEHOLDER": "Your name",
+      "EMAIL_LABEL": "Email",
+      "EMAIL_PLACEHOLDER": "email@example.com",
+      "MESSAGE_LABEL": "Message",
+      "MESSAGE_PLACEHOLDER": "Your message...",
+      "SUBMIT": "Send",
+      "PATIENTEZ": "Please wait…",
+      "SUCCESS_ALERT": "Thank you for your message!",
+      "ERROR": {
+        "NAME_REQUIRED": "Name is required.",
+        "EMAIL_REQUIRED": "Email is required.",
+        "EMAIL_INVALID": "Invalid email.",
+        "MESSAGE_REQUIRED": "Message is required.",
+        "SUBMIT_FAILED": "An error occurred. Please try again later."
+      }
+    },
+    "HOME": {
+      "HERO": {
+        "BUTTON": "Learn More"
+      },
+      "MASTERY": {
+        "TITLE": "Master Social Engineering",
+        "TEXT": "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat.",
+        "BUTTON": "About",
+        "IMAGE_ALT": "Social engineering illustration"
+      },
+      "CHALLENGES": {
+        "TITLE": "Challenges",
+        "INTRO": "Lorem ipsum dolor sit amet consectetur, adipisicing elit. A expedita ea nemo sunt asperiores modi.",
+        "CARD": {
+          "IMAGE_ALT": "Challenge illustration",
+          "TEXT": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Commodi obcaecati cum architecto."
+        },
+        "BUTTON": "Learn More"
+      }
+    }, 
+    "DASHBOARD": {
+  "TITLE": "Dashboard",
+  "SCORE": "Score",
+  "TABS": {
+    "DETAILS": "Details",
+    "SETTINGS": "Settings"
+  },
+  "DETAILS": {
+    "FULL_NAME": "Full Name",
+    "USERNAME": "Username",
+    "EMAIL": "Email",
+    "PASSWORD": "Password",
+    "SUBMIT": "Save"
+  },
+  "SETTINGS": {
+    "CONTENT": "Here you can change your preferences."
+  },
+  "CHALLENGES": {
+    "TITLE": "My Challenges",
+    "MESSAGE": "Message"
+  }
+}
+
+  }
+  

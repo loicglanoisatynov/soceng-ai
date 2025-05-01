@@ -1,58 +1,57 @@
-<!-- src/app/auth/login/login.component.html -->
 <div class="relative min-h-screen pb-100">
-  <!-- L’image en arrière‑plan, centrée sur la partie basse et étendue jusqu’au footer -->
   <img
     src="/assets/images/bg-login.jpg"
     alt="Background login"
     class="absolute inset-0 w-full h-full object-cover"
   />
 
-  <!-- Conteneur du formulaire -->
   <div class="relative z-10 flex items-center justify-center min-h-screen px-4">
     <div
       class="w-full max-w-md bg-[#4a009f] p-10 border-3 border-[#FF8600] rounded-2xl shadow-[0_20px_30px_rgba(0,0,0,0.1)] backdrop-blur-md"
     >
-      <!-- Titre -->
       <h1 class="text-[30px] leading-[14px] font-bold text-[#FF8600] mb-6 text-center">
-        Login
+        {{ 'LOGIN.TITLE' | translate }}
       </h1>
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6">
-        <!-- Adresse mail -->
+        <!-- Email -->
         <div>
           <label class="block text-[14px] font-medium text-[#FF8600] mb-1">
-            Adresse mail
+            {{ 'LOGIN.EMAIL_LABEL' | translate }}
           </label>
           <input
             type="email"
             formControlName="email"
-            placeholder="email@exemple.com"
+            [placeholder]="'LOGIN.EMAIL_PLACEHOLDER' | translate"
             class="w-full px-4 py-3 bg-[#AEB8FE] border border-[#FF8600] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8600]"
           />
           <p
             *ngIf="form.get('email')?.touched && form.get('email')?.invalid"
             class="text-red-600 text-sm mt-1"
           >
-            Email invalide.
+            {{ form.get('email')?.hasError('required')
+               ? ('LOGIN.ERROR.EMAIL_REQUIRED' | translate)
+               : ('LOGIN.ERROR.EMAIL_INVALID' | translate)
+            }}
           </p>
         </div>
 
         <!-- Mot de passe -->
         <div>
           <label class="block text-[14px] font-medium text-[#FF8600] mb-1">
-            Mot de passe
+            {{ 'LOGIN.PASSWORD_LABEL' | translate }}
           </label>
           <input
             type="password"
             formControlName="password"
-            placeholder="••••••••"
+            [placeholder]="'LOGIN.PASSWORD_PLACEHOLDER' | translate"
             class="w-full px-4 py-3 bg-[#AEB8FE] border border-[#FF8600] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8600]"
           />
           <p
             *ngIf="form.get('password')?.touched && form.get('password')?.invalid"
             class="text-red-600 text-sm mt-1"
           >
-            Le mot de passe est requis.
+            {{ 'LOGIN.ERROR.PASSWORD_REQUIRED' | translate }}
           </p>
         </div>
 
@@ -62,11 +61,16 @@
           [disabled]="loading"
           class="w-full py-3 text-lg font-medium border border-[#FF8600] rounded-lg text-white bg-[#5C00BF] hover:bg-[#5C00BF] disabled:bg-[#5C00BF]/50 disabled:opacity-50 transition"
         >
-          {{ loading ? 'Patientez…' : 'Submit' }}
+          {{ loading
+             ? ('LOGIN.PATIENTEZ' | translate)
+             : ('LOGIN.SUBMIT' | translate)
+          }}
         </button>
 
-        <!-- Erreur -->
-        <p *ngIf="error" class="text-red-600 text-center mt-4">{{ error }}</p>
+        <!-- Erreur serveur -->
+        <p *ngIf="error" class="text-red-600 text-center mt-4">
+          {{ error | translate }}
+        </p>
       </form>
     </div>
   </div>

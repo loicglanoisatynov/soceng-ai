@@ -1,20 +1,28 @@
 import { Component, inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators
+} from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-contact',
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    TranslateModule      // ← indispensable pour la pipe | translate
   ],
   templateUrl: './contact.component.html',
+  styleUrls: ['./contact.component.scss']
 })
 export class ContactComponent {
   private fb = inject(FormBuilder);
+  private translate = inject(TranslateService);
 
-  // **Ajoutez ces deux propriétés** pour lever vos erreurs de template
   loading = false;
   error: string | null = null;
 
@@ -33,15 +41,14 @@ export class ContactComponent {
     this.loading = true;
     this.error = null;
 
-    // Simuler un appel HTTP
+    // Simule un appel HTTP
     setTimeout(() => {
-      // Ici vous remplacerez par votre appel réel, par ex. via HttpClient
       const success = Math.random() > 0.2;
       if (success) {
-        alert('Merci pour votre message !');
+        alert(this.translate.instant('CONTACT.SUCCESS_ALERT'));
         this.contactForm.reset();
       } else {
-        this.error = 'Une erreur est survenue. Veuillez réessayer plus tard.';
+        this.error = this.translate.instant('CONTACT.ERROR.SUBMIT_FAILED');
       }
       this.loading = false;
     }, 1500);

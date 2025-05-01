@@ -1,14 +1,20 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../auth.service';
 import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    TranslateModule
+  ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
@@ -31,24 +37,21 @@ export class LoginComponent implements OnInit {
   }
 
   submit() {
-    // 1) Validation rapide
     if (this.form.invalid) {
-      this.error = 'Merci de remplir tous les champs.';
+      this.error = 'LOGIN.ERROR.FILL_FIELDS';
       return;
     }
 
-    // 2) Préparation des credentials (cast)
-    const creds = this.form.value as { email: string; password: string };
-
     this.error = null;
     this.loading = true;
+
+    const creds = this.form.value as { email: string; password: string };
 
     this.auth.login(creds)
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
         next: () => this.router.navigate(['/dashboard']),
-        error: err =>
-          (this.error = err.error?.message || 'Échec de la connexion.')
+        error: () => this.error = 'LOGIN.ERROR.LOGIN_FAILED'
       });
   }
 }

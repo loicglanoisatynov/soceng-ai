@@ -1,0 +1,159 @@
+{
+    "HEADER": {
+      "TITLE": "The SocEngIA",
+      "CHALLENGE": "Challenge",
+      "ABOUT": "À propos",
+      "CONTACT": "Contact",
+      "DASHBOARD": "Dashboard",
+      "LOGIN": "Connexion",
+      "SIGNUP": "Inscription",
+      "LOGOUT": "Déconnexion"
+    },
+    "ABOUT": {
+      "HERO": {
+        "TITLE": "À propos de nous",
+        "TEXT": "Lorem ipsum dolor, sit amet consectetur adipisicing elit. Similique non adipisci deleniti repudiandae maiores quis eaque iste repellendus in magni pariatur.",
+        "BUTTON": "En savoir +"
+      },
+      "TWO_COLUMNS": {
+        "TEXT": "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat.",
+        "IMAGE_ALT": "Photo illustrative"
+      },
+      "TEAM": {
+        "TITLE": "La Team",
+        "INTRO": "Lorem ipsum dolor sit amet consectetur, adipisicing elit. A expedita ea nemo sunt asperiores modi.",
+        "CARD": {
+          "IMAGE_ALT": "Photo membre",
+          "TEXT": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Commodi obcaecati cum architecto, at, animi temporibus explicabo dignissimos et aut quod veniam."
+        },
+        "BUTTON": "Voir plus"
+      }
+    },
+    "LOGIN": {
+      "TITLE": "Se connecter",
+      "EMAIL_LABEL": "Adresse mail",
+      "EMAIL_PLACEHOLDER": "email@exemple.com",
+      "PASSWORD_LABEL": "Mot de passe",
+      "PASSWORD_PLACEHOLDER": "••••••••",
+      "SUBMIT": "Se connecter",
+      "PATIENTEZ": "Patientez…",
+      "ERROR": {
+        "FILL_FIELDS": "Merci de remplir tous les champs.",
+        "LOGIN_FAILED": "Échec de la connexion.",
+        "EMAIL_REQUIRED": "L'adresse mail est requise.",
+        "EMAIL_INVALID": "Email invalide.",
+        "PASSWORD_REQUIRED": "Le mot de passe est requis."
+      }
+    },
+    "SIGNUP": {
+      "TITLE": "Inscription",
+      "NAME_LABEL": "Prénom/Nom",
+      "NAME_PLACEHOLDER": "Prénom Nom",
+      "EMAIL_LABEL": "Adresse mail",
+      "EMAIL_PLACEHOLDER": "email@exemple.com",
+      "PASSWORD_LABEL": "Mot de passe",
+      "PASSWORD_PLACEHOLDER": "••••••••",
+      "CONFIRM_LABEL": "Confirmation mot de passe",
+      "CONFIRM_PLACEHOLDER": "••••••••",
+      "SUBMIT": "Créer mon compte",
+      "PATIENTEZ": "Patientez…",
+      "ERROR": {
+        "FILL_FIELDS": "Vérifiez vos informations.",
+        "CREATE_FAILED": "Impossible de créer le compte.",
+        "NAME_REQUIRED": "Le prénom/nom est requis.",
+        "EMAIL_REQUIRED": "L'adresse mail est requise.",
+        "EMAIL_INVALID": "Email invalide.",
+        "PASSWORD_REQUIRED": "Le mot de passe est requis.",
+        "PASSWORD_MINLENGTH": "Mot de passe trop court (6 caractères min.).",
+        "CONFIRM_MISMATCH": "Les mots de passe ne correspondent pas."
+      }
+    },
+    "CHALLENGE": {
+      "HERO": {
+        "TITLE": "Nos Challenges",
+        "TEXT": "Lorem ipsum dolor, sit amet consectetur adipisicing elit. Similique non adipisci deleniti repudiandae maiores quis eaque iste repellendus.",
+        "BUTTON": "En savoir +"
+      },
+      "LIST": {
+        "TITLE": "Les challenges",
+        "INTRO": "Lorem ipsum dolor sit amet consectetur, adipisicing elit. A expedita ea nemo sunt asperiores modi.",
+        "CARD": {
+          "IMAGE_ALT": "Aperçu du challenge",
+          "TITLE": "Challenge",
+          "TEXT": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium voluptates molestiae similique."
+        }
+      },
+      "SEASON": {
+        "TITLE": "Nos challenges saisonniers",
+        "INTRO": "Lorem ipsum dolor sit amet consectetur, adipisicing elit. A expedita ea nemo sunt asperiores modi.",
+        "CARD": {
+          "IMAGE_ALT": "Illustration saisonnière",
+          "TITLE": "Challenge",
+          "TEXT": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Commodi obcaecati cum architecto."
+        },
+        "BUTTON": "En savoir +"
+      }
+    },
+    "CONTACT": {
+      "TITLE": "Contactez-nous",
+      "NAME_LABEL": "Nom",
+      "NAME_PLACEHOLDER": "Votre nom",
+      "EMAIL_LABEL": "Email",
+      "EMAIL_PLACEHOLDER": "email@exemple.com",
+      "MESSAGE_LABEL": "Message",
+      "MESSAGE_PLACEHOLDER": "Votre message...",
+      "SUBMIT": "Envoyer",
+      "PATIENTEZ": "Patientez…",
+      "SUCCESS_ALERT": "Merci pour votre message !",
+      "ERROR": {
+        "NAME_REQUIRED": "Le nom est requis.",
+        "EMAIL_REQUIRED": "L'email est requis.",
+        "EMAIL_INVALID": "Email invalide.",
+        "MESSAGE_REQUIRED": "Le message est requis.",
+        "SUBMIT_FAILED": "Une erreur est survenue. Veuillez réessayer plus tard."
+      }
+    },
+    "HOME": {
+      "HERO": {
+        "BUTTON": "En savoir +"
+      },
+      "MASTERY": {
+        "TITLE": "Maîtrisez l'ingénierie sociale",
+        "TEXT": "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat.",
+        "BUTTON": "À propos",
+        "IMAGE_ALT": "Illustration ingénierie sociale"
+      },
+      "CHALLENGES": {
+        "TITLE": "Les challenges",
+        "INTRO": "Lorem ipsum dolor sit amet consectetur, adipisicing elit. A expedita ea nemo sunt asperiores modi.",
+        "CARD": {
+          "IMAGE_ALT": "Illustration challenge",
+          "TEXT": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Commodi obcaecati cum architecto."
+        },
+        "BUTTON": "En savoir +"
+      }
+    }, 
+    "DASHBOARD": {
+  "TITLE": "Tableau de bord",
+  "SCORE": "Score",
+  "TABS": {
+    "DETAILS": "Détails",
+    "SETTINGS": "Paramètres"
+  },
+  "DETAILS": {
+    "FULL_NAME": "Nom complet",
+    "USERNAME": "Nom d'utilisateur",
+    "EMAIL": "Email",
+    "PASSWORD": "Mot de passe",
+    "SUBMIT": "Enregistrer"
+  },
+  "SETTINGS": {
+    "CONTENT": "Ici tu peux modifier tes préférences."
+  },
+  "CHALLENGES": {
+    "TITLE": "Mes Challenges",
+    "MESSAGE": "Message"
+  }
+}
+  }
+  
