@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { AuthService } from '../auth.service';
 import { finalize } from 'rxjs/operators';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-signup',
@@ -21,7 +21,7 @@ import { finalize } from 'rxjs/operators';
 export class SignupComponent implements OnInit {
   form!: FormGroup;
   loading = false;
-  error: string | null = null;
+  error: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -42,26 +42,30 @@ export class SignupComponent implements OnInit {
   }
 
   private passwordsMatch(group: FormGroup) {
-    return group.get('password')!.value === group.get('confirm')!.value
-      ? null
-      : { mismatch: true };
+    const pass = group.get('password')!.value;
+    const confirm = group.get('confirm')!.value;
+    return pass === confirm ? null : { mismatch: true };
   }
 
-  submit() {
+  submit(): void {
     if (this.form.invalid) {
       this.error = 'SIGNUP.ERROR.FILL_FIELDS';
       return;
     }
-    this.error = null;
+    this.error = '';
     this.loading = true;
-
+  
     const { name, email, password } = this.form.value;
-    this.auth
-      .signup({ name, email, password })
-      .pipe(finalize(() => (this.loading = false)))
+    this.auth.signup({ name, email, password })
+      .pipe(finalize(() => this.loading = false))
       .subscribe({
         next: () => this.router.navigate(['/auth/login']),
-        error: () => (this.error = 'SIGNUP.ERROR.CREATE_FAILED')
+        error: err => {
+          // err.error est une string puisque responseType:'text'
+          this.error = typeof err.error === 'string'
+            ? err.error.trim()
+            : 'SIGNUP.ERROR.CREATE_FAILED';
+        }
       });
   }
 }

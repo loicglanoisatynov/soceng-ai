@@ -1,80 +1,113 @@
-import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { isPlatformBrowser } from '@angular/common';
-import { BehaviorSubject, throwError, Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+// src/app/auth/auth.service.ts
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { tap, map, catchError } from 'rxjs/operators';
 
-interface LoginResponse {
-  accessToken: string;
-  refreshToken: string;
+export interface UserProfile {
+  id: number;
+  username: string;
+  email: string;
+}
+
+export interface LoginResponse {
+  status: boolean;
+  message: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private API = 'https://api.ton-backend.com';
-  private _token: string | null = null;
-  public loggedIn$ = new BehaviorSubject<boolean>(false);
+  private readonly API = '/api';
 
-  constructor(
-    private http: HttpClient,
-    @Inject(PLATFORM_ID) private platformId: any
-  ) {
-    if (isPlatformBrowser(this.platformId)) {
-      this._token = localStorage.getItem('access_token');
-      this.loggedIn$.next(!!this._token);
-    }
+  /** État de connexion */
+  public loggedIn$ = new BehaviorSubject<boolean>(false);
+  private _profile: UserProfile | null = null;
+
+  constructor(private http: HttpClient) {}
+
+  /**
+   * POST /api/create-user
+   * – on envoie exactement { username, email, password }
+   * – on précise responseType: 'text' pour ne pas parser en JSON
+   * – on ajoute withCredentials: true pour que le cookie (même si pas strictement nécessaire ici)
+   *   soit correctement géré côté back
+   */
+  signup(data: { name: string; email: string; password: string }): Observable<string> {
+    const payload = {
+      username: data.name,
+      email:    data.email,
+      password: data.password
+    };
+    return this.http.post(
+      `${this.API}/create-user`,
+      payload,
+      {
+        headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+        responseType: 'text',
+        withCredentials: true
+      }
+    );
   }
 
-  login(creds: { email: string; password: string }): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.API}/login`, creds).pipe(
+  /**
+   * POST /api/login
+   * – on passe { username, password }
+   * – on inclut withCredentials pour que Go lise/écrive ses cookies
+   */
+  login(creds: { username: string; password: string }): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(
+      `${this.API}/login`,
+      { username: creds.username, password: creds.password },
+      { withCredentials: true }
+    ).pipe(
       tap(res => {
-        if (isPlatformBrowser(this.platformId)) {
-          localStorage.setItem('access_token', res.accessToken);
-          localStorage.setItem('refresh_token', res.refreshToken);
-          this._token = res.accessToken;
-          this.loggedIn$.next(true);
-        }
+        // Go renvoie { status: true, message: "Login successful" }
+        this.loggedIn$.next(res.status);
       })
     );
   }
 
-  signup(data: { name: string; email: string; password: string }): Observable<any> {
-    return this.http.post<any>(`${this.API}/create-user`, data);
+  /**
+   * GET /api/profile
+   * – valide la session via le cookie HTTP
+   * – charge le profil
+   */
+  checkAuth(): Observable<boolean> {
+    return this.http.get<UserProfile>(
+      `${this.API}/profile`,
+      { withCredentials: true }
+    ).pipe(
+      tap(profile => {
+        this._profile = profile;
+        this.loggedIn$.next(true);
+      }),
+      map(() => true),
+      catchError(() => {
+        this._profile = null;
+        this.loggedIn$.next(false);
+        return of(false);
+      })
+    );
   }
 
-  logout(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-    }
-    this._token = null;
-    this.loggedIn$.next(false);
+  /**
+   * DELETE /api/logout
+   * – supprime la session côté serveur
+   */
+  logout(): Observable<void> {
+    return this.http.delete<void>(
+      `${this.API}/logout`,
+      { withCredentials: true }
+    ).pipe(
+      tap(() => {
+        this._profile = null;
+        this.loggedIn$.next(false);
+      })
+    );
   }
 
-  get token(): string | null {
-    return this._token;
-  }
-
-  get isLoggedIn(): boolean {
-    return !!this._token;
-  }
-
-  refreshToken(): Observable<{ accessToken: string }> {
-    if (!isPlatformBrowser(this.platformId)) {
-      return throwError(() => new Error('Platform not supported'));
-    }
-    const refresh = localStorage.getItem('refresh_token');
-    if (!refresh) {
-      return throwError(() => new Error('No refresh token'));
-    }
-    return this.http
-      .post<{ accessToken: string }>(`${this.API}/refresh-token`, { token: refresh })
-      .pipe(
-        tap(res => {
-          localStorage.setItem('access_token', res.accessToken);
-          this._token = res.accessToken;
-          this.loggedIn$.next(true);
-        })
-      );
+  /** Profil chargé après checkAuth */
+  get profile(): UserProfile | null {
+    return this._profile;
   }
 }

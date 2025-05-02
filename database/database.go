@@ -8,7 +8,7 @@ import (
 	_ "github.com/mattn/go-sqlite3" // Import the SQLite driver
 )
 
-var db_name string = "database.db"
+var db_name = "database/data.db"
 
 var db *sql.DB = nil
 

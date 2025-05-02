@@ -1,10 +1,11 @@
+// src/app/auth/login/login.component.ts
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { AuthService } from '../auth.service';
 import { finalize } from 'rxjs/operators';
+import { AuthService, LoginResponse } from '../auth.service';
 
 @Component({
   selector: 'app-login',
@@ -21,7 +22,7 @@ import { finalize } from 'rxjs/operators';
 export class LoginComponent implements OnInit {
   form!: FormGroup;
   loading = false;
-  error: string | null = null;
+  error   = '';
 
   constructor(
     private fb: FormBuilder,
@@ -29,29 +30,40 @@ export class LoginComponent implements OnInit {
     private router: Router
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.form = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
+      username: ['', Validators.required],
       password: ['', Validators.required]
     });
   }
 
-  submit() {
+  submit(): void {
     if (this.form.invalid) {
       this.error = 'LOGIN.ERROR.FILL_FIELDS';
       return;
     }
 
-    this.error = null;
+    this.error   = '';
     this.loading = true;
 
-    const creds = this.form.value as { email: string; password: string };
-
-    this.auth.login(creds)
-      .pipe(finalize(() => (this.loading = false)))
+    const { username, password } = this.form.value;
+    this.auth.login({ username, password })
+      .pipe(finalize(() => this.loading = false))
       .subscribe({
-        next: () => this.router.navigate(['/dashboard']),
-        error: () => this.error = 'LOGIN.ERROR.LOGIN_FAILED'
+        next: (res: LoginResponse) => {
+          if (res.status) {
+            this.router.navigate(['/dashboard']);
+          } else {
+            this.error = res.message || 'LOGIN.ERROR.LOGIN_FAILED';
+          }
+        },
+        error: err => {
+          // si le back renvoie un texte d’erreur
+          const msg = typeof err.error === 'string'
+                    ? err.error.trim()
+                    : 'LOGIN.ERROR.LOGIN_FAILED';
+          this.error = msg;
+        }
       });
   }
 }

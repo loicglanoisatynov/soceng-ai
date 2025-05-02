@@ -1,10 +1,10 @@
 // src/app/dashboard/dashboard/dashboard.component.ts
-import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule, Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
-import { AuthService } from '../../auth/auth.service';
+import { AuthService, UserProfile } from '../../auth/auth.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -21,17 +21,19 @@ import { AuthService } from '../../auth/auth.service';
 export class DashboardComponent implements OnInit {
   private auth = inject(AuthService);
   private router = inject(Router);
-  private fb = inject(FormBuilder);
-  private platformId = inject(PLATFORM_ID) as any;  // ← cast any
+  private fb     = inject(FormBuilder);
 
+  // On ne stocke QUE ces trois champs pour l'instant
   user = {
-    name: '',
+    name:     '',
     photoUrl: '/assets/images/default-avatar.png',
-    score: 0
+    score:    0
   };
+
   selectedTab: 'details' | 'settings' = 'details';
   profileForm!: FormGroup;
 
+  // Exemple statique ; vous remplacerez ça par un vrai fetch de vos challenges
   challenges = [
     { name: 'Challenge 1', info: 'Information', message: 'Message' },
     { name: 'Challenge 2', info: 'Information', message: 'Message' },
@@ -39,28 +41,35 @@ export class DashboardComponent implements OnInit {
   ];
 
   ngOnInit() {
-    if (isPlatformBrowser(this.platformId) && this.auth.token) {
-      try {
-        const payloadBase64 = this.auth.token.split('.')[1];
-        const payload = JSON.parse(atob(payloadBase64));
-        this.user.name = payload.name || '';
-        this.user.score = payload.score ?? 0;
-      } catch {
-        console.warn('Impossible de décoder le token.');
+    // 1) On valide la session via le back (cookie HTTP)
+    this.auth.checkAuth().subscribe(isAuth => {
+      if (!isAuth) {
+        // pas auth -> retour au login
+        this.router.navigate(['/auth/login'], { queryParams: { returnUrl: '/dashboard' } });
+        return;
       }
-    }
 
-    this.profileForm = this.fb.group({
-      fullName: [this.user.name],
-      username: [''], // à remplir si besoin
-      email: [''],
-      password: ['']
+      // 2) Si OK, on récupère le profil stocké
+      const profile: UserProfile | null = this.auth.profile;
+      if (profile) {
+        this.user.name     = profile.username;                // backend renvoie username
+        this.user.photoUrl = (profile as any).avatarUrl  || this.user.photoUrl;
+        this.user.score    = (profile as any).score      ?? this.user.score;
+      }
+
+      // 3) On construit le formulaire
+      this.profileForm = this.fb.group({
+        fullName: [ this.user.name ],
+        email:    [ profile?.email || '' ],
+        password: [ '' ]
+      });
     });
   }
 
   logout() {
-    this.auth.logout();
-    this.router.navigate(['/home']);
+    this.auth.logout().subscribe(() => {
+      this.router.navigate(['/home']);
+    });
   }
 
   switchTab(tab: 'details' | 'settings') {
@@ -69,6 +78,6 @@ export class DashboardComponent implements OnInit {
 
   saveDetails() {
     if (!this.profileForm.valid) return;
-    // TODO: appel API pour mettre à jour le profil
+    // TODO → PUT /api/edit-profile ou /api/edit-user
   }
 }
