@@ -1,17 +1,19 @@
-/* Contenu du fichier soceng-ai/internals/server/server.go */
 package server
 
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
 )
 
-var port string
-var host string
-var https bool
+var (
+	port  string
+	host  string
+	https bool
+)
 
 type ctxKey struct{}
 
@@ -29,47 +31,52 @@ func Serve(w http.ResponseWriter, r *http.Request) {
 				allow = append(allow, route.Get_route_method())
 				continue
 			}
+
 			ctx := context.WithValue(r.Context(), ctxKey{}, matches[1:])
 			route.Get_route_handler()(w, r.WithContext(ctx))
 			return
 		}
 	}
+
 	if len(allow) > 0 {
 		w.Header().Set("Allow", strings.Join(allow, ", "))
 		http.Error(w, "405 method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
+
 	http.NotFound(w, r)
 }
 
-// Fonction pour nettoyer la console (pour un affichage propre)
+// clearTerminal efface la console pour un affichage propre
 func clearTerminal() {
 	fmt.Print("\033[H\033[2J")
 }
 
+// StartServer initialise et démarre le serveur HTTP
 func StartServer(args []string) {
 	parseArgs(args)
-
-	// go monitorServer()
 
 	http.HandleFunc("/", Serve)
 
 	if https {
-		print("HTTPS not yet implemented.")
+		fmt.Println("HTTPS not yet implemented.")
 		os.Exit(1)
-		// http.ListenAndServeTLS(":"+port, "cert.pem", "key.pem", nil)
 	}
-	fmt.Println("Serveur HTTP démarré sur " + host + ":" + port)
-	// http.ListenAndServe(host+":"+port, nil)
-	http.ListenAndServe(":"+port, nil)
+
+	addr := host + ":" + port
+	fmt.Println("Serveur HTTP démarré sur", addr)
+	if err := http.ListenAndServe(addr, nil); err != nil {
+		log.Fatalf("Erreur lors du démarrage du serveur : %v", err)
+	}
 }
 
-func parseArgs(strings []string) {
-	for i, s := range strings {
-		if s == "-p" && i+1 < len(strings) {
-			port = strings[i+1]
-		} else if s == "-h" && i+1 < len(strings) {
-			host = strings[i+1]
+// parseArgs lit les arguments pour le port, l'hôte et le mode HTTPS
+func parseArgs(args []string) {
+	for i, s := range args {
+		if s == "-p" && i+1 < len(args) {
+			port = args[i+1]
+		} else if s == "-h" && i+1 < len(args) {
+			host = args[i+1]
 		} else if s == "-s" {
 			https = true
 		}
