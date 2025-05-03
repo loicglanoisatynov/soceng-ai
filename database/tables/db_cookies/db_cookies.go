@@ -50,7 +50,7 @@ func Get_user_id_by_cookie(username string, cookie string) int {
 	db := database.Get_DB()
 	var user_id int
 	query := "SELECT user_id FROM cookies WHERE cookie_value = ? AND user_id = (SELECT id FROM users WHERE username = ?)"
-	err := db.QueryRow(query, cookie).Scan(&user_id)
+	err := db.QueryRow(query, cookie, username).Scan(&user_id)
 	if err != nil {
 		fmt.Println("Error getting user ID by cookie:", err)
 		return -1

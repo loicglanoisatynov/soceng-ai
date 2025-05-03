@@ -3,8 +3,12 @@ CREATE TABLE users (
     username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL UNIQUE,
     passwd VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_admin BOOLEAN DEFAULT FALSE
 );
+
+INSERT INTO users (id, username, email, passwd, created_at, is_admin) VALUES
+(1, 'admin', 'loic.glanois@ynov.com', 'very_solid_password', CURRENT_TIMESTAMP, TRUE);
 
 CREATE TABLE cookies (
     id SERIAL PRIMARY KEY,

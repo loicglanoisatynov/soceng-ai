@@ -153,3 +153,26 @@ func Cookies_relevant(cookies []*http.Cookie, w http.ResponseWriter) bool {
 	}
 	return true
 }
+
+func Is_admin(r *http.Request) bool {
+	cookie, err := r.Cookie("socengai-auth")
+	if err != nil {
+		fmt.Println("Error getting cookie: ", err)
+		return false
+	}
+	username_cookie, err := r.Cookie("socengai-username")
+	if err != nil {
+		fmt.Println("Error getting username cookie: ", err)
+		return false
+	}
+	if !IsCookieValid(username_cookie.Value, cookie.Value) {
+		fmt.Println("Invalid cookie")
+		return false
+	}
+	user_id := db_users.Get_user_id_by_username_or_email(username_cookie.Value)
+	if user_id == -1 {
+		fmt.Println("User not found")
+		return false
+	}
+	return db_users.Is_admin(user_id)
+}

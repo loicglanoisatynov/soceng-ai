@@ -65,3 +65,12 @@ func get_current_time() string {
 	}
 	return current_time
 }
+
+func Validate_challenge(title string) {
+	db := database.Get_DB()
+	query := "UPDATE challenges SET validated = TRUE WHERE title = ?"
+	_, err := db.Exec(query, title)
+	if err != nil {
+		fmt.Println("Error validating challenge:", err)
+	}
+}

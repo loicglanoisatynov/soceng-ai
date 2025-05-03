@@ -22,3 +22,8 @@ Créer un challenge (commande valide) :
 ```bash
 curl -X POST http://localhost:80/api/challenge -H "Content-Type: application/json" -d '{"title": "Welcome to the Game", "description": "Un petit challenge introductif", "illustration": "illustration.png"}' -b cookie.txt -v
 ```
+
+Valider un challenge (implique d'être admin) : 
+```bash
+curl -X PUT http://localhost:80/api/challenge -H "Content-Type: application/json" -d '{"operation":"validate", "title": "Welcome to the Game", "description": "Un petit challenge introductif", "illustration": "illustration.png"}' -b cookie.txt -v
+```

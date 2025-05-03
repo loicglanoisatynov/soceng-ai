@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"runtime"
 	"strings"
 )
 
@@ -51,8 +52,6 @@ func clearTerminal() {
 func StartServer(args []string) {
 	parseArgs(args)
 
-	// go monitorServer()
-
 	http.HandleFunc("/", Serve)
 
 	if https {
@@ -60,7 +59,12 @@ func StartServer(args []string) {
 		os.Exit(1)
 		// http.ListenAndServeTLS(":"+port, "cert.pem", "key.pem", nil)
 	}
-	fmt.Println("Serveur HTTP librairie standard go démarré sur " + host + ":" + port)
+
+	if runtime.GOOS != "windows" && port > "1024" {
+		fmt.Println("Démarrez le serveur avec sudo pour utiliser un port inférieur à 1024.")
+		os.Exit(0)
+	}
+	fmt.Println("Serveur HTTP démarré sur " + host + ":" + port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 

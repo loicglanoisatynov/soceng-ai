@@ -42,7 +42,7 @@ func Get_user(db *sql.DB, by string, value string) (User, error) {
 	var user User
 	query := "SELECT * FROM users WHERE " + by + " = $1"
 	row := db.QueryRow(query, value)
-	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.Created_at)
+	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.Created_at, &user.Created_at)
 	if err != nil {
 		return user, err
 	}
@@ -152,6 +152,24 @@ func Does_email_exists(email string) bool {
 
 	var count int
 	row := db.QueryRow(query, email)
+	err := row.Scan(&count)
+	if err != nil {
+		return false
+	}
+
+	if count > 0 {
+		return true
+	} else {
+		return false
+	}
+}
+
+func Is_admin(user_id int) bool {
+	db := database.Get_DB()
+	query := "SELECT COUNT(*) FROM users WHERE id = $1 AND is_admin = true"
+
+	var count int
+	row := db.QueryRow(query, user_id)
 	err := row.Scan(&count)
 	if err != nil {
 		return false

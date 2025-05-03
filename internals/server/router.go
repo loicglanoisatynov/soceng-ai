@@ -34,6 +34,7 @@ func init() {
 
 		// newRoute("GET", "/api/get-challenges", handlers.Get_challenges), // Récupère la liste des défis (notamment pour le front-end)
 		newRoute("POST", "/api/challenge", api.Challenge_handler),
+		newRoute("PUT", "/api/challenge", api.Challenge_handler),
 		// newRoute("GET", "/api/get-challenge", handlers.Get_challenge),
 		// newRoute("PUT", "/api/edit-challenge", handlers.Edit_challenge),
 		// newRoute("DELETE", "/api/delete-challenge", handlers.Delete_challenge),

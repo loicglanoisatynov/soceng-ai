@@ -18,8 +18,8 @@ func Challenge_handler(w http.ResponseWriter, r *http.Request) {
 		challenge.Create(w, r)
 	// case "GET":
 	// 	challenge.Read(w, r)
-	// case "PUT":
-	// 	challenge.Update(w, r)
+	case "PUT":
+		challenge.Update(w, r)
 	// case "DELETE":
 	// 	challenge.Delete(w, r)
 	default:
