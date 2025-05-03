@@ -1,6 +1,5 @@
 <!-- src/app/dashboard/dashboard/dashboard.component.html -->
 <div class="min-h-screen bg-gray-50 pt-24 px-8">
-  <!-- En-tête + bouton de déconnexion -->
   <div class="flex justify-between items-center mb-8">
     <h1 class="text-4xl font-bold text-[#FF8600]">
       {{ 'DASHBOARD.TITLE' | translate }}
@@ -14,22 +13,17 @@
   </div>
 
   <div class="flex space-x-8">
-    <!-- Colonne de gauche : avatar, nom complet, score et onglets -->
     <div class="w-1/4 bg-white p-6 rounded-lg shadow space-y-4">
       <img
         [src]="user.photoUrl"
         [alt]="user.name"
         class="w-24 h-24 rounded-full object-cover mx-auto"
       />
-      <h2 class="text-xl font-semibold text-center">
-        {{ user.name }}
-      </h2>
+      <h2 class="text-xl font-semibold text-center">{{ user.name }}</h2>
       <p class="text-center">
         {{ 'DASHBOARD.SCORE' | translate }}:
         <span class="font-bold">{{ user.score }}</span>
       </p>
-
-      <!-- Onglets -->
       <nav class="flex justify-around mt-4">
         <button
           (click)="switchTab('details')"
@@ -46,9 +40,7 @@
       </nav>
     </div>
 
-    <!-- Contenu principal -->
     <div class="flex-1 space-y-8">
-      <!-- Onglet Détails -->
       <ng-container *ngIf="selectedTab === 'details'">
         <form
           [formGroup]="profileForm"
@@ -92,14 +84,12 @@
         </form>
       </ng-container>
 
-      <!-- Onglet Settings -->
       <ng-container *ngIf="selectedTab === 'settings'">
         <div class="bg-white p-6 rounded-lg shadow">
           {{ 'DASHBOARD.SETTINGS.CONTENT' | translate }}
         </div>
       </ng-container>
 
-      <!-- Liste des challenges -->
       <section class="space-y-6">
         <h2 class="text-2xl font-bold text-[#FF8600]">
           {{ 'DASHBOARD.CHALLENGES.TITLE' | translate }}
