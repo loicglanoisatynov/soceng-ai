@@ -2,12 +2,11 @@ package profiles_handling
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"soceng-ai/database/tables/db_cookies"
 	db_profiles "soceng-ai/database/tables/db_profiles"
 	db_users "soceng-ai/database/tables/db_users"
-	logging "soceng-ai/internals/server/handlers/logging"
+	authentification "soceng-ai/internals/server/handlers/authentification"
 	registering "soceng-ai/internals/server/handlers/registering"
 )
 
@@ -50,7 +49,7 @@ func Edit_profile(w http.ResponseWriter, r *http.Request) {
 	if len(r.Cookies()) < 2 {
 		http.Error(w, "Missing cookie.\n", http.StatusUnauthorized)
 		return
-	} else if !are_cookies_relevant(cookies) {
+	} else if !authentification.Cookies_relevant(cookies, w) {
 		http.Error(w, "Needed cookies : socengai-username & socengai-auth\n", http.StatusUnauthorized)
 		return
 	}
@@ -83,7 +82,7 @@ func Edit_profile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newCookie := logging.IssueCookie(request.Username)
+	newCookie := authentification.IssueCookie(request.Username)
 	// Changer le cookie de l'utilisateur
 	if username_cookie.Value != request.Username {
 		db_cookies.Delete_cookie(db_users.Get_user_id_by_username_or_email(username_cookie.Value), auth_cookie.Value)
@@ -179,14 +178,4 @@ func Edit_user(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write([]byte("User updated successfully\n"))
-}
-
-func are_cookies_relevant(cookies []*http.Cookie) bool {
-	for _, cookie := range cookies {
-		fmt.Println(cookie.Name)
-		if cookie.Name != "socengai-username" && cookie.Name != "socengai-auth" {
-			return false
-		}
-	}
-	return true
 }

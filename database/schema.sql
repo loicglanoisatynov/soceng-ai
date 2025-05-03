@@ -20,3 +20,14 @@ CREATE TABLE profiles (
     biography VARCHAR(255),
     avatar VARCHAR(255)
 );
+
+CREATE TABLE challenges (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    description TEXT NOT NULL,
+    difficulty INT NOT NULL CHECK (difficulty BETWEEN 1 AND 5),
+    illustration VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    validated BOOLEAN DEFAULT FALSE
+);

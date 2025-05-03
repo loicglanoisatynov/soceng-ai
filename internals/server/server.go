@@ -4,6 +4,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -59,9 +60,8 @@ func StartServer(args []string) {
 		os.Exit(1)
 		// http.ListenAndServeTLS(":"+port, "cert.pem", "key.pem", nil)
 	}
-	fmt.Println("Serveur HTTP démarré sur " + host + ":" + port)
-	// http.ListenAndServe(host+":"+port, nil)
-	http.ListenAndServe(":"+port, nil)
+	fmt.Println("Serveur HTTP librairie standard go démarré sur " + host + ":" + port)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
 func parseArgs(strings []string) {

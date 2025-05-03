@@ -7,7 +7,7 @@ import (
 	"regexp"
 	database "soceng-ai/database"
 	db_users "soceng-ai/database/tables/db_users"
-	"soceng-ai/internals/server/handlers/logging"
+	logging "soceng-ai/internals/server/handlers/authentification"
 	"strings"
 )
 

@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"regexp"
 	handlers "soceng-ai/internals/server/handlers"
-	handlers_logging "soceng-ai/internals/server/handlers/logging"
+
+	api "soceng-ai/internals/server/handlers/api"
+	authentification "soceng-ai/internals/server/handlers/authentification"
 	profiles_handling "soceng-ai/internals/server/handlers/profiles_handling"
 	"soceng-ai/internals/server/handlers/registering"
 )
@@ -25,10 +27,16 @@ func init() {
 		newRoute("POST", "/create-user", registering.Register_user),
 		newRoute("POST", "/check-register", registering.Check_register),
 		newRoute("DELETE", "/delete-user", registering.Delete_user),
-		newRoute("POST", "/login", handlers_logging.Login),
-		newRoute("DELETE", "/logout", handlers_logging.Logout),
+		newRoute("POST", "/login", authentification.Login),
+		newRoute("DELETE", "/logout", authentification.Logout),
 		newRoute("PUT", "/edit-profile", profiles_handling.Edit_profile),
 		newRoute("PUT", "/edit-user", profiles_handling.Edit_user),
+
+		// newRoute("GET", "/api/get-challenges", handlers.Get_challenges), // Récupère la liste des défis (notamment pour le front-end)
+		newRoute("POST", "/api/challenge", api.Challenge_handler),
+		// newRoute("GET", "/api/get-challenge", handlers.Get_challenge),
+		// newRoute("PUT", "/api/edit-challenge", handlers.Edit_challenge),
+		// newRoute("DELETE", "/api/delete-challenge", handlers.Delete_challenge),
 
 		// newRoute("GET", "/contact", contact),
 		// newRoute("GET", "/([^/]+)/admin", widgetAdmin),
