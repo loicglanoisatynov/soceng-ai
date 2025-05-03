@@ -1,8 +1,17 @@
-// src/app/auth/auth.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, of } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { tap, map } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
+
+export interface UserProfile {
+  id: number;
+  username: string;
+  email: string;
+  avatarUrl?: string;
+  score?: number;
+  progress?: number;
+}
 
 export interface LoginResponse {
   status: boolean;
@@ -11,42 +20,73 @@ export interface LoginResponse {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly API = '/api';
-  public loggedIn$ = new BehaviorSubject<boolean>(false);
+  // Utilisation de l'URL de base définie dans environment
+  private readonly API = environment.apiBaseUrl;
 
-  constructor(private http: HttpClient) {}
+  public loggedIn$: BehaviorSubject<boolean>;
+  private _profile: UserProfile | null = null;
 
-  signup(data: {
-    name: string; email: string; password: string;
-  }): Observable<string> {
-    const payload = {
-      username: data.name,
-      email:    data.email,
-      password: data.password
-    };
-    return this.http.post(
+  constructor(private http: HttpClient) {
+    const saved = typeof window !== 'undefined' &&
+      localStorage.getItem('isLoggedIn') === 'true';
+    this.loggedIn$ = new BehaviorSubject<boolean>(saved);
+  }
+
+  /** SIGN UP */
+  signup(data: { name: string; email: string; password: string }): Observable<void> {
+    return this.http.post<void>(
       `${this.API}/create-user`,
-      payload,
-      { responseType: 'text', withCredentials: true }
+      { username: data.name, email: data.email, password: data.password },
+      { withCredentials: true }
     );
   }
 
-  login(creds: { username: string; password: string }): Observable<LoginResponse> {
+  /** LOGIN : stocke état, profil minimal, persistance */
+  login(creds: { username: string; password: string }): Observable<boolean> {
     return this.http.post<LoginResponse>(
       `${this.API}/login`,
       creds,
       { withCredentials: true }
     ).pipe(
-      tap(res => this.loggedIn$.next(res.status))
+      tap(res => {
+        this.loggedIn$.next(res.status);
+        if (res.status) {
+          this._profile = { id: 0, username: creds.username, email: '' };
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('username', creds.username);
+          }
+        }
+      }),
+      map(res => res.status)
     );
   }
 
+  /** LOGOUT : récupère username, envoie body, reset état */
   logout(): Observable<void> {
-    return this.http.delete<void>(
-      `${this.API}/logout`,
-      { withCredentials: true }
-    ).pipe(
-      tap(() => this.loggedIn$.next(false))
+    const username =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('username') || ''
+        : '';
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.request<void>('DELETE', `${this.API}/logout`, {
+      headers,
+      withCredentials: true,
+      body: { username }
+    }).pipe(
+      tap(() => {
+        this.loggedIn$.next(false);
+        this._profile = null;
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('isLoggedIn');
+          localStorage.removeItem('username');
+        }
+      })
     );
+  }
+
+  /** Getter profil */
+  get profile(): UserProfile | null {
+    return this._profile;
   }
 }

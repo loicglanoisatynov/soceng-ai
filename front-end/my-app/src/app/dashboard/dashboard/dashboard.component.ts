@@ -1,10 +1,11 @@
-// src/app/dashboard/dashboard/dashboard.component.ts
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
-import { AuthService } from '../../auth/auth.service';
+import { take } from 'rxjs/operators';
+import { AuthService, UserProfile } from '../../auth/auth.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-dashboard',
@@ -15,43 +16,62 @@ import { AuthService } from '../../auth/auth.service';
     ReactiveFormsModule,
     TranslateModule
   ],
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss']
+  templateUrl: './dashboard.component.html'
 })
 export class DashboardComponent implements OnInit {
   private auth   = inject(AuthService);
   private router = inject(Router);
   private fb     = inject(FormBuilder);
 
-  user = {
-    name:     'Utilisateur',
-    photoUrl: '/assets/images/bg-login.jpg',
-    score:    0
+  user: UserProfile & { avatarUrl: string; score: number; progress: number } = {
+    id:        0,
+    username:  'John Doe',
+    email:     '',
+    avatarUrl: '/assets/images/default-avatar.png',
+    score:     0,
+    progress:  0
   };
 
   selectedTab: 'details'|'settings' = 'details';
   profileForm!: FormGroup;
-
-  challenges = [
-    { name: 'Challenge 1', info: 'Info', message: 'Message' },
-    { name: 'Challenge 2', info: 'Info', message: 'Message' },
-    { name: 'Challenge 3', info: 'Info', message: 'Message' }
-  ];
+  challenges: Array<{ name: string; info: string }> = [];
 
   ngOnInit() {
-    // on ne fait plus de checkAuth() ici
-    // on part du principe qu’on est déjà passé par le AuthGuard
-    this.profileForm = this.fb.group({
-      fullName: [ this.user.name ],
-      email:    [''],
-      password: ['']
+    this.auth.loggedIn$.pipe(take(1)).subscribe(isLoggedIn => {
+      if (!isLoggedIn) {
+        this.router.navigate(
+          [environment.routes.login],
+          { queryParams: { returnUrl: environment.routes.dashboard } }
+        );
+        return;
+      }
+
+      const p = this.auth.profile!;
+      this.user = {
+        ...p,
+        avatarUrl: p.avatarUrl || this.user.avatarUrl,
+        score:     p.score     || this.user.score,
+        progress:  p.progress  || this.user.progress
+      };
+
+      this.profileForm = this.fb.group({
+        fullName: [ this.user.username ],
+        email:    [ this.user.email ],
+        password: [ '' ]
+      });
+
+      this.challenges = [
+        { name: 'Challenge 1', info: 'Lorem ipsum…' },
+        { name: 'Challenge 2', info: 'Dolor sit amet…' },
+        { name: 'Challenge 3', info: 'Consectetur…' }
+      ];
     });
   }
 
   logout() {
-    this.auth.logout().subscribe(() => {
-      this.router.navigate(['/home']);
-    });
+    this.auth.logout().subscribe(() =>
+      this.router.navigate([environment.routes.login])
+    );
   }
 
   switchTab(tab: 'details'|'settings') {
@@ -60,6 +80,6 @@ export class DashboardComponent implements OnInit {
 
   saveDetails() {
     if (!this.profileForm.valid) return;
-    // TODO: PUT /api/edit-profile
+    // TODO → PUT `${environment.apiBaseUrl}/edit-profile`
   }
 }

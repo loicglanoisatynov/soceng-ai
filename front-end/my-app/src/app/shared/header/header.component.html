@@ -1,7 +1,7 @@
 <!-- src/app/shared/header/header.component.html -->
 <header
   class="fixed top-0 left-0 w-screen flex items-center justify-between px-9 py-4 z-50 shadow-[0_20px_30px_0_#5C00BF]"
-  style="background-color: rgba(92, 0, 191, 0.9);"
+  style="background: rgba(92,0,191,0.9);"
 >
   <a
     routerLink="/home"
@@ -10,74 +10,94 @@
     {{ 'HEADER.TITLE' | translate }}
   </a>
 
-  <div class="flex items-center space-x-8">
-    <nav class="flex space-x-6">
-      <a
-        routerLink="/challenge"
-        class="text-lg text-[#FF8600] hover:text-white"
-      >
-        {{ 'HEADER.CHALLENGE' | translate }}
-      </a>
-      <a
-        routerLink="/about"
-        class="text-lg text-[#FF8600] hover:text-white"
-      >
-        {{ 'HEADER.ABOUT' | translate }}
-      </a>
-      <a
-        routerLink="/contact"
-        class="text-lg text-[#FF8600] hover:text-white"
-      >
-        {{ 'HEADER.CONTACT' | translate }}
-      </a>
-      <a
-        *ngIf="isLoggedIn"
-        routerLink="/dashboard"
-        class="text-lg text-[#FF8600] hover:text-white"
-      >
-        {{ 'HEADER.DASHBOARD' | translate }}
-      </a>
-    </nav>
+  <!-- Bouton burger visible sur mobile only -->
+  <button
+    class="lg:hidden p-2 text-[#FF8600] focus:outline-none"
+    (click)="toggleMenu()"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+         viewBox="0 0 24 24" stroke="currentColor">
+      <path *ngIf="!menuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h16" />
+      <path *ngIf=" menuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  </button>
 
-    <div class="flex items-center space-x-4 ml-8">
-      <!-- Sélecteur de langue -->
+  <!-- Nav normale (desktop) -->
+  <nav class="hidden lg:flex items-center space-x-6">
+    <a routerLink="/challenge" class="text-lg text-[#FF8600] hover:text-white">
+      {{ 'HEADER.CHALLENGE' | translate }}
+    </a>
+    <a routerLink="/about" class="text-lg text-[#FF8600] hover:text-white">
+      {{ 'HEADER.ABOUT' | translate }}
+    </a>
+    <a routerLink="/contact" class="text-lg text-[#FF8600] hover:text-white">
+      {{ 'HEADER.CONTACT' | translate }}
+    </a>
+    <a *ngIf="isLoggedIn" routerLink="/dashboard" class="text-lg text-[#FF8600] hover:text-white">
+      {{ 'HEADER.DASHBOARD' | translate }}
+    </a>
+  </nav>
+
+  <!-- Zone de droite (langue + buttons) -->
+  <div class="hidden lg:flex items-center space-x-4 ml-8">
+    <select
+      (change)="switchLang($any($event.target).value)"
+      class="px-2 py-1 border border-[#FF8600] rounded bg-[#AEB8FE] text-[#FF8600]"
+    >
+      <option value="fr" [selected]="lang.currentLang==='fr'">FR</option>
+      <option value="en" [selected]="lang.currentLang==='en'">EN</option>
+    </select>
+    <button *ngIf="showAuthButtons" routerLink="/auth/login"
+            class="w-24 border border-[#FF8600] text-[#FF8600] px-4 py-1 rounded hover:bg-[#FF8600] hover:text-white">
+      {{ 'HEADER.LOGIN' | translate }}
+    </button>
+    <button *ngIf="showAuthButtons" routerLink="/auth/signup"
+            class="w-24 border border-[#FF8600] text-[#FF8600] px-4 py-1 rounded hover:bg-[#FF8600] hover:text-white">
+      {{ 'HEADER.SIGNUP' | translate }}
+    </button>
+    <button *ngIf="isLoggedIn" (click)="onLogout()"
+            class="w-24 border border-red-500 text-red-500 px-4 py-1 rounded hover:bg-red-500 hover:text-white">
+      {{ 'HEADER.LOGOUT' | translate }}
+    </button>
+  </div>
+
+  <!-- Menu mobile déroulant -->
+  <div
+    *ngIf="menuOpen"
+    class="absolute top-full left-0 w-full bg-[rgba(92,0,191,0.95)] lg:hidden flex flex-col px-6 py-4 space-y-4"
+  >
+    <a routerLink="/challenge" (click)="toggleMenu()" class="text-lg text-white">
+      {{ 'HEADER.CHALLENGE' | translate }}
+    </a>
+    <a routerLink="/about" (click)="toggleMenu()" class="text-lg text-white">
+      {{ 'HEADER.ABOUT' | translate }}
+    </a>
+    <a routerLink="/contact" (click)="toggleMenu()" class="text-lg text-white">
+      {{ 'HEADER.CONTACT' | translate }}
+    </a>
+    <a *ngIf="isLoggedIn" routerLink="/dashboard" (click)="toggleMenu()" class="text-lg text-white">
+      {{ 'HEADER.DASHBOARD' | translate }}
+    </a>
+    <div class="flex items-center space-x-4">
       <select
         (change)="switchLang($any($event.target).value)"
         class="px-2 py-1 border border-[#FF8600] rounded bg-[#AEB8FE] text-[#FF8600]"
       >
-        <option 
-          value="fr" 
-          [selected]="lang.currentLang === 'fr'"
-        >
-          FR
-        </option>
-        <option 
-          value="en" 
-          [selected]="lang.currentLang === 'en'"
-        >
-          EN
-        </option>
+        <option value="fr" [selected]="lang.currentLang==='fr'">FR</option>
+        <option value="en" [selected]="lang.currentLang==='en'">EN</option>
       </select>
-
-      <button
-        *ngIf="showAuthButtons"
-        routerLink="/auth/login"
-        class="w-24 border border-[#FF8600] text-[#FF8600] px-4 py-1 rounded hover:bg-[#FF8600] hover:text-white"
-      >
+      <button *ngIf="showAuthButtons" routerLink="/auth/login" (click)="toggleMenu()"
+              class="flex-1 border border-[#FF8600] text-[#FF8600] py-1 rounded hover:bg-[#FF8600] hover:text-white">
         {{ 'HEADER.LOGIN' | translate }}
       </button>
-      <button
-        *ngIf="showAuthButtons"
-        routerLink="/auth/signup"
-        class="w-24 border border-[#FF8600] text-[#FF8600] px-4 py-1 rounded hover:bg-[#FF8600] hover:text-white"
-      >
+      <button *ngIf="showAuthButtons" routerLink="/auth/signup" (click)="toggleMenu()"
+              class="flex-1 border border-[#FF8600] text-[#FF8600] py-1 rounded hover:bg-[#FF8600] hover:text-white">
         {{ 'HEADER.SIGNUP' | translate }}
       </button>
-      <button
-        *ngIf="isLoggedIn"
-        (click)="logout()"
-        class="w-24 border border-red-500 text-red-500 px-4 py-1 rounded hover:bg-red-500 hover:text-white"
-      >
+      <button *ngIf="isLoggedIn" (click)="onLogout()"
+              class="flex-1 border border-red-500 text-red-500 py-1 rounded hover:bg-red-500 hover:text-white">
         {{ 'HEADER.LOGOUT' | translate }}
       </button>
     </div>
