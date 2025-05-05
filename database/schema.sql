@@ -1,3 +1,8 @@
+DROP TABLE IF EXISTS cookies;
+DROP TABLE IF EXISTS profiles;
+DROP TABLE IF EXISTS challenges;
+DROP TABLE IF EXISTS users;
+
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
@@ -66,3 +71,35 @@ CREATE TABLE characters (
 -- sessions (id, user_id, challenge_id, start_time, end_time, status)
 -- game_characters (id, character_id, character_name, suspicion_level, is_contacted, is_suspect, session_id)
 
+-- Utilisateurs
+INSERT INTO users (username, email, passwd) VALUES
+('admin', 'admin@admin.com', 'hashed_admin_password'),
+('piratejoe', 'joe@hacker.com', 'hashed_piratejoe_pass'),
+('aiqueen', 'queen@aiqueen.com', 'hashed_aiqueen_pass');
+
+-- Profils
+INSERT INTO profiles (user_id, biography, avatar) VALUES
+(1, 'Super admin du système. Ne jamais lui faire confiance.', 'admin.png'),
+(2, 'Pirate spécialisé en ingénierie sociale. Très bavard.', 'piratejoe.png'),
+(3, 'Hackeuse éthique fan d’IA. Très curieuse.', 'aiqueen.png');
+ 
+-- Challenges du jeu
+INSERT INTO challenges (title, description, flag, difficulty) VALUES
+(
+  'Infiltrer la réception',
+  'Discute avec la réceptionniste pour obtenir le mot de passe Wi-Fi.',
+  'FLAG{wifi}',
+  'Facile'
+),
+(
+  'Convaincre le directeur',
+  'Tente de récupérer des infos techniques sans éveiller ses soupçons.',
+  'FLAG{tech}',
+  'Difficile'
+),
+(
+  'Nettoyage stratégique',
+  'La femme de ménage en sait plus que tu ne crois. Profite de son bavardage.',
+  'FLAG{balaie}',
+  'Moyen'
+);
