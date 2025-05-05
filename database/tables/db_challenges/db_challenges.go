@@ -22,7 +22,7 @@ func Create_challenge(title string, description string, illustration string) {
 	present_time := get_current_time()
 	validated := false
 	difficulty := 1 // Default difficulty, can be changed later
-	query := "INSERT INTO challenges (id, title, description, difficulty, illustration, created_at, updated_at, validated) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+	query := "INSERT INTO challenges (id, title, lore_for_player, difficulty, illustration, created_at, updated_at, validated) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
 	_, err := db.Exec(query, id, title, description, difficulty, illustration, present_time, present_time, validated)
 	if err != nil {
 		fmt.Println("Error creating challenge:", err)
