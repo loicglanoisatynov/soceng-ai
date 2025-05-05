@@ -13,6 +13,8 @@ Se logger (et récupérer le cookie de session) :
 curl -X POST http://localhost:80/login -H "Content-Type: application/json" -d '{"username": "lglanois", "password": "password0!"}' -c cookie.txt
 ```
 
+Se logout :
+
 Afficher les cookies de session récupérés :
 ```bash
 grep "socengai" cookie.txt -A 1

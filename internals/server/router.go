@@ -9,7 +9,7 @@ import (
 	api "soceng-ai/internals/server/handlers/api"
 	authentification "soceng-ai/internals/server/handlers/authentification"
 	profiles_handling "soceng-ai/internals/server/handlers/profiles_handling"
-	"soceng-ai/internals/server/handlers/registering"
+	registering "soceng-ai/internals/server/handlers/registering"
 )
 
 var routes []Route
