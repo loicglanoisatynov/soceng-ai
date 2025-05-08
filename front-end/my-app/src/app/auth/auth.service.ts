@@ -12,18 +12,14 @@ export interface LoginResponse {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  // On pointe directement sur le back (pas de /api, pas de proxy)
+  // On pointe directement sur le back
   private readonly API = 'http://localhost:8080';
 
   public loggedIn$ = new BehaviorSubject<boolean>(false);
 
   constructor(private http: HttpClient) {}
 
-  signup(data: {
-    name: string;
-    email: string;
-    password: string;
-  }): Observable<string> {
+  signup(data: { name: string; email: string; password: string; }): Observable<string> {
     const payload = {
       username: data.name,
       email:    data.email,
@@ -49,9 +45,11 @@ export class AuthService {
   }
 
   logout(): Observable<void> {
+    // On passe en POST pour éviter le 400 Bad Request sur DELETE
     return this.http
-      .delete<void>(
+      .post<void>(
         `${this.API}/logout`,
+        {},                           // body vide
         { withCredentials: true }
       )
       .pipe(

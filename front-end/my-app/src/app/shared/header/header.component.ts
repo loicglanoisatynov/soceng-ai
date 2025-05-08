@@ -1,9 +1,11 @@
+// src/app/shared/header/header.component.ts
+
 import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
-import { LanguageService } from '../../core/language.service';
-import { AuthService } from '../../auth/auth.service';
+import { isPlatformBrowser, CommonModule }         from '@angular/common';
+import { Router, RouterModule }                    from '@angular/router';
+import { TranslateModule }                         from '@ngx-translate/core';
+import { LanguageService }                         from '../../core/language.service';
+import { AuthService }                             from '../../auth/auth.service';
 
 @Component({
   selector: 'app-header',
@@ -24,7 +26,7 @@ export class HeaderComponent implements OnInit {
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      this.auth.loggedIn$.subscribe(status => (this.isLoggedIn = status));
+      this.auth.loggedIn$.subscribe(status => this.isLoggedIn = status);
     }
   }
 
@@ -35,8 +37,18 @@ export class HeaderComponent implements OnInit {
   }
 
   logout(): void {
-    this.auth.logout();
-    this.router.navigate(['/auth/login']);
+    this.auth.logout().subscribe({
+      next: () => {
+        // L’état loggedIn$ est déjà passé à false
+        this.router.navigate(['/home']);
+      },
+      error: err => {
+        console.error('Erreur lors du logout', err);
+        // On force la mise à jour du statut et la navigation
+        this.auth.loggedIn$.next(false);
+        this.router.navigate(['/home']);
+      }
+    });
   }
 
   switchLang(lang: string) {
