@@ -17,12 +17,29 @@ var (
 
 type ctxKey struct{}
 
+// getField extrait un paramètre capturé par la regex dans le contexte de la requête
 func getField(r *http.Request, index int) string {
 	fields := r.Context().Value(ctxKey{}).([]string)
 	return fields[index]
 }
 
 func Serve(w http.ResponseWriter, r *http.Request) {
+	// ==== GESTION CORS ====
+	origin := r.Header.Get("Origin")
+	if origin != "" {
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+		w.Header().Set("Vary", "Origin")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+	}
+	if r.Method == http.MethodOptions {
+		// Réponse aux requêtes pré-vol
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	// =======================
+
 	var allow []string
 	for _, route := range routes {
 		matches := route.Get_route_regex().FindStringSubmatch(r.URL.Path)
