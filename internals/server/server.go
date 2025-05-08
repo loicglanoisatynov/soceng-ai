@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"os"
 	"runtime"
+	"soceng-ai/internals/utils/colors"
+	prompts "soceng-ai/internals/utils/prompts"
 	"strings"
 )
 
@@ -64,7 +66,7 @@ func StartServer(args []string) {
 		fmt.Println("Démarrez le serveur avec sudo pour utiliser un port inférieur à 1024.")
 		os.Exit(0)
 	}
-	fmt.Println("Serveur HTTP démarré sur " + host + ":" + port)
+	fmt.Println(prompts.Prompt + prompts.Success + "Serveur HTTP démarré sur " + colors.Cyan + host + colors.Reset + ":" + colors.Cyan + port + colors.Reset)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 

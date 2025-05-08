@@ -10,7 +10,7 @@ curl -X POST http://localhost:80/create-user -H "Content-Type: application/json"
 
 Se logger (et récupérer le cookie de session) :
 ```bash
-curl -X POST http://localhost:80/login -H "Content-Type: application/json" -d '{"username": "lglanois", "password": "password0!"}' -c cookie.txt
+curl -X POST http://localhost:80/login -H "Content-Type: application/json" -d '{"username": "lglanois", "password": "very_solid_password"}' -c cookie.txt
 ```
 
 Se logout :
@@ -20,10 +20,41 @@ Afficher les cookies de session récupérés :
 grep "socengai" cookie.txt -A 1
 ```
 
+## API Challenges
+
+### Création de challenge
+
+#### Commandes valides
+
 Créer un challenge (commande valide) :
 ```bash
-curl -X POST http://localhost:80/api/challenge -H "Content-Type: application/json" -d '{"title": "Welcome to the Game", "description": "Un petit challenge introductif", "illustration": "illustration.png"}' -b cookie.txt -v
+curl -X POST http://localhost:80/api/challenge \
+  -H "Content-Type: application/json" \
+  -d '{"challenge": {"title": "Titre du challenge", "description": "Ceci est une description test"}}' \
+  -b cookie.txt -v
 ```
+
+#### Commandes invalides
+
+Créer un challenge (sans cookie de session) :
+```bash
+curl -X POST http://localhost:80/api/challenge \
+  -H "Content-Type: application/json" \
+  -d '{"challenge": {"title": "Titre du challenge", "description": "Ceci est une description test"}}' \
+  -v
+```
+
+Créer un challenge (sans titre) :
+```bash
+curl -X POST http://localhost:80/api/challenge \
+  -H "Content-Type: application/json" \
+  -d '{"challenge": {"description": "Ceci est une description test"}}' \
+  -b cookie.txt -v
+```
+
+### Validation de challenge
+
+#### Commandes valides
 
 Valider un challenge (implique d'être admin) : 
 ```bash
