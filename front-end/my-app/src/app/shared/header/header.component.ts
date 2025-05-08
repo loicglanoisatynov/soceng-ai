@@ -1,10 +1,10 @@
 // src/app/shared/header/header.component.ts
 import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser, CommonModule }         from '@angular/common';
-import { Router, RouterModule }                    from '@angular/router';
-import { TranslateModule }                         from '@ngx-translate/core';
-import { LanguageService }                         from '../../core/language.service';
-import { AuthService }                             from '../../auth/auth.service';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { RouterModule, Router } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
+import { LanguageService } from '../../core/language.service';
+import { AuthService } from '../../auth/auth.service';
 
 @Component({
   selector: 'app-header',
@@ -14,14 +14,12 @@ import { AuthService }                             from '../../auth/auth.service
   styleUrls: ['./header.component.scss']
 })
 export class HeaderComponent implements OnInit {
-  // URL de l'avatar par défaut
-  public defaultAvatar = 'assets/images/bg-login.jpg';
-  public isLoggedIn = false;
+  isLoggedIn = false;
 
   constructor(
     public auth: AuthService,
-    private router: Router,
     public lang: LanguageService,
+    private router: Router,
     @Inject(PLATFORM_ID) private platformId: any
   ) {}
 
@@ -38,21 +36,23 @@ export class HeaderComponent implements OnInit {
   }
 
   logout(): void {
-    this.auth.logout().subscribe({
-      next: () => {
-        // L’état loggedIn$ est déjà passé à false
-        this.router.navigate(['/home']);
-      },
-      error: err => {
-        console.error('Erreur lors du logout', err);
-        // On force la mise à jour du statut et la navigation
-        this.auth.loggedIn$.next(false);
-        this.router.navigate(['/home']);
-      }
-    });
+    this.auth.logout();
+    this.router.navigate(['/auth/login']);
   }
 
   switchLang(lang: string) {
     this.lang.use(lang);
+  }
+
+  // ** these two must match the template **
+  toggleMenu() {
+    this.menuOpen = !this.menuOpen;
+  }
+
+  onLogout() {
+    this.auth.logout().subscribe(() => {
+      this.menuOpen = false;
+      this.router.navigate(['/auth/login']);
+    });
   }
 }

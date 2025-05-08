@@ -1,8 +1,7 @@
 // src/app/auth/auth.service.ts
-
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 export interface LoginResponse {
@@ -12,48 +11,42 @@ export interface LoginResponse {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  // On pointe directement sur le back
-  private readonly API = 'http://localhost:8080';
-
+  private readonly API = '/api';
   public loggedIn$ = new BehaviorSubject<boolean>(false);
 
   constructor(private http: HttpClient) {}
 
-  signup(data: { name: string; email: string; password: string; }): Observable<string> {
+  signup(data: {
+    name: string; email: string; password: string;
+  }): Observable<string> {
     const payload = {
       username: data.name,
       email:    data.email,
-      password: data.password,
+      password: data.password
     };
     return this.http.post(
       `${this.API}/create-user`,
-      payload,
-      { responseType: 'text', withCredentials: true }
+      { username: data.name, email: data.email, password: data.password },
+      { withCredentials: true }
     );
   }
 
   login(creds: { username: string; password: string }): Observable<LoginResponse> {
-    return this.http
-      .post<LoginResponse>(
-        `${this.API}/login`,
-        creds,
-        { withCredentials: true }
-      )
-      .pipe(
-        tap(res => this.loggedIn$.next(res.status))
-      );
+    return this.http.post<LoginResponse>(
+      `${this.API}/login`,
+      creds,
+      { withCredentials: true }
+    ).pipe(
+      tap(res => this.loggedIn$.next(res.status))
+    );
   }
 
   logout(): Observable<void> {
-    // On passe en POST pour éviter le 400 Bad Request sur DELETE
-    return this.http
-      .post<void>(
-        `${this.API}/logout`,
-        {},                           // body vide
-        { withCredentials: true }
-      )
-      .pipe(
-        tap(() => this.loggedIn$.next(false))
-      );
+    return this.http.delete<void>(
+      `${this.API}/logout`,
+      { withCredentials: true }
+    ).pipe(
+      tap(() => this.loggedIn$.next(false))
+    );
   }
 }

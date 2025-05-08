@@ -11,10 +11,11 @@ import {
   ActivatedRoute,
   RouterModule
 } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule }    from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { finalize } from 'rxjs/operators';
-import { AuthService, LoginResponse } from '../auth.service';
+import { finalize }        from 'rxjs/operators';
+import { AuthService }     from '../auth.service';
+import { environment }     from '../../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -25,14 +26,13 @@ import { AuthService, LoginResponse } from '../auth.service';
     RouterModule,
     TranslateModule
   ],
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
+  templateUrl: './login.component.html'
 })
 export class LoginComponent implements OnInit {
-  private fb = inject(FormBuilder);
-  private auth = inject(AuthService);
+  private fb     = inject(FormBuilder);
+  private auth   = inject(AuthService);
   private router = inject(Router);
-  private route = inject(ActivatedRoute);
+  private route  = inject(ActivatedRoute);
 
   form!: FormGroup;
   loading = false;
@@ -50,30 +50,28 @@ export class LoginComponent implements OnInit {
       this.error = 'LOGIN.ERROR.FILL_FIELDS';
       return;
     }
-
     this.error   = '';
     this.loading = true;
-
     const { username, password } = this.form.value;
-    // On lit le returnUrl (ex: /dashboard) ou on met une valeur par défaut
-    const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
 
     this.auth.login({ username, password })
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
-        next: (res: LoginResponse) => {
-          if (res.status) {
-            // redirige vers la page d’origine ou /dashboard
+        next: (isAuth: boolean) => {
+          if (isAuth) {
+            // on récupère la route du dashboard depuis l'env
+            const returnUrl =
+              this.route.snapshot.queryParamMap.get('returnUrl')
+                || environment.routes.dashboard;
             this.router.navigateByUrl(returnUrl);
           } else {
-            this.error = res.message || 'LOGIN.ERROR.LOGIN_FAILED';
+            this.error = 'LOGIN.ERROR.INVALID_CREDENTIALS';
           }
         },
         error: err => {
-          const msg = typeof err.error === 'string'
-                    ? err.error.trim()
-                    : 'LOGIN.ERROR.LOGIN_FAILED';
-          this.error = msg;
+          this.error = typeof err.error === 'string'
+            ? err.error.trim()
+            : 'LOGIN.ERROR.LOGIN_FAILED';
         }
       });
   }
