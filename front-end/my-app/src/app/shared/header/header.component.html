@@ -12,29 +12,16 @@
 
   <div class="flex items-center space-x-8">
     <nav class="flex space-x-6">
-      <a
-        routerLink="/challenge"
-        class="text-lg text-[#FF8600] hover:text-white"
-      >
+      <a routerLink="/challenge" class="text-lg text-[#FF8600] hover:text-white">
         {{ 'HEADER.CHALLENGE' | translate }}
       </a>
-      <a
-        routerLink="/about"
-        class="text-lg text-[#FF8600] hover:text-white"
-      >
+      <a routerLink="/about" class="text-lg text-[#FF8600] hover:text-white">
         {{ 'HEADER.ABOUT' | translate }}
       </a>
-      <a
-        routerLink="/contact"
-        class="text-lg text-[#FF8600] hover:text-white"
-      >
+      <a routerLink="/contact" class="text-lg text-[#FF8600] hover:text-white">
         {{ 'HEADER.CONTACT' | translate }}
       </a>
-      <a
-        *ngIf="isLoggedIn"
-        routerLink="/dashboard"
-        class="text-lg text-[#FF8600] hover:text-white"
-      >
+      <a *ngIf="isLoggedIn" routerLink="/dashboard" class="text-lg text-[#FF8600] hover:text-white">
         {{ 'HEADER.DASHBOARD' | translate }}
       </a>
     </nav>
@@ -45,20 +32,11 @@
         (change)="switchLang($any($event.target).value)"
         class="px-2 py-1 border border-[#FF8600] rounded bg-[#AEB8FE] text-[#FF8600]"
       >
-        <option 
-          value="fr" 
-          [selected]="lang.currentLang === 'fr'"
-        >
-          FR
-        </option>
-        <option 
-          value="en" 
-          [selected]="lang.currentLang === 'en'"
-        >
-          EN
-        </option>
+        <option [value]="'fr'" [selected]="lang.currentLang === 'fr'">FR</option>
+        <option [value]="'en'" [selected]="lang.currentLang === 'en'">EN</option>
       </select>
 
+      <!-- Boutons Login / Signup -->
       <button
         *ngIf="showAuthButtons"
         routerLink="/auth/login"
@@ -73,6 +51,31 @@
       >
         {{ 'HEADER.SIGNUP' | translate }}
       </button>
+
+      <!-- Avatar de l'utilisateur connecté -->
+      <img
+        *ngIf="isLoggedIn"
+        [src]="defaultAvatar"
+        alt="Avatar"
+        class="w-8 h-8 rounded-full mr-2"
+      />
+
+      <!-- Icône Paramètres -->
+      <a
+        *ngIf="isLoggedIn"
+        [routerLink]="['/settings']"
+        routerLinkActive="opacity-80"
+        class="mr-2"
+        title="Settings"
+      >
+        <img
+          src="assets/icons/settings.svg"
+          alt="Settings"
+          class="w-6 h-6 hover:opacity-80"
+        />
+      </a>
+
+      <!-- Bouton Logout -->
       <button
         *ngIf="isLoggedIn"
         (click)="logout()"

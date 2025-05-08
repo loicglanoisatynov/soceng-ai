@@ -1,14 +1,15 @@
+// src/app/app.routes.ts
 import { Routes } from '@angular/router';
 import { AuthGuard } from './auth/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
 
-  // alias pour /login
+  // alias pour /login et /signup
   { path: 'login', redirectTo: 'auth/login', pathMatch: 'full' },
-  // alias pour /signup (facultatif)
   { path: 'signup', redirectTo: 'auth/signup', pathMatch: 'full' },
 
+  // Public pages
   {
     path: 'home',
     loadComponent: () =>
@@ -25,6 +26,13 @@ export const routes: Routes = [
       import('./contact/contact.component').then(m => m.ContactComponent)
   },
   {
+    path: 'challenge',
+    loadComponent: () =>
+      import('./challenge/challenge/challenge.component').then(m => m.ChallengeComponent)
+  },
+
+  // Auth
+  {
     path: 'auth',
     children: [
       {
@@ -39,18 +47,19 @@ export const routes: Routes = [
       }
     ]
   },
-  // src/app/app.routes.ts
-{
-  path: 'dashboard',
-  canActivate: [AuthGuard],
-  loadComponent: () =>
-    import('./dashboard/dashboard/dashboard.component').then(m => m.DashboardComponent)
-},
+
+  // Protected pages
   {
-    path: 'challenge',
-    // plus de guard, c'est une page publique
+    path: 'dashboard',
+    canActivate: [AuthGuard],
     loadComponent: () =>
-      import('./challenge/challenge/challenge.component').then(m => m.ChallengeComponent)
+      import('./dashboard/dashboard/dashboard.component').then(m => m.DashboardComponent)
+  },
+  {
+    path: 'settings',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./settings/settings/settings.component').then(m => m.SettingsComponent)
   },
 
   // Wildcard

@@ -1,5 +1,4 @@
 // src/app/shared/header/header.component.ts
-
 import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser, CommonModule }         from '@angular/common';
 import { Router, RouterModule }                    from '@angular/router';
@@ -15,7 +14,9 @@ import { AuthService }                             from '../../auth/auth.service
   styleUrls: ['./header.component.scss']
 })
 export class HeaderComponent implements OnInit {
-  isLoggedIn = false;
+  // URL de l'avatar par défaut
+  public defaultAvatar = 'assets/images/bg-login.jpg';
+  public isLoggedIn = false;
 
   constructor(
     public auth: AuthService,
