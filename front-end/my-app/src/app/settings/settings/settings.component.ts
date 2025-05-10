@@ -1,17 +1,31 @@
-// src/app/settings/settings.component.ts
-
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { AuthService, UserProfile } from '../../auth/auth.service';
 import { TranslateModule } from '@ngx-translate/core';
-import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, TranslateModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule],
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.scss']
 })
-export class SettingsComponent {
-  // TODO : gérer ici vos préférences utilisateur
+export class SettingsComponent implements OnInit {
+  private fb = inject(FormBuilder);
+  private auth = inject(AuthService);
+
+  profile!: UserProfile;
+  settingsForm = this.fb.group({
+    emailNotifications: [false],
+    darkMode: [false]
+  });
+
+  ngOnInit(): void {
+    this.profile = this.auth.profile!;
+  }
+
+  saveSettings() {
+    console.log('Settings saved', this.settingsForm.value);
+  }
 }

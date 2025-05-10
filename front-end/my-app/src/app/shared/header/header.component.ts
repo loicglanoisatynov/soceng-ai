@@ -13,7 +13,7 @@ import { AuthService }                            from '../../auth/auth.service'
   styleUrls: ['./header.component.scss']
 })
 export class HeaderComponent implements OnInit {
-  public defaultAvatar = 'assets/images/default-avatar.png';
+  public defaultAvatar = 'assets/images/bg-login.jpg';
   public isLoggedIn   = false;
   public menuOpen     = false;
 

@@ -1,19 +1,15 @@
-<!-- src/app/dashboard/dashboard/dashboard.component.html -->
+<!-- src/app/shared/profile-hero.component.html -->
 
-<!-- Hero + Profile Card Section -->
 <section
   class="relative w-full h-[60vh] bg-cover bg-center border-b-4 border-[#FF8600]"
   [style.backgroundImage]="'url(assets/images/boitumelo-fP9VEkZ-L0s-unsplash.jpg)'"
 >
-  <!-- Dark overlay -->
   <div class="absolute inset-0 bg-black/50"></div>
 
-  <!-- Profile Card -->
   <div
-    class="absolute bottom-0 left-20 transform translate-y-1/2 z-20 w-1/5 bg-[#5C00BF] border-2 border-[#FF8600] shadow-lg pt-20 text-[#FF8600]"
+    class="absolute bottom-0 left-20 transform translate-y-1/2 z-20 w-1/5 bg-[#5C00BF] border-2 border-[#FF8600] shadow-lg pt-20 text-[#FF8600] rounded-xl"
   >
     <div class="flex flex-col">
-      <!-- Avatar + Info -->
       <div class="p-4 text-center">
         <div
           class="w-24 h-24 mx-auto -mt-12 rounded-full border-4 border-[#FF8600] overflow-hidden bg-[#5C00BF]"
@@ -30,7 +26,6 @@
         </div>
       </div>
 
-      <!-- Stats + Help + Socials -->
       <div class="px-4 pb-4 font-mono">
         <div class="text-center space-y-1">
           <p class="font-semibold">Score: {{ user.score }}/100</p>
@@ -77,12 +72,3 @@
     </div>
   </div>
 </section>
-
-<!-- Section agrandie avec message “En attente de challenge” -->
-<section
-  id="new-content"
-  class="w-full h-[40vh] flex items-center justify-center bg-gray-100 text-gray-700 px-10"
->
-  <p class="text-2xl font-semibold">En attente de challenge</p>
-</section>
-
