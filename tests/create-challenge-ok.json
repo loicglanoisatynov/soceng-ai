@@ -1,0 +1,43 @@
+{
+    "challenge": {
+      "title": "Vous avez du WiFi ?",
+      "description": "Vous voulez vous introduire dans le réseau WiFi de l'entreprise.",
+      "illustration": "no_connection.png",
+      "lore_for_player": "Vous voulez vous introduire dans le réseau WiFi de l'entreprise.",
+      "lore_for_ai": "Vous êtes entreprise service informatique. Locaux à plusieurs étages. WiFi privé et interdit aux visiteurs. Technicien attendu pour maintenance climatisation pour midi.",
+      "osint_data": "L'entreprise a été créée en DATE. Le nom de son fondateur est NOM.",
+      "hints": [
+        {
+          "title": "Entrées prévues",
+          "text": "9h : personnel de l'entreprise\n10h : technicien de maintenance\n11h30 : rendez-vous avec M. NOM client \n15h : personnel de ménage",
+          "keywords": "horaires, rendez-vous, personnel, maintenance, client",
+          "hint_illustration_type": "file",
+          "mentions": null,
+          "is_available_from_start": true,
+          "is_capital": false
+        },
+        {
+          "title": "WiFi",
+          "text": "SSID : WiFi_ENTREPRISE\nMot de passe : FLAG",
+          "keywords": "WiFi, mot de passe, réseau, entreprise",
+          "hint_illustration_type": "file",
+          "mentions": null,
+          "is_available_from_start": false,
+          "is_capital": true
+        }
+      ],
+      "characters": [
+        {
+          "advice_to_user": "Faites-vous passer pour ce que vous n'êtes pas.",
+          "symbolic_name": "Charlotte",
+          "title": "Hôtesse d'accueil",
+          "initial_suspicion": 1,
+          "communication_type": "in-person",
+          "symbolic_osint_data": "Rien d'exploitable",
+          "knows_contact_of": null,
+          "holds_hint": "WiFi",
+          "is_available_from_start": true
+        }
+      ]
+    }
+}

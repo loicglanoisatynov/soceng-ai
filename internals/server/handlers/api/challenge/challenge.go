@@ -37,6 +37,35 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if request.Challenge.Hints == nil || request.Challenge.Characters == nil {
+		http.Error(w, "Invalid request. Hints and Characters cannot be nil", http.StatusBadRequest)
+		return
+	}
+	if request.Challenge.Title == "" || request.Challenge.Description == "" {
+		http.Error(w, "Invalid request. Title and Description cannot be empty", http.StatusBadRequest)
+		return
+	}
+	if request.Challenge.Illustration == "" {
+		http.Error(w, "Invalid request. Illustration cannot be empty", http.StatusBadRequest)
+		return
+	}
+	if request.Challenge.Lore_for_player == "" || request.Challenge.Lore_for_ai == "" {
+		http.Error(w, "Invalid request. Lore_for_player and Lore_for_ai cannot be empty", http.StatusBadRequest)
+		return
+	}
+	if request.Challenge.Osint_data == "" {
+		http.Error(w, "Invalid request. Osint_data cannot be empty", http.StatusBadRequest)
+		return
+	}
+	if len(request.Challenge.Hints) == 0 {
+		http.Error(w, "Invalid request. Hints cannot be empty", http.StatusBadRequest)
+		return
+	}
+	if len(request.Challenge.Characters) == 0 {
+		http.Error(w, "Invalid request. Characters cannot be empty", http.StatusBadRequest)
+		return
+	}
+
 	err_str := db_challenges.Create_challenge(request.Challenge, r, w)
 	if err_str != "" {
 		http.Error(w, err_str, http.StatusBadRequest)

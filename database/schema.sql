@@ -62,7 +62,7 @@ CREATE TABLE characters (
     symbolic_name VARCHAR(50) NOT NULL, -- Non-passable à l'IA. Génère un nom de personnage aléatoire pour chaque partie.
     title VARCHAR(50) NOT NULL, -- Passable à l'API de l'IA.
     initial_suspicion INT NOT NULL, -- Non-passable à l'API de l'IA (sert à générer la suspicion initiale du personnage, dynamique pendant la partie).
-    communication_type VARCHAR(50) NOT NULL, -- Passable à l'API de l'IA (type de communication : email, phone, in-person, etc.)
+    communication_type VARCHAR(50) NOT NULL CHECK (communication_type IN ('email', 'phone', 'in-person', 'social_media')), -- Passable à l'API de l'IA (type de communication : email, phone, in-person, etc.)
     symbolic_osint_data TEXT, -- Non-passable à l'API de l'IA (sert à générer les données osint du personnage, change pour chaque partie/session)
     knows_contact_of INT NOT NULL REFERENCES characters(id) ON DELETE CASCADE, -- passable à API de l'IA (passe le contact_string de la personne)
     holds_hint INT REFERENCES hints(id) ON DELETE CASCADE, -- Non-passable à l'API de l'IA (sert à générer le hint du personnage, change pour chaque partie/session)

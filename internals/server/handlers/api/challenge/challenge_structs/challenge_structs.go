@@ -5,7 +5,7 @@ type Hint struct {
 	Text                    string `json:"text"`
 	Keywords                string `json:"keywords"`
 	Illustration_type       string `json:"hint_illustration_type"`
-	Mentions                int    `json:"mentions"`
+	Mentions                string `json:"mentions"`
 	Is_available_from_start bool   `json:"is_available_from_start"`
 	Is_capital              bool   `json:"is_capital"`
 }

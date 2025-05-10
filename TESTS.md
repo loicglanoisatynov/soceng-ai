@@ -26,11 +26,11 @@ grep "socengai" cookie.txt -A 1
 
 #### Commandes valides
 
-Créer un challenge (commande valide) :
+Créer un challenge avec deux hints et un personnage : 
 ```bash
 curl -X POST http://localhost:80/api/challenge \
   -H "Content-Type: application/json" \
-  -d '{"challenge": {"title": "Titre du challenge", "description": "Ceci est une description test"}}' \
+  -d @tests/create-challenge-ok.json \
   -b cookie.txt -v
 ```
 
@@ -44,13 +44,19 @@ curl -X POST http://localhost:80/api/challenge \
   -v
 ```
 
-Créer un challenge (sans titre) :
-```bash
-curl -X POST http://localhost:80/api/challenge \
-  -H "Content-Type: application/json" \
-  -d '{"challenge": {"description": "Ceci est une description test"}}' \
-  -b cookie.txt -v
-```
+Créer un challenge avec une erreur de json (erreur de syntaxe) :
+Créer un challenge sans titre :
+Créer un challenge sans description :
+Créer un challenge sans illustration :
+Créer un challenge sans lore de joueur :
+Créer un challenge sans lore d'ia : 
+Créer un challenge sans infos d'osint :
+Créer un challenge sans hint :
+Créer un challenge sans hint capital (flag) :
+Créer un challenge sans personnage :
+Créer un challenge sans hint ou personnage accessible en début de jeu :
+
+
 
 ### Validation de challenge
 
