@@ -1,40 +1,6 @@
-<!-- src/app/settings/settings.component.html -->
-<div class="bg-white p-6 rounded-lg shadow-lg space-y-4">
-  <h2 class="text-2xl font-bold">
-    {{ 'SETTINGS.TITLE' | translate }}: {{ profile.username }}
-  </h2>
+<!-- src/app/settings/settings/settings.component.html -->
+<app-profile-hero [user]="profile"></app-profile-hero>
 
-  <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()" class="space-y-4">
-    <div class="flex items-center">
-      <input
-        id="emailNotif"
-        type="checkbox"
-        formControlName="emailNotifications"
-        class="form-checkbox h-5 w-5 text-[#FF8600]"
-      />
-      <label for="emailNotif" class="ml-2">
-        {{ 'SETTINGS.EMAIL_NOTIF' | translate }}
-      </label>
-    </div>
-
-    <div class="flex items-center">
-      <input
-        id="darkMode"
-        type="checkbox"
-        formControlName="darkMode"
-        class="form-checkbox h-5 w-5 text-[#FF8600]"
-      />
-      <label for="darkMode" class="ml-2">
-        {{ 'SETTINGS.DARK_MODE' | translate }}
-      </label>
-    </div>
-
-    <button
-      type="submit"
-      class="mt-4 bg-[#FF8600] text-white px-4 py-2 rounded hover:bg-opacity-90"
-      [disabled]="settingsForm.pristine"
-    >
-      {{ 'SETTINGS.SAVE' | translate }}
-    </button>
-  </form>
+<div class="bg-white p-6 rounded-lg shadow-lg space-y-4 mt-6">
+  <!-- ton formulaire Settings… -->
 </div>
