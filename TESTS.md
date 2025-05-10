@@ -50,13 +50,9 @@ Créer un challenge sans description :
 Créer un challenge sans illustration :
 Créer un challenge sans lore de joueur :
 Créer un challenge sans lore d'ia : 
-Créer un challenge sans infos d'osint :
-Créer un challenge sans hint :
 Créer un challenge sans hint capital (flag) :
 Créer un challenge sans personnage :
 Créer un challenge sans hint ou personnage accessible en début de jeu :
-
-
 
 ### Validation de challenge
 
