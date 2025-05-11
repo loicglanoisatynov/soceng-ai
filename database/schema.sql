@@ -105,3 +105,30 @@ INSERT INTO profiles (id, user_id, biography, avatar) VALUES
 --   'FLAG{balaie}',
 --   'Moyen'
 -- );
+
+CREATE TABLE game_sessions (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    challenge_id INT NOT NULL REFERENCES challenges(id) ON DELETE CASCADE,
+    session_key VARCHAR(50) NOT NULL UNIQUE,
+    start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    end_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(50) NOT NULL CHECK (status IN ('in_progress', 'completed'))
+);
+
+CREATE TABLE session_characters (
+    id SERIAL PRIMARY KEY,
+    session_id INT NOT NULL REFERENCES game_sessions(id) ON DELETE CASCADE,
+    character_id INT NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+    character_name VARCHAR(50) NOT NULL,
+    suspicion_level INT NOT NULL CHECK (suspicion_level BETWEEN 0 AND 100),
+    is_accessible BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE substitutes (
+    id SERIAL PRIMARY KEY,
+    challenge_id INT NOT NULL REFERENCES challenges(id) ON DELETE CASCADE,
+    word_to_substitute VARCHAR(50) NOT NULL,
+    substitute_word VARCHAR(50) NOT NULL
+);
+

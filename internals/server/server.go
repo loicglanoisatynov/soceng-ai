@@ -29,10 +29,10 @@ func Serve(w http.ResponseWriter, r *http.Request) {
 	for _, route := range routes {
 		matches := route.Get_route_regex().FindStringSubmatch(r.URL.Path)
 		if len(matches) > 0 {
-			if r.Method != route.Get_route_method() {
-				allow = append(allow, route.Get_route_method())
-				continue
-			}
+			// if r.Method != route.Get_route_method() {
+			// 	allow = append(allow, route.Get_route_method())
+			// 	continue
+			// }
 			ctx := context.WithValue(r.Context(), ctxKey{}, matches[1:])
 			route.Get_route_handler()(w, r.WithContext(ctx))
 			return

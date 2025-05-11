@@ -49,7 +49,9 @@ func Edit_profile(w http.ResponseWriter, r *http.Request) {
 	if len(r.Cookies()) < 2 {
 		http.Error(w, "Missing cookie.\n", http.StatusUnauthorized)
 		return
-	} else if !authentification.Cookies_relevant(cookies, w) {
+	}
+	cookies_status := authentification.Cookies_relevant(cookies)
+	if cookies_status != "OK" {
 		http.Error(w, "Needed cookies : socengai-username & socengai-auth\n", http.StatusUnauthorized)
 		return
 	}

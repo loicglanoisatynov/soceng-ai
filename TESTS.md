@@ -3,6 +3,11 @@ Lançable sur Windows ?
 Lançable sur Linux ?
 Lançable sur Docker ?
 
+Vérifier que le serveur est bien lancé sur le port 80 :
+```bash
+curl -X GET http://localhost:80
+```
+
 Créer un user (et récupérer le cookie de session) :
 ```bash
 curl -X POST http://localhost:80/create-user -H "Content-Type: application/json" -d '{"username": "lglanois", "password": "password0!", "email":"loic.glanois@ynov.com"}' -c cookie.txt
@@ -30,7 +35,7 @@ Créer un challenge avec deux hints et un personnage :
 ```bash
 curl -X POST http://localhost:80/api/challenge \
   -H "Content-Type: application/json" \
-  -d @tests/create-challenge-ok.json \
+  -d @tests/challenge/create-challenge-ok.json \
   -b cookie.txt -v
 ```
 
