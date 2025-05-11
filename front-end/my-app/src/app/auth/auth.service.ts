@@ -1,52 +1,92 @@
-// src/app/auth/auth.service.ts
-import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { tap } from 'rxjs/operators';
-import { isPlatformBrowser } from '@angular/common';
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { tap, map } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
+
+export interface UserProfile {
+  id: number;
+  username: string;
+  email: string;
+  avatarUrl?: string;
+  score?: number;
+  progress?: number;
+}
+
+export interface LoginResponse {
+  status: boolean;
+  message: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private API = 'https://api.ton-backend.com';
-  private _token: string | null = null;
+  // Utilisation de l'URL de base définie dans environment
+  private readonly API = environment.apiBaseUrl;
 
-  constructor(
-    private http: HttpClient,
-    @Inject(PLATFORM_ID) private platformId: any
-  ) {
-    if (isPlatformBrowser(this.platformId)) {
-      this._token = localStorage.getItem('token');
-    }
+  public loggedIn$: BehaviorSubject<boolean>;
+  private _profile: UserProfile | null = null;
+
+  constructor(private http: HttpClient) {
+    const saved = typeof window !== 'undefined' &&
+      localStorage.getItem('isLoggedIn') === 'true';
+    this.loggedIn$ = new BehaviorSubject<boolean>(saved);
   }
 
-  login(creds: { email: string; password: string }) {
-    return this.http
-      .post<{ token: string }>(`${this.API}/login`, creds)
-      .pipe(
-        tap(res => {
-          if (isPlatformBrowser(this.platformId)) {
-            localStorage.setItem('token', res.token);
-            this._token = res.token;
+  /** SIGN UP */
+  signup(data: { name: string; email: string; password: string }): Observable<void> {
+    return this.http.post<void>(
+      `${this.API}/create-user`,
+      { username: data.name, email: data.email, password: data.password },
+      { withCredentials: true }
+    );
+  }
+
+  /** LOGIN : stocke état, profil minimal, persistance */
+  login(creds: { username: string; password: string }): Observable<boolean> {
+    return this.http.post<LoginResponse>(
+      `${this.API}/login`,
+      creds,
+      { withCredentials: true }
+    ).pipe(
+      tap(res => {
+        this.loggedIn$.next(res.status);
+        if (res.status) {
+          this._profile = { id: 0, username: creds.username, email: '' };
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('username', creds.username);
           }
-        })
-      );
+        }
+      }),
+      map(res => res.status)
+    );
   }
 
-  signup(data: any) {
-    return this.http.post(`${this.API}/signup`, data);
+  /** LOGOUT : récupère username, envoie body, reset état */
+  logout(): Observable<void> {
+    const username =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('username') || ''
+        : '';
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.request<void>('DELETE', `${this.API}/logout`, {
+      headers,
+      withCredentials: true,
+      body: { username }
+    }).pipe(
+      tap(() => {
+        this.loggedIn$.next(false);
+        this._profile = null;
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('isLoggedIn');
+          localStorage.removeItem('username');
+        }
+      })
+    );
   }
 
-  logout() {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem('token');
-    }
-    this._token = null;
-  }
-
-  get token(): string | null {
-    return this._token;
-  }
-
-  get isLoggedIn(): boolean {
-    return !!this._token;
+  /** Getter profil */
+  get profile(): UserProfile | null {
+    return this._profile;
   }
 }

@@ -144,14 +144,13 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func Cookies_relevant(cookies []*http.Cookie, w http.ResponseWriter) bool {
+func Cookies_relevant(cookies []*http.Cookie) string {
 	for _, cookie := range cookies {
 		if cookie.Name != "socengai-username" && cookie.Name != "socengai-auth" {
-			http.Error(w, "Needed cookies : socengai-username & socengai-auth\n", http.StatusUnauthorized)
-			return false
+			return "Needed cookies : socengai-username & socengai-auth"
 		}
 	}
-	return true
+	return "OK"
 }
 
 func Is_admin(r *http.Request) bool {

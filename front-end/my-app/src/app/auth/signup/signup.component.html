@@ -1,112 +1,118 @@
 <!-- src/app/auth/signup/signup.component.html -->
 <div class="relative min-h-screen pb-16">
-    <!-- Fond -->
-    <img
-      src="/assets/images/bg-login.jpg"
-      alt="Background signup"
-      class="absolute inset-0 w-full h-full object-cover object-[position:50%_20%]"
-    />
-  
-    <!-- Conteneur du formulaire -->
-    <div class="relative z-10 flex items-center justify-center min-h-screen px-4">
-      <div
-        class="w-full max-w-md bg-[#4a009f] p-10 border-3 border-[#FF8600] rounded-2xl shadow-[0_20px_30px_rgba(0,0,0,0.1)] backdrop-blur-md"
-      >
-        <!-- Titre -->
-        <h1 class="text-[30px] leading-[14px] font-bold text-[#FF8600] mb-6 text-center">
-          Sign Up
-        </h1>
-  
-        <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6">
-          <!-- Prénom/Nom -->
-          <div>
-            <label class="block text-[14px] font-medium text-[#FF8600] mb-1">
-              Prénom/Nom
-            </label>
-            <input
-              type="text"
-              formControlName="name"
-              placeholder="Prénom Nom"
-              class="w-full px-4 py-3 bg-[#AEB8FE] border border-[#FF8600] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8600]"
-            />
-            <p
-              *ngIf="form.get('name')?.touched && form.get('name')?.invalid"
-              class="text-red-600 text-sm mt-1"
-            >
-              Ce champ est requis.
-            </p>
-          </div>
-  
-          <!-- Adresse mail -->
-          <div>
-            <label class="block text-[14px] font-medium text-[#FF8600] mb-1">
-              Adresse mail
-            </label>
-            <input
-              type="email"
-              formControlName="email"
-              placeholder="email@exemple.com"
-              class="w-full px-4 py-3 bg-[#AEB8FE] border border-[#FF8600] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8600]"
-            />
-            <p
-              *ngIf="form.get('email')?.touched && form.get('email')?.invalid"
-              class="text-red-600 text-sm mt-1"
-            >
-              Email invalide.
-            </p>
-          </div>
-  
-          <!-- Mot de passe -->
-          <div>
-            <label class="block text-[14px] font-medium text-[#FF8600] mb-1">
-              Mot de passe
-            </label>
-            <input
-              type="password"
-              formControlName="password"
-              placeholder="••••••••"
-              class="w-full px-4 py-3 bg-[#AEB8FE] border border-[#FF8600] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8600]"
-            />
-            <p
-              *ngIf="form.get('password')?.touched && form.get('password')?.invalid"
-              class="text-red-600 text-sm mt-1"
-            >
-              Mot de passe trop court (6 caractères min.).
-            </p>
-          </div>
-  
-          <!-- Confirmation Mot de passe -->
-          <div>
-            <label class="block text-[14px] font-medium text-[#FF8600] mb-1">
-              Confirmation Mot de passe
-            </label>
-            <input
-              type="password"
-              formControlName="confirm"
-              placeholder="••••••••"
-              class="w-full px-4 py-3 bg-[#AEB8FE] border border-[#FF8600] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8600]"
-            />
-            <p
-              *ngIf="form.errors?.['mismatch'] && form.get('confirm')?.touched"
-              class="text-red-600 text-sm mt-1"
-            >
-              Les mots de passe ne correspondent pas.
-            </p>
-          </div>
-  
-          <!-- Submit -->
-          <button
-            type="submit"
-            [disabled]="loading"
-            class="w-full py-3 text-lg font-medium border border-[#FF8600] rounded-lg text-white bg-[#5C00BF] hover:bg-[#5C00BF] disabled:bg-[#5C00BF]/50 disabled:opacity-50 transition"
+  <img
+    src="/assets/images/bg-login.jpg"
+    alt="Background signup"
+    class="absolute inset-0 w-full h-full object-cover object-[position:50%_20%]"
+  />
+
+  <div class="relative z-10 flex items-center justify-center min-h-screen px-4">
+    <div
+      class="w-full max-w-md bg-[#4a009f] p-10 border-3 border-[#FF8600] 
+             rounded-2xl shadow-[0_20px_30px_rgba(0,0,0,0.1)] backdrop-blur-md"
+    >
+      <h1 class="text-[30px] font-bold text-[#FF8600] mb-6 text-center">
+        {{ 'SIGNUP.TITLE' | translate }}
+      </h1>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6">
+        <!-- Prénom/Nom -->
+        <div>
+          <label class="block text-[#FF8600] mb-1">
+            {{ 'SIGNUP.NAME_LABEL' | translate }}
+          </label>
+          <input
+            type="text"
+            formControlName="name"
+            placeholder="{{ 'SIGNUP.NAME_PLACEHOLDER' | translate }}"
+            class="w-full px-4 py-3 bg-[#AEB8FE] border border-[#FF8600] rounded-lg"
+          />
+          <p
+            *ngIf="form.get('name')?.touched && form.get('name')?.invalid"
+            class="text-red-600 text-sm mt-1"
           >
-            {{ loading ? 'Patientez…' : 'Submit' }}
-          </button>
-  
-          <!-- Erreur générique -->
-          <p *ngIf="error" class="text-red-600 text-center mt-4">{{ error }}</p>
-        </form>
-      </div>
+            {{ 'SIGNUP.ERROR.NAME_REQUIRED' | translate }}
+          </p>
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label class="block text-[#FF8600] mb-1">
+            {{ 'SIGNUP.EMAIL_LABEL' | translate }}
+          </label>
+          <input
+            type="email"
+            formControlName="email"
+            placeholder="{{ 'SIGNUP.EMAIL_PLACEHOLDER' | translate }}"
+            class="w-full px-4 py-3 bg-[#AEB8FE] border border-[#FF8600] rounded-lg"
+          />
+          <p
+            *ngIf="form.get('email')?.touched && form.get('email')?.invalid"
+            class="text-red-600 text-sm mt-1"
+          >
+            {{ form.get('email')?.hasError('required')
+               ? ('SIGNUP.ERROR.EMAIL_REQUIRED' | translate)
+               : ('SIGNUP.ERROR.EMAIL_INVALID' | translate) }}
+          </p>
+        </div>
+
+        <!-- Mot de passe -->
+        <div>
+          <label class="block text-[#FF8600] mb-1">
+            {{ 'SIGNUP.PASSWORD_LABEL' | translate }}
+          </label>
+          <input
+            type="password"
+            formControlName="password"
+            placeholder="{{ 'SIGNUP.PASSWORD_PLACEHOLDER' | translate }}"
+            class="w-full px-4 py-3 bg-[#AEB8FE] border border-[#FF8600] rounded-lg"
+          />
+          <p
+            *ngIf="form.get('password')?.touched && form.get('password')?.invalid"
+            class="text-red-600 text-sm mt-1"
+          >
+            {{ form.get('password')?.hasError('required')
+               ? ('SIGNUP.ERROR.PASSWORD_REQUIRED' | translate)
+               : ('SIGNUP.ERROR.PASSWORD_MINLENGTH' | translate) }}
+          </p>
+        </div>
+
+        <!-- Confirmation Mot de passe -->
+        <div>
+          <label class="block text-[#FF8600] mb-1">
+            {{ 'SIGNUP.CONFIRM_LABEL' | translate }}
+          </label>
+          <input
+            type="password"
+            formControlName="confirm"
+            placeholder="{{ 'SIGNUP.CONFIRM_PLACEHOLDER' | translate }}"
+            class="w-full px-4 py-3 bg-[#AEB8FE] border border-[#FF8600] rounded-lg"
+          />
+          <p
+            *ngIf="form.errors?.['mismatch'] && form.get('confirm')?.touched"
+            class="text-red-600 text-sm mt-1"
+          >
+            {{ 'SIGNUP.ERROR.CONFIRM_MISMATCH' | translate }}
+          </p>
+        </div>
+
+        <!-- Submit -->
+        <button
+          type="submit"
+          [disabled]="loading"
+          class="w-full py-3 text-lg font-medium border border-[#FF8600] rounded-lg text-white 
+                 bg-[#5C00BF] hover:bg-opacity-90 disabled:opacity-50"
+        >
+          {{ loading
+             ? ('SIGNUP.PATIENTEZ' | translate)
+             : ('SIGNUP.SUBMIT' | translate) }}
+        </button>
+
+        <!-- Erreur serveur -->
+        <p *ngIf="error" class="text-red-600 text-center mt-4">
+          {{ error | translate }}
+        </p>
+      </form>
     </div>
   </div>
-  
+</div>

@@ -1,7 +1,9 @@
-DROP TABLE IF EXISTS cookies;
-DROP TABLE IF EXISTS profiles;
+DROP TABLE IF EXISTS hints;
 DROP TABLE IF EXISTS challenges;
+DROP TABLE IF EXISTS profiles;
+DROP TABLE IF EXISTS cookies;
 DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS characters;
 
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
@@ -105,3 +107,141 @@ INSERT INTO profiles (id, user_id, biography, avatar) VALUES
 --   'FLAG{balaie}',
 --   'Moyen'
 -- );
+
+CREATE TABLE game_sessions (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    challenge_id INT NOT NULL REFERENCES challenges(id) ON DELETE CASCADE,
+    session_key VARCHAR(50) NOT NULL UNIQUE,
+    start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    end_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(50) NOT NULL CHECK (status IN ('in_progress', 'completed'))
+);
+
+CREATE TABLE session_characters (
+    id SERIAL PRIMARY KEY,
+    session_id INT NOT NULL REFERENCES game_sessions(id) ON DELETE CASCADE,
+    character_id INT NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+    character_name VARCHAR(50) NOT NULL,
+    suspicion_level INT NOT NULL CHECK (suspicion_level BETWEEN 0 AND 100),
+    is_accessible BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE substitutes (
+    id SERIAL PRIMARY KEY,
+    challenge_id INT NOT NULL REFERENCES challenges(id) ON DELETE CASCADE,
+    word_to_substitute VARCHAR(50) NOT NULL,
+    substitute_word VARCHAR(50) NOT NULL
+);
+
+
+
+-- Challenge : Obtenir le mot de passe Wi-Fi
+INSERT INTO challenges (
+    id, title, lore_for_player, lore_for_ai, difficulty, illustration, osint_data
+) VALUES (
+    1,
+    'Infiltrer la réception',
+    'Tu es devant l’accueil. Tente de parler à la réceptionniste pour obtenir un accès réseau.',
+    'La réceptionniste est plutôt bavarde mais méfiante envers les étrangers. Elle connaît le mot de passe Wi-Fi.',
+    1,
+    'reception.jpg',
+    'Post LinkedIn récent indiquant un changement de réseau Wi-Fi.'
+);
+
+-- Hint : Récompense du challenge
+INSERT INTO hints (
+    id, challenge_id, hint_title, hint_text, keywords, illustration_type, mentions, is_available_from_start, is_capital
+) VALUES (
+    1,
+    1,
+    'Post-it Wi-Fi',
+    'Julie t’a discrètement glissé un post-it avec le mot de passe : welcome',
+    'Wi-Fi, post-it, réseau, accueil',
+    'file',
+    NULL,
+    FALSE,
+    TRUE
+);
+
+-- Personnage : Julie la réceptionniste
+INSERT INTO characters (
+    id, challenge_id, advice_to_user, symbolic_name, title, initial_suspicion,
+    communication_type, symbolic_osint_data, knows_contact_of, holds_hint, is_available_from_start
+) VALUES (
+    1,
+    1,
+    'Julie a tendance à faire confiance aux gens sympathiques. Sois avenant.',
+    'julie_recpt',
+    'Réceptionniste',
+    20,
+    'in-person',
+    'Photo sur Intranet avec un badge portant un QR Code lisible.',
+    1,
+    1,
+    TRUE
+);
+
+-- Nouveau challenge : Convaincre deux employés
+INSERT INTO challenges (
+    id, title, lore_for_player, lore_for_ai, difficulty, illustration, osint_data
+) VALUES (
+    2,
+    'Récupérer les accès internes',
+    'Deux employés possèdent chacun une moitié d’une information précieuse. Obtiens leur confiance.',
+    'Le premier personnage (Paul) peut te rediriger vers sa collègue (Claire) qui a le complément. Ils sont prudents, mais pas impossibles à convaincre.',
+    3,
+    'office_access.jpg',
+    'Un document de réunion interne montre que Paul et Claire travaillent sur le même projet.'
+);
+
+-- Hint que Claire détient
+INSERT INTO hints (
+    id, challenge_id, hint_title, hint_text, keywords, illustration_type, mentions, is_available_from_start, is_capital
+) VALUES (
+    2,
+    2,
+    'Mémo technique',
+    'Claire t’a transmis un mémo confidentiel : mot de passe = Internal@2025',
+    'accès, interne, projet',
+    'file',
+    NULL,
+    FALSE,
+    TRUE
+);
+
+-- Personnage 1 : Paul (oriente vers Claire)
+INSERT INTO characters (
+    id, challenge_id, advice_to_user, symbolic_name, title, initial_suspicion,
+    communication_type, symbolic_osint_data, knows_contact_of, holds_hint, is_available_from_start
+) VALUES (
+    2,
+    2,
+    'Paul est méthodique. Il ne donne rien sans preuve, mais il t’orientera si tu sembles bien renseigné.',
+    'paul_dev',
+    'Développeur',
+    40,
+    'email',
+    'Paul est actif sur GitHub, souvent la nuit.',
+    3,
+    NULL,
+    TRUE
+);
+
+-- Personnage 2 : Claire (détient le hint)
+INSERT INTO characters (
+    id, challenge_id, advice_to_user, symbolic_name, title, initial_suspicion,
+    communication_type, symbolic_osint_data, knows_contact_of, holds_hint, is_available_from_start
+) VALUES (
+    3,
+    2,
+    'Claire est méfiante mais bavarde si tu mentionnes Paul et leur projet commun.',
+    'claire_hr',
+    'Chargée RH',
+    50,
+    'in-person',
+    'Photo d’équipe avec Paul lors d’un team-building.',
+    2,
+    2,
+    FALSE
+);

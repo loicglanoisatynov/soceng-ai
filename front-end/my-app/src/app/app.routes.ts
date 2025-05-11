@@ -39,12 +39,13 @@ export const routes: Routes = [
       }
     ]
   },
-  {
-    path: 'dashboard',
-    canActivate: [AuthGuard],
-    loadComponent: () =>
-      import('./dashboard/dashboard/dashboard.component').then(m => m.DashboardComponent)
-  },
+  // src/app/app.routes.ts
+{
+  path: 'dashboard',
+  canActivate: [AuthGuard],
+  loadComponent: () =>
+    import('./dashboard/dashboard/dashboard.component').then(m => m.DashboardComponent)
+},
   {
     path: 'challenge',
     // plus de guard, c'est une page publique

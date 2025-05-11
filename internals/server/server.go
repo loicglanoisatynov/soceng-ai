@@ -1,4 +1,3 @@
-/* Contenu du fichier soceng-ai/internals/server/server.go */
 package server
 
 import (
@@ -9,13 +8,15 @@ import (
 	"os"
 	"runtime"
 	"soceng-ai/internals/utils/colors"
-	prompts "soceng-ai/internals/utils/prompts"
+	"soceng-ai/internals/utils/prompts"
 	"strings"
 )
 
-var port string
-var host string
-var https bool
+var (
+	port  string
+	host  string
+	https bool
+)
 
 type ctxKey struct{}
 
@@ -29,39 +30,41 @@ func Serve(w http.ResponseWriter, r *http.Request) {
 	for _, route := range routes {
 		matches := route.Get_route_regex().FindStringSubmatch(r.URL.Path)
 		if len(matches) > 0 {
-			if r.Method != route.Get_route_method() {
-				allow = append(allow, route.Get_route_method())
-				continue
-			}
+			// if r.Method != route.Get_route_method() {
+			// 	allow = append(allow, route.Get_route_method())
+			// 	continue
+			// }
 			ctx := context.WithValue(r.Context(), ctxKey{}, matches[1:])
 			route.Get_route_handler()(w, r.WithContext(ctx))
 			return
 		}
 	}
+
 	if len(allow) > 0 {
 		w.Header().Set("Allow", strings.Join(allow, ", "))
 		http.Error(w, "405 method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
+
 	http.NotFound(w, r)
 }
 
-// Fonction pour nettoyer la console (pour un affichage propre)
+// clearTerminal efface la console pour un affichage propre
 func clearTerminal() {
 	fmt.Print("\033[H\033[2J")
 }
 
+// StartServer initialise et démarre le serveur HTTP
 func StartServer(args []string) {
 	parseArgs(args)
 
 	http.HandleFunc("/", Serve)
 
 	if https {
-		print("HTTPS not yet implemented.")
+		fmt.Println("HTTPS not yet implemented.")
 		os.Exit(1)
 		// http.ListenAndServeTLS(":"+port, "cert.pem", "key.pem", nil)
 	}
-
 	if runtime.GOOS != "windows" && port > "1024" {
 		fmt.Println("Démarrez le serveur avec sudo pour utiliser un port inférieur à 1024.")
 		os.Exit(0)

@@ -1,1 +1,119 @@
-<p>dashboard works!</p>
+<!-- src/app/dashboard/dashboard/dashboard.component.html -->
+<div class="min-h-screen flex bg-gray-50">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-white shadow-lg p-6 flex flex-col justify-between">
+    <div>
+      <h2 class="text-2xl font-bold text-[#FF8600] mb-6">The SocEngIA</h2>
+      <nav class="space-y-4">
+        <button
+          (click)="switchTab('details')"
+          [class.text-[#FF8600]]="selectedTab === 'details'"
+          class="w-full text-left text-gray-700 hover:text-[#FF8600] font-semibold"
+        >
+          {{ 'DASHBOARD.TABS.DETAILS' | translate }}
+        </button>
+        <button
+          (click)="switchTab('settings')"
+          [class.text-[#FF8600]]="selectedTab === 'settings'"
+          class="w-full text-left text-gray-700 hover:text-[#FF8600] font-semibold"
+        >
+          {{ 'DASHBOARD.TABS.SETTINGS' | translate }}
+        </button>
+      </nav>
+    </div>
+    <div class="text-center">
+      <button
+        (click)="logout()"
+        class="text-red-500 hover:text-red-700"
+      >
+        {{ 'HEADER.LOGOUT' | translate }}
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="flex-1 p-8">
+    <!-- Header du Dashboard -->
+    <header class="flex justify-between items-center mb-8">
+      <h1 class="text-3xl font-extrabold text-gray-800">
+        {{ 'DASHBOARD.TITLE' | translate }}
+      </h1>
+      <div class="flex items-center space-x-4">
+        <span class="text-gray-700 font-medium">{{ user.username }}</span>
+        <img
+          [src]="user.avatarUrl"
+          alt="{{ user.username }}"
+          class="w-10 h-10 rounded-full border-2 border-[#FF8600]"
+        />
+      </div>
+    </header>
+
+    <!-- Onglets Details / Settings -->
+    <section *ngIf="selectedTab === 'details'" class="bg-white p-6 rounded-lg shadow mb-8">
+      <form
+        [formGroup]="profileForm"
+        (ngSubmit)="saveDetails()"
+        class="space-y-6"
+      >
+        <div>
+          <label class="block text-sm font-medium text-gray-600">
+            {{ 'DASHBOARD.DETAILS.USERNAME' | translate }}
+          </label>
+          <input
+            formControlName="fullName"
+            class="mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FF8600]"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600">
+            {{ 'DASHBOARD.DETAILS.EMAIL' | translate }}
+          </label>
+          <input
+            formControlName="email"
+            class="mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FF8600]"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600">
+            {{ 'DASHBOARD.DETAILS.PASSWORD' | translate }}
+          </label>
+          <input
+            type="password"
+            formControlName="password"
+            class="mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FF8600]"
+          />
+        </div>
+        <button
+          type="submit"
+          class="mt-4 bg-[#FF8600] text-white px-4 py-2 rounded hover:bg-opacity-90"
+        >
+          {{ 'DASHBOARD.DETAILS.SUBMIT' | translate }}
+        </button>
+      </form>
+    </section>
+
+    <section *ngIf="selectedTab === 'settings'" class="bg-white p-6 rounded-lg shadow mb-8">
+      <!-- Contenu à venir dans ton SettingsComponent -->
+      {{ 'DASHBOARD.SETTINGS.CONTENT' | translate }}
+    </section>
+
+    <!-- Grille des Challenges -->
+    <section class="mt-4">
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">
+        {{ 'DASHBOARD.CHALLENGES.TITLE' | translate }}
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div
+          *ngFor="let c of challenges"
+          class="bg-white p-5 rounded-lg shadow hover:shadow-md transition"
+        >
+          <h3 class="text-xl font-semibold text-gray-800 mb-2">{{ c.name }}</h3>
+          <p class="text-gray-600 mb-4">{{ c.info }}</p>
+          <button class="text-[#FF8600] hover:underline">
+            {{ 'DASHBOARD.CHALLENGES.MESSAGE' | translate }}
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
