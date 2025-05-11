@@ -27,24 +27,19 @@ export class DashboardComponent implements OnInit {
   private auth = inject(AuthService);
   private fb   = inject(FormBuilder);
 
-  // Local form & tab
   profileForm!: FormGroup;
   selectedTab: 'details' | 'settings' | 'challenges' | 'help' = 'details';
 
   ngOnInit(): void {
-    // On recharge le profil à chaque entrée sur /dashboard
     this.auth.loadProfile().pipe(take(1)).subscribe({
       next: (p: UserProfile) => {
-        // On initialise le form une fois qu'on a les data
         this.profileForm = this.fb.group({
           fullName: [p.username],
           email:    [p.email],
           password: ['']
         });
       },
-      error: (err) => {
-        console.warn('Échec loadProfile:', err);
-        // fallback form vide
+      error: () => {
         this.profileForm = this.fb.group({
           fullName: [''],
           email:    [''],
@@ -60,12 +55,10 @@ export class DashboardComponent implements OnInit {
 
   saveDetails(): void {
     if (!this.profileForm.valid) return;
-    // TODO → PUT `/api/profile`
+    // …vous pouvez PUT /edit-profile ici si besoin
   }
 
   logout(): void {
-    this.auth.logout().pipe(take(1)).subscribe(() => {
-      // TODO → router.navigate(['/login'])
-    });
+    this.auth.logout().pipe(take(1)).subscribe();
   }
 }

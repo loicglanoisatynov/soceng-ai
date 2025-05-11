@@ -1,7 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  HttpResponse
+} from '@angular/common/http';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { tap, switchMap, catchError } from 'rxjs/operators';
 
 export interface LoginResponse {
   status: boolean;
@@ -15,11 +19,16 @@ export interface UserProfile {
   avatarUrl?: string;
   score?: number;
   progress?: number;
+  biography?: string;
+}
+
+interface ApiResponse {
+  status: boolean;
+  message: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  // chemin absolu pour le proxy Angular
   private readonly API = '/api';
 
   public loggedIn$ = new BehaviorSubject<boolean>(false);
@@ -27,10 +36,12 @@ export class AuthService {
 
   constructor(private http: HttpClient) {}
 
+  /** Accès synchrone au profil courant */
   get profile(): UserProfile | null {
     return this.profile$.value;
   }
 
+  /** Inscription */
   signup(data: { name: string; email: string; password: string }): Observable<string> {
     return this.http.post<string>(
       `${this.API}/create-user`,
@@ -39,40 +50,100 @@ export class AuthService {
     );
   }
 
+  /**
+   * Connexion :
+   * - responseType:'text' pour ne pas forcer JSON.parse sur un 500 HTML
+   * - observe:'response' pour capter le status
+   */
   login(creds: { username: string; password: string }): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(
+    return this.http.post(
       `${this.API}/login`,
-      creds,
-      { withCredentials: true }
+      { username: creds.username, password: creds.password },
+      {
+        withCredentials: true,
+        observe: 'response',
+        responseType: 'text'
+      }
     ).pipe(
-      tap(res => {
-        this.loggedIn$.next(res.status);
-        if (res.status) {
-          // on recharge le profil dès la connexion
-          this.loadProfile().subscribe();
+      switchMap((res: HttpResponse<string>) => {
+        // Si on arrive ici, on a un 2xx : on parse le texte
+        try {
+          const body = JSON.parse(res.body || '{}') as LoginResponse;
+          this.loggedIn$.next(!!body.status);
+          return of(body);
+        } catch {
+          return of({ status: false, message: 'LOGIN.ERROR.INVALID_RESPONSE' });
         }
+      }),
+      catchError((err: HttpErrorResponse) => {
+        // Erreur  non-2xx : on renvoie un LoginResponse
+        const msg = err.status === 500
+          ? 'LOGIN.ERROR.INVALID_CREDENTIALS'
+          : `LOGIN.ERROR.${err.status}`;
+        return of({ status: false, message: msg });
       })
     );
   }
 
+  /** Déconnexion */
   logout(): Observable<void> {
-    return this.http.delete<void>(
-      `${this.API}/logout`,
-      { withCredentials: true }
-    ).pipe(
-      tap(() => {
+    return this.http
+      .delete<void>(`${this.API}/logout`, { withCredentials: true })
+      .pipe(tap(() => {
         this.loggedIn$.next(false);
         this.profile$.next(null);
-      })
-    );
+      }));
   }
 
+  /**
+   * Chargement de profil.
+   * Comme votre back n’a pas de /profile, on stub à partir du cookie.
+   */
   loadProfile(): Observable<UserProfile> {
-    return this.http.get<UserProfile>(
-      `${this.API}/profile`,
+    const username = document.cookie
+      .split('; ')
+      .find(r => r.startsWith('socengai-username='))
+      ?.split('=')[1] ?? 'Utilisateur';
+    const stub: UserProfile = {
+      id:        0,
+      username,
+      email:     '',
+      avatarUrl: '',
+      score:     0,
+      progress:  0,
+      biography: ''
+    };
+    return of(stub).pipe(tap(p => this.profile$.next(p)));
+  }
+
+  /** MAJ du profil public */
+  updateProfile(data: { username: string; biography: string; avatar: string }): Observable<ApiResponse> {
+    return this.http.put<ApiResponse>(
+      `${this.API}/edit-profile`,
+      data,
       { withCredentials: true }
-    ).pipe(
-      tap(profile => this.profile$.next(profile))
-    );
+    ).pipe(tap(res => {
+      if (res.status && this.profile) {
+        this.profile$.next({
+          ...this.profile,
+          username:  data.username,
+          biography: data.biography,
+          avatarUrl: data.avatar
+        });
+      }
+    }));
+  }
+
+  /** MAJ des identifiants */
+  updateUser(data: { email?: string; password: string; newpassword?: string }): Observable<ApiResponse> {
+    return this.http.put<ApiResponse>(
+      `${this.API}/edit-user`,
+      data,
+      { withCredentials: true }
+    ).pipe(tap(res => {
+      if (res.status && this.profile && data.email) {
+        this.profile$.next({ ...this.profile, email: data.email });
+      }
+    }));
   }
 }

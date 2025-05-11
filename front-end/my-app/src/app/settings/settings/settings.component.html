@@ -1,45 +1,100 @@
-<!-- 1) Le même Profile Hero partout -->
 <app-profile-hero></app-profile-hero>
 
-<!-- 2) On remonte la carte comme dans Dashboard -->
-<div class="container mx-auto mt-[-5rem] px-6">
-  <div class="bg-white p-6 rounded-lg shadow-lg space-y-4">
-    <h2 class="text-2xl font-bold">
-      {{ 'SETTINGS.TITLE' | translate }}: {{ profile?.username }}
-    </h2>
+<!-- Wrapper blanc englobant carte + formulaires -->
+<div class="container mx-auto mt-[1rem] px-6">
+  <div class="bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col lg:flex-row">
+    <!-- 1) Carte (vide ici mais la carte réelle est juste au-dessus) -->
+    <div class="lg:w-1/3 hidden lg:block"></div>
 
-    <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()" class="space-y-4">
-      <div class="flex items-center">
-        <input
-          id="emailNotif"
-          type="checkbox"
-          formControlName="emailNotifications"
-          class="form-checkbox h-5 w-5 text-[#FF8600]"
-        />
-        <label for="emailNotif" class="ml-2">
-          {{ 'SETTINGS.EMAIL_NOTIF' | translate }}
-        </label>
+    <!-- 2) Formulaires (colonne de droite poussée à droite) -->
+    <div class="lg:w-2/3 ml-auto p-8 space-y-8">
+      <!-- Profil public -->
+      <div>
+        <h2 class="font-['Press_Start_2P'] text-2xl text-[#2E2E2E] mb-4">
+          {{ 'SETTINGS.PROFILE_TITLE' | translate }}
+        </h2>
+        <form
+          ngNoForm
+          [formGroup]="profileForm"
+          (ngSubmit)="onSaveProfile()"
+          class="space-y-4 font-['OCR_A_Std_Regular'] text-[#2E2E2E]"
+        >
+          <div>
+            <label class="block mb-1">{{ 'SETTINGS.USERNAME'   | translate }}</label>
+            <input
+              formControlName="username"
+              class="w-full border border-[#AEB8FE] rounded-lg p-2 focus:ring-2 focus:ring-[#FF8600]"
+            />
+          </div>
+          <div>
+            <label class="block mb-1">{{ 'SETTINGS.BIOGRAPHY'  | translate }}</label>
+            <textarea
+              formControlName="biography"
+              rows="4"
+              class="w-full border border-[#AEB8FE] rounded-lg p-2 focus:ring-2 focus:ring-[#FF8600]"
+            ></textarea>
+          </div>
+          <div>
+            <label class="block mb-1">{{ 'SETTINGS.AVATAR_URL' | translate }}</label>
+            <input
+              formControlName="avatar"
+              class="w-full border border-[#AEB8FE] rounded-lg p-2 focus:ring-2 focus:ring-[#FF8600]"
+            />
+          </div>
+          <button
+            type="submit"
+            class="w-full mt-4 bg-[#FF8600] text-white font-['OCR_A_Std_Regular'] py-2 rounded-lg hover:opacity-90 disabled:opacity-50"
+            [disabled]="profileForm.pristine"
+          >
+            {{ 'SETTINGS.SAVE_PROFILE' | translate }}
+          </button>
+        </form>
       </div>
 
-      <div class="flex items-center">
-        <input
-          id="darkMode"
-          type="checkbox"
-          formControlName="darkMode"
-          class="form-checkbox h-5 w-5 text-[#FF8600]"
-        />
-        <label for="darkMode" class="ml-2">
-          {{ 'SETTINGS.DARK_MODE' | translate }}
-        </label>
+      <!-- Identifiants -->
+      <div>
+        <h2 class="font-['Press_Start_2P'] text-2xl text-[#2E2E2E] mb-4">
+          {{ 'SETTINGS.CREDENTIALS_TITLE' | translate }}
+        </h2>
+        <form
+          ngNoForm
+          [formGroup]="credentialsForm"
+          (ngSubmit)="onSaveCredentials()"
+          class="space-y-4 font-['OCR_A_Std_Regular'] text-[#2E2E2E]"
+        >
+          <div>
+            <label class="block mb-1">{{ 'SETTINGS.EMAIL'            | translate }}</label>
+            <input
+              formControlName="email"
+              type="email"
+              class="w-full border border-[#AEB8FE] rounded-lg p-2 focus:ring-2 focus:ring-[#FF8600]"
+            />
+          </div>
+          <div>
+            <label class="block mb-1">{{ 'SETTINGS.CURRENT_PASSWORD' | translate }}</label>
+            <input
+              formControlName="password"
+              type="password"
+              class="w-full border border-[#AEB8FE] rounded-lg p-2 focus:ring-2 focus:ring-[#FF8600]"
+            />
+          </div>
+          <div>
+            <label class="block mb-1">{{ 'SETTINGS.NEW_PASSWORD'     | translate }}</label>
+            <input
+              formControlName="newpassword"
+              type="password"
+              class="w-full border border-[#AEB8FE] rounded-lg p-2 focus:ring-2 focus:ring-[#FF8600]"
+            />
+          </div>
+          <button
+            type="submit"
+            class="w-full mt-4 bg-[#FF8600] text-white font-['OCR_A_Std_Regular'] py-2 rounded-lg hover:opacity-90 disabled:opacity-50"
+            [disabled]="credentialsForm.pristine"
+          >
+            {{ 'SETTINGS.SAVE_CREDENTIALS' | translate }}
+          </button>
+        </form>
       </div>
-
-      <button
-        type="submit"
-        class="mt-4 bg-[#FF8600] text-white px-4 py-2 rounded hover:bg-opacity-90"
-        [disabled]="settingsForm.pristine"
-      >
-        {{ 'SETTINGS.SAVE' | translate }}
-      </button>
-    </form>
+    </div>
   </div>
 </div>
