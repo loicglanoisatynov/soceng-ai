@@ -1,14 +1,13 @@
-// src/app/dashboard/dashboard/dashboard.component.ts
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule }                                        from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup }         from '@angular/forms';
-import { TranslateModule }                                     from '@ngx-translate/core';
-import { take }                                                from 'rxjs/operators';
+import { CommonModule }                                    from '@angular/common';
+import { ReactiveFormsModule, FormBuilder, FormGroup }     from '@angular/forms';
+import { TranslateModule }                                 from '@ngx-translate/core';
+import { take }                                            from 'rxjs/operators';
 
-import { AuthService, UserProfile }     from '../../auth/auth.service';
-import { ProfileHeroComponent }         from '../../shared/profile-hero/profile-hero.component';
-import { SettingsComponent }            from '../../settings/settings/settings.component';
-import { MyChallengeComponent }         from '../challenges/mychallenge/mychallenge.component';
+import { AuthService, UserProfile }        from '../../auth/auth.service';
+import { ProfileHeroComponent }            from '../../shared/profile-hero/profile-hero.component';
+import { SettingsComponent }               from '../../settings/settings/settings.component';
+import { MyChallengeComponent }            from '../challenges/mychallenge/mychallenge.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -28,37 +27,45 @@ export class DashboardComponent implements OnInit {
   private auth = inject(AuthService);
   private fb   = inject(FormBuilder);
 
-  user: UserProfile & { avatarUrl: string; score: number; progress: number } = {
-    id:        0,
-    username:  'John Doe',
-    email:     '',
-    avatarUrl: '/assets/images/bg-login.jpg',
-    score:     0,
-    progress:  0
-  };
-
-  selectedTab: 'details' | 'settings' | 'challenges' | 'help' = 'details';
+  // Local form & tab
   profileForm!: FormGroup;
-  currentChallenge: { title: string } | null = { title: 'Mon premier challenge' };
+  selectedTab: 'details' | 'settings' | 'challenges' | 'help' = 'details';
 
-  ngOnInit() {
-    this.auth.loggedIn$.pipe(take(1)).subscribe(is => {
-      if (!is) return;
-      const p = this.auth.profile!;
-      this.user = {
-        ...p,
-        avatarUrl: p.avatarUrl || this.user.avatarUrl,
-        score:     p.score     || 0,
-        progress:  p.progress  || 0
-      };
-
-      this.profileForm = this.fb.group({
-        fullName: [this.user.username],
-        email:    [this.user.email],
-        password: ['']
-      });
+  ngOnInit(): void {
+    // On recharge le profil à chaque entrée sur /dashboard
+    this.auth.loadProfile().pipe(take(1)).subscribe({
+      next: (p: UserProfile) => {
+        // On initialise le form une fois qu'on a les data
+        this.profileForm = this.fb.group({
+          fullName: [p.username],
+          email:    [p.email],
+          password: ['']
+        });
+      },
+      error: (err) => {
+        console.warn('Échec loadProfile:', err);
+        // fallback form vide
+        this.profileForm = this.fb.group({
+          fullName: [''],
+          email:    [''],
+          password: ['']
+        });
+      }
     });
   }
 
-  // …
+  switchTab(tab: 'details' | 'settings' | 'challenges' | 'help'): void {
+    this.selectedTab = tab;
+  }
+
+  saveDetails(): void {
+    if (!this.profileForm.valid) return;
+    // TODO → PUT `/api/profile`
+  }
+
+  logout(): void {
+    this.auth.logout().pipe(take(1)).subscribe(() => {
+      // TODO → router.navigate(['/login'])
+    });
+  }
 }

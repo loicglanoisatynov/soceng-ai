@@ -4,7 +4,6 @@
 >
   <div class="absolute inset-0 bg-black/50"></div>
 
-  <!-- La carte apparaît toujours, on s’appuie sur le `user` passé par le parent -->
   <div
     class="absolute bottom-0 left-20 transform translate-y-1/2 z-20
            w-1/5 bg-[#5C00BF] border-2 border-[#FF8600]
@@ -13,16 +12,8 @@
     <div class="flex flex-col">
       <!-- Avatar + Info -->
       <div class="p-4 text-center">
-        <div
-          class="w-24 h-24 mx-auto -mt-12 rounded-full
-                 border-4 border-[#FF8600]
-                 overflow-hidden bg-[#5C00BF]"
-        >
-          <img
-            [src]="user.avatarUrl"
-            [alt]="user.username"
-            class="w-full h-full object-cover"
-          />
+        <div class="w-24 h-24 mx-auto -mt-12 rounded-full border-4 border-[#FF8600] overflow-hidden bg-[#5C00BF]">
+          <img [src]="user.avatarUrl" [alt]="user.username" class="w-full h-full object-cover" />
         </div>
         <div class="mt-4">
           <h3 class="text-2xl font-bold">{{ user.username }}</h3>
