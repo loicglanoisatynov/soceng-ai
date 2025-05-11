@@ -12,12 +12,22 @@
     <div class="flex flex-col">
       <!-- Avatar + Info -->
       <div class="p-4 text-center">
-        <div class="w-24 h-24 mx-auto -mt-12 rounded-full border-4 border-[#FF8600] overflow-hidden bg-[#5C00BF]">
-          <img [src]="user.avatarUrl" [alt]="user.username" class="w-full h-full object-cover" />
+        <div class="w-24 h-24 mx-auto -mt-12 rounded-full
+                    border-4 border-[#FF8600]
+                    overflow-hidden bg-[#5C00BF]">
+          <img
+            [src]="user.avatarUrl"
+            [alt]="user.username"
+            class="w-full h-full object-cover"
+          />
         </div>
         <div class="mt-4">
           <h3 class="text-2xl font-bold">{{ user.username }}</h3>
           <p class="text-sm">{{ user.email }}</p>
+          <!-- NOUVELLE LIGNE POUR LA BIOGRAPHIE -->
+          <p *ngIf="user.biography" class="mt-2 text-xs italic">
+            {{ user.biography }}
+          </p>
         </div>
       </div>
 

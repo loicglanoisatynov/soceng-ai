@@ -15,7 +15,6 @@ export class ProfileHeroComponent implements OnInit, OnDestroy {
   private auth = inject(AuthService);
   private sub!: Subscription;
 
-  // Valeurs par défaut pour affichage immédiat
   user: UserProfile & { avatarUrl: string; score: number; progress: number } = {
     id:        0,
     username:  'John Doe',
@@ -26,7 +25,6 @@ export class ProfileHeroComponent implements OnInit, OnDestroy {
   };
 
   ngOnInit(): void {
-    // Souscription au BehaviorSubject partagé
     this.sub = this.auth.profile$.subscribe(p => {
       if (p) {
         this.user = {
@@ -37,10 +35,8 @@ export class ProfileHeroComponent implements OnInit, OnDestroy {
         };
       }
     });
-
-    // Si profile n'a jamais été chargé (refresh direct), on force
     if (!this.auth.profile) {
-      this.auth.loadProfile().subscribe({ error: () => {/* ignore */} });
+      this.auth.loadProfile().subscribe({ error: () => {} });
     }
   }
 
