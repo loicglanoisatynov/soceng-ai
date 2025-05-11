@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
@@ -19,8 +19,7 @@ export interface UserProfile {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  // chemin absolu pour le proxy Angular
-  private readonly API = '/api';
+  private readonly API = 'http://localhost:8080';
 
   public loggedIn$ = new BehaviorSubject<boolean>(false);
   public profile$  = new BehaviorSubject<UserProfile | null>(null);
@@ -40,15 +39,16 @@ export class AuthService {
   }
 
   login(creds: { username: string; password: string }): Observable<LoginResponse> {
+    const headers = new HttpHeaders().set('Content-Type', 'application/json');
+
     return this.http.post<LoginResponse>(
       `${this.API}/login`,
       creds,
-      { withCredentials: true }
+      { headers, withCredentials: true }
     ).pipe(
       tap(res => {
         this.loggedIn$.next(res.status);
         if (res.status) {
-          // on recharge le profil dès la connexion
           this.loadProfile().subscribe();
         }
       })
