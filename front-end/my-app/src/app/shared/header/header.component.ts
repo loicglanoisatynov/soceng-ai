@@ -1,32 +1,54 @@
 // src/app/shared/header/header.component.ts
-import { Component, Inject, PLATFORM_ID } from '@angular/core';
-import { RouterModule, Router } from '@angular/router';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { AuthService } from '../../auth/auth.service';
+import { Router, RouterModule } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
+
+import { LanguageService } from '../../core/language.service';
+import { AuthService }     from '../../auth/auth.service';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, TranslateModule],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss']
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
+  isLoggedIn = false;
+  menuOpen = false;
+
   constructor(
     public auth: AuthService,
+    public lang: LanguageService,
     private router: Router,
     @Inject(PLATFORM_ID) private platformId: any
   ) {}
 
-  /** Affiche Login/SignUp quand on est en navigateur, non connecté, et hors des pages /auth */
-  get showAuthButtons(): boolean {
-    if (!isPlatformBrowser(this.platformId)) return false;
-    const url = this.router.url;
-    return !this.auth.isLoggedIn && !url.startsWith('/auth');
+  ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.auth.loggedIn$.subscribe(status => this.isLoggedIn = status);
+    }
   }
 
-  logout() {
-    this.auth.logout();
-    this.router.navigate(['/login']);
+  get showAuthButtons(): boolean {
+    if (!isPlatformBrowser(this.platformId)) return false;
+    return !this.isLoggedIn && !this.router.url.startsWith('/auth');
+  }
+
+  switchLang(lang: string) {
+    this.lang.use(lang);
+  }
+
+  // ** these two must match the template **
+  toggleMenu() {
+    this.menuOpen = !this.menuOpen;
+  }
+
+  onLogout() {
+    this.auth.logout().subscribe(() => {
+      this.menuOpen = false;
+      this.router.navigate(['/auth/login']);
+    });
   }
 }
