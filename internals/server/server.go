@@ -3,10 +3,10 @@ package server
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"strings"
+
 )
 
 var (
@@ -23,21 +23,9 @@ func getField(r *http.Request, index int) string {
 	return fields[index]
 }
 
+// Serve est le routeur principal (avec CORS géré en middleware)
 func Serve(w http.ResponseWriter, r *http.Request) {
-	// ==== GESTION CORS ====
-	origin := r.Header.Get("Origin")
-	if origin != "" {
-		w.Header().Set("Access-Control-Allow-Origin", origin)
-		w.Header().Set("Vary", "Origin")
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-	}
-	if r.Method == http.MethodOptions {
-		// Réponse aux requêtes pré-vol
-		w.WriteHeader(http.StatusOK)
-		return
-	}
+	// Le CORS est désormais géré en amont par handlers.WithCORS
 	// =======================
 
 	var allow []string
@@ -73,6 +61,7 @@ func clearTerminal() {
 func StartServer(args []string) {
 	parseArgs(args)
 
+	// On enregistre désormais Serve sur DefaultServeMux
 	http.HandleFunc("/", Serve)
 
 	if https {
@@ -82,19 +71,22 @@ func StartServer(args []string) {
 
 	addr := host + ":" + port
 	fmt.Println("Serveur HTTP démarré sur", addr)
-	if err := http.ListenAndServe(addr, nil); err != nil {
-		log.Fatalf("Erreur lors du démarrage du serveur : %v", err)
-	}
+	// Le ListenAndServe final est appelé dans main.go pour injecter le middleware CORS
 }
 
 // parseArgs lit les arguments pour le port, l'hôte et le mode HTTPS
 func parseArgs(args []string) {
 	for i, s := range args {
-		if s == "-p" && i+1 < len(args) {
-			port = args[i+1]
-		} else if s == "-h" && i+1 < len(args) {
-			host = args[i+1]
-		} else if s == "-s" {
+		switch s {
+		case "-p":
+			if i+1 < len(args) {
+				port = args[i+1]
+			}
+		case "-h":
+			if i+1 < len(args) {
+				host = args[i+1]
+			}
+		case "-s":
 			https = true
 		}
 	}
