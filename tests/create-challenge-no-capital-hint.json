@@ -1,0 +1,22 @@
+{
+    "challenge": {
+      "title": "Pas de hint capital",
+      "description": "Test",
+      "illustration": "img.png",
+      "lore_for_player": "Lore joueur",
+      "lore_for_ai": "Lore IA",
+      "osint_data": "",
+      "hints": [
+        {
+          "title": "Indice simple",
+          "text": "Texte",
+          "keywords": "",
+          "hint_illustration_type": "file",
+          "is_available_from_start": true,
+          "is_capital": false
+        }
+      ],
+      "characters": []
+    }
+  }
+  

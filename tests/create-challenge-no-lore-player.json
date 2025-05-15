@@ -1,0 +1,12 @@
+{
+    "challenge": {
+      "title": "Pas de lore joueur",
+      "description": "Test",
+      "illustration": "img.png",
+      "lore_for_ai": "Lore IA",
+      "osint_data": "",
+      "hints": [],
+      "characters": []
+    }
+  }
+  

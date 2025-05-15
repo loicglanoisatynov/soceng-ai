@@ -1,0 +1,13 @@
+{
+    "challenge": {
+      "title": "Sans personnage",
+      "description": "Test",
+      "illustration": "img.png",
+      "lore_for_player": "Lore joueur",
+      "lore_for_ai": "Lore IA",
+      "osint_data": "",
+      "hints": [],
+      "characters": []
+    }
+  }
+  
