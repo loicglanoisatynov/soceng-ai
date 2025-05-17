@@ -41,13 +41,9 @@ func Challenge_handler(w http.ResponseWriter, r *http.Request) {
 
 // Récupère les requêtes commençant par /api/sessions
 func Sessions_handler(w http.ResponseWriter, r *http.Request) {
-	// Objet de réponse http
-	// defaultPayload := []byte(`{"message": "Bad Request"}`)
 	var response = http.Response{
 		StatusCode: http.StatusBadRequest,
 		Status:     "Bad Request",
-		// Header:     http.Header{"Content-Type": []string{"application/json"}},
-		// Body:       io.NopCloser(bytes.NewBuffer(defaultPayload)),
 	}
 
 	cookies_status := process_cookies(r)
@@ -56,7 +52,6 @@ func Sessions_handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Si l'url est /api/sessions/start-challenge, on démarre une nouvelle session de jeu
 	if r.URL.Path == "/api/sessions/start-challenge" {
 		switch r.Method {
 		case "POST":
@@ -76,6 +71,7 @@ func Sessions_handler(w http.ResponseWriter, r *http.Request) {
 POST /api/sessions/start-challenge
 ➤ Démarre une nouvelle session de jeu pour un challenge donné.
 Payload : { challenge_id }
+Opération backend : créer un objet game_session pointant vers l'objet challenge associé. Création des substituts (noms uniques générés).
 Retourne : session_id, personnages initiaux, documents initiaux
 
 GET /api/sessions/{session_id}

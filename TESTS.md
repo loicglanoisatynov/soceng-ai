@@ -67,3 +67,70 @@ Valider un challenge (implique d'être admin) :
 ```bash
 curl -X PUT http://localhost:80/api/challenge -H "Content-Type: application/json" -d '{"operation":"validate", "title": "Welcome to the Game", "description": "Un petit challenge introductif", "illustration": "illustration.png"}' -b cookie.txt -v
 ```
+
+### Commencer un challenge
+
+#### Commande valide
+
+Commencer un challenge (implique d'être logged in, voir ##) : 
+```bash
+curl -X POST http://localhost:80/api/sessions/start-challenge \
+  -H "Content-Type: application/json" \
+  -d @tests/session/create/ok/payload.json \
+  -b cookie.txt -v \
+  && echo
+```
+
+#### Commandes invalides
+
+##### Pas de cookie de session
+
+Commande : 
+```bash
+curl -X POST http://localhost:80/api/sessions/start-challenge \
+  -H "Content-Type: application/json" \
+  -d @tests/session/create/ok/payload.json -v \
+  && echo
+```
+
+Output attendu :
+TODO
+
+##### Pas de payload
+TODO
+
+##### Payload vide
+TODO
+
+##### Payload non-pertinent (clés hors-sujet)
+TODO
+
+##### Payload mal formé (erreur de syntaxe)
+TODO
+
+##### Challenge inexistant
+
+Commande :
+```bash
+curl -X POST http://localhost:80/api/sessions/start-challenge \
+  -H "Content-Type: application/json" \
+  -d @tests/session/create/notexistant/payload.json \
+  -b cookie.txt -v \
+  && echo
+```
+
+Output attendu :
+TODO
+
+##### Challenge non validé
+
+Commande :
+```bash
+curl -X POST http://localhost:80/api/sessions/start-challenge \
+  -H "Content-Type: application/json" \
+  -d @tests/session/create/notvalidated/payload.json \
+  -b cookie.txt -v \
+  && echo
+```
+
+Output attendu :

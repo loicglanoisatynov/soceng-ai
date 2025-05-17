@@ -175,3 +175,12 @@ func Is_admin(r *http.Request) bool {
 	}
 	return db_users.Is_admin(user_id)
 }
+
+func Get_cookie_value(r *http.Request, cookie_name string) string {
+	for _, cookie := range r.Cookies() {
+		if cookie.Name == cookie_name {
+			return cookie.Value
+		}
+	}
+	return "Error : cookie not found"
+}

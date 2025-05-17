@@ -61,12 +61,12 @@ CREATE TABLE characters (
     id SERIAL PRIMARY KEY,
     challenge_id INT NOT NULL REFERENCES challenges(id) ON DELETE CASCADE,
     advice_to_user TEXT, -- Passable à l'API de l'IA.
-    symbolic_name VARCHAR(50) NOT NULL, -- Non-passable à l'IA. Génère un nom de personnage aléatoire pour chaque partie.
+    character_name VARCHAR(50) NOT NULL, -- Passable à l'IA
     title VARCHAR(50) NOT NULL, -- Passable à l'API de l'IA.
-    initial_suspicion INT NOT NULL, -- Non-passable à l'API de l'IA (sert à générer la suspicion initiale du personnage, dynamique pendant la partie).
+    initial_suspicion INT NOT NULL CHECK (initial_suspicion BETWEEN 1 AND 10), -- Non-passable à l'API de l'IA (sert à générer la suspicion initiale du personnage, dynamique pendant la partie). Entre 1 et 10
     communication_type VARCHAR(50) NOT NULL CHECK (communication_type IN ('email', 'phone', 'in-person', 'social_media')), -- Passable à l'API de l'IA (type de communication : email, phone, in-person, etc.)
-    symbolic_osint_data TEXT, -- Non-passable à l'API de l'IA (sert à générer les données osint du personnage, change pour chaque partie/session)
-    knows_contact_of INT NOT NULL REFERENCES characters(id) ON DELETE CASCADE, -- passable à API de l'IA (passe le contact_string de la personne)
+    osint_data TEXT, -- Non-passable à l'API de l'IA (sert à générer les données osint du personnage, change pour chaque partie/session)
+    knows_contact_of INT REFERENCES characters(id) ON DELETE CASCADE, -- passable à API de l'IA (passe le contact_string de la personne)
     holds_hint INT REFERENCES hints(id) ON DELETE CASCADE, -- Non-passable à l'API de l'IA (sert à générer le hint du personnage, change pour chaque partie/session)
     is_available_from_start BOOLEAN DEFAULT FALSE -- Non-passable à l'API de l'IA (sert à générer la disponibilité du personnage, change pour chaque partie/session)
 );
@@ -114,7 +114,6 @@ CREATE TABLE game_sessions (
     challenge_id INT NOT NULL REFERENCES challenges(id) ON DELETE CASCADE,
     session_key VARCHAR(50) NOT NULL UNIQUE,
     start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    end_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status VARCHAR(50) NOT NULL CHECK (status IN ('in_progress', 'completed'))
 );
 
@@ -122,23 +121,20 @@ CREATE TABLE session_characters (
     id SERIAL PRIMARY KEY,
     session_id INT NOT NULL REFERENCES game_sessions(id) ON DELETE CASCADE,
     character_id INT NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
-    character_name VARCHAR(50) NOT NULL,
     suspicion_level INT NOT NULL CHECK (suspicion_level BETWEEN 0 AND 100),
     is_accessible BOOLEAN DEFAULT FALSE
 );
 
-CREATE TABLE substitutes (
+CREATE TABLE session_hints (
     id SERIAL PRIMARY KEY,
-    challenge_id INT NOT NULL REFERENCES challenges(id) ON DELETE CASCADE,
-    word_to_substitute VARCHAR(50) NOT NULL,
-    substitute_word VARCHAR(50) NOT NULL
+    session_id INT NOT NULL REFERENCES game_sessions(id) ON DELETE CASCADE,
+    hint_id INT NOT NULL REFERENCES hints(id) ON DELETE CASCADE,
+    is_accessible BOOLEAN DEFAULT FALSE
 );
-
-
 
 -- Challenge : Obtenir le mot de passe Wi-Fi
 INSERT INTO challenges (
-    id, title, lore_for_player, lore_for_ai, difficulty, illustration, osint_data
+    id, title, lore_for_player, lore_for_ai, difficulty, illustration, osint_data, validated
 ) VALUES (
     1,
     'Infiltrer la réception',
@@ -146,7 +142,8 @@ INSERT INTO challenges (
     'La réceptionniste est plutôt bavarde mais méfiante envers les étrangers. Elle connaît le mot de passe Wi-Fi.',
     1,
     'reception.jpg',
-    'Post LinkedIn récent indiquant un changement de réseau Wi-Fi.'
+    'Post LinkedIn récent indiquant un changement de réseau Wi-Fi.',
+    TRUE
 );
 
 -- Hint : Récompense du challenge
@@ -166,15 +163,15 @@ INSERT INTO hints (
 
 -- Personnage : Julie la réceptionniste
 INSERT INTO characters (
-    id, challenge_id, advice_to_user, symbolic_name, title, initial_suspicion,
-    communication_type, symbolic_osint_data, knows_contact_of, holds_hint, is_available_from_start
+    id, challenge_id, advice_to_user, character_name, title, initial_suspicion,
+    communication_type, osint_data, knows_contact_of, holds_hint, is_available_from_start
 ) VALUES (
     1,
     1,
     'Julie a tendance à faire confiance aux gens sympathiques. Sois avenant.',
     'julie_recpt',
     'Réceptionniste',
-    20,
+    2,
     'in-person',
     'Photo sur Intranet avec un badge portant un QR Code lisible.',
     1,
@@ -212,15 +209,15 @@ INSERT INTO hints (
 
 -- Personnage 1 : Paul (oriente vers Claire)
 INSERT INTO characters (
-    id, challenge_id, advice_to_user, symbolic_name, title, initial_suspicion,
-    communication_type, symbolic_osint_data, knows_contact_of, holds_hint, is_available_from_start
+    id, challenge_id, advice_to_user, character_name, title, initial_suspicion,
+    communication_type, osint_data, knows_contact_of, holds_hint, is_available_from_start
 ) VALUES (
     2,
     2,
     'Paul est méthodique. Il ne donne rien sans preuve, mais il t’orientera si tu sembles bien renseigné.',
     'paul_dev',
     'Développeur',
-    40,
+    4,
     'email',
     'Paul est actif sur GitHub, souvent la nuit.',
     3,
@@ -230,18 +227,62 @@ INSERT INTO characters (
 
 -- Personnage 2 : Claire (détient le hint)
 INSERT INTO characters (
-    id, challenge_id, advice_to_user, symbolic_name, title, initial_suspicion,
-    communication_type, symbolic_osint_data, knows_contact_of, holds_hint, is_available_from_start
+    id, challenge_id, advice_to_user, character_name, title, initial_suspicion,
+    communication_type, osint_data, knows_contact_of, holds_hint, is_available_from_start
 ) VALUES (
     3,
     2,
     'Claire est méfiante mais bavarde si tu mentionnes Paul et leur projet commun.',
     'claire_hr',
     'Chargée RH',
-    50,
+    5,
     'in-person',
     'Photo d’équipe avec Paul lors d’un team-building.',
     2,
     2,
+    FALSE
+);
+
+-- Insertion de challenge non-validé (à des fins de test)
+INSERT INTO challenges (
+    id, title, lore_for_player, lore_for_ai, difficulty, illustration, osint_data
+) VALUES (
+    3,
+    'Infiltrer la salle serveur',
+    'Accède à la salle serveur pour récupérer des données sensibles.',
+    'La salle serveur est protégée par un mot de passe. Tu dois convaincre le responsable de te le donner.',
+    4,
+    'server_room.jpg',
+    'Un document interne mentionne une mise à jour de sécurité.'
+);
+-- Hint que le responsable détient
+INSERT INTO hints (
+    id, challenge_id, hint_title, hint_text, keywords, illustration_type, mentions, is_available_from_start, is_capital
+) VALUES (
+    3,
+    3,
+    'Note de sécurité',
+    'Le responsable t’a glissé une note : mot de passe = Secure@2025',
+    'sécurité, accès, serveur',
+    'file',
+    NULL,
+    FALSE,
+    TRUE
+);
+-- Personnage : Responsable de la salle serveur
+INSERT INTO characters (
+    id, challenge_id, advice_to_user, character_name, title, initial_suspicion,
+    communication_type, osint_data, knows_contact_of, holds_hint, is_available_from_start
+) VALUES (
+    4,
+    3,
+    'Le responsable est très prudent. Sois convaincant et mentionne la mise à jour de sécurité.',
+    'responsable_srv',
+    'Responsable IT',
+    6,
+    'in-person',
+    'Photo de l’équipe IT lors d’un séminaire.',
+    NULL,
+    3,
     FALSE
 );

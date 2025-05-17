@@ -39,7 +39,7 @@ func init() {
 		// newRoute("DELETE", "/api/delete-challenge", handlers.Delete_challenge),
 
 		/* Gestion des sessions de parties */
-		newRoute("/api/sessions", api.Sessions_handler), // Créer une session de jeu (challenge_id)
+		newRoute("/api/sessions/([^/]+)", api.Sessions_handler), // Créer une session de jeu (challenge_id)
 
 		// Récupérer les informations de session de challenge
 		// Récupérer les informations de conversation (affichant à la fois les données du personnage et des messages échangés)

@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"soceng-ai/database"
-	challenge_structs "soceng-ai/internals/server/handlers/api/challenge/challenge_structs"
+	db_challenges_structs "soceng-ai/database/tables/db_challenges/db_challenges_structs"
+	"soceng-ai/internals/server/handlers/api/challenge/challenge_structs"
 )
 
 func Create_challenge(challenge challenge_structs.Challenge, r *http.Request, w http.ResponseWriter) string {
@@ -71,6 +72,92 @@ func purify(challenge_id int) string {
 	return ""
 }
 
+func Get_hints_by_challenge_id(challenge_id int) ([]db_challenges_structs.Db_hint, string) {
+	db := database.Get_DB()
+	query := "SELECT * FROM hints WHERE challenge_id = ?"
+	rows, err := db.Query(query, challenge_id)
+	if err != nil {
+		fmt.Println("Error getting hints:", err)
+		return nil, err.Error()
+	}
+	defer rows.Close()
+
+	var hints []db_challenges_structs.Db_hint
+	// Parcours des résultats de la requête
+	// On crée un tableau de hints
+	for rows.Next() {
+		var hint db_challenges_structs.Db_hint
+		err := rows.Scan(&hint.ID, &hint.Challenge_id, &hint.Title, &hint.Text, &hint.Keywords, &hint.Illustration_type, &hint.Mentions, &hint.Is_available_from_start, &hint.Is_capital)
+		if err != nil && err.Error() == "sql: Scan error on column index 6, name \"mentions\": converting NULL to string is unsupported" {
+			// fmt.Println("Error scanning hint:", err)
+			hint.Mentions = ""
+			// continue
+		} else if err != nil {
+			fmt.Println("Error scanning hint:", err)
+			return nil, err.Error()
+		}
+		hints = append(hints, hint)
+	}
+	return hints, "OK"
+}
+
+func Get_characters_by_challenge_id(challenge_id int) []db_challenges_structs.Db_character {
+	db := database.Get_DB()
+	query := "SELECT * FROM characters WHERE challenge_id = ?"
+	rows, err := db.Query(query, challenge_id)
+	if err != nil {
+		fmt.Println("Error getting characters:", err)
+		return nil
+	}
+	defer rows.Close()
+
+	var characters []db_challenges_structs.Db_character
+	// Parcours des résultats de la requête
+	// On crée un tableau de personnages
+	for rows.Next() {
+		var character db_challenges_structs.Db_character
+		// On récupère les données de chaque personnage
+		// On les stocke dans la structure Characters
+		err := rows.Scan(&character.ID, &character.Challenge_id, &character.Advice_to_user, &character.Symbolic_name, &character.Title, &character.Initial_suspicion, &character.Communication_type, &character.Symbolic_osint_data, &character.Knows_contact_of, &character.Holds_hint, &character.Is_available_from_start)
+		if err != nil {
+			fmt.Println("Error scanning character:", err)
+			continue
+		}
+		characters = append(characters, character)
+	}
+	return characters
+}
+
+func Is_challenge_validated(challenge_id int) string {
+	db := database.Get_DB()
+	var validated bool
+	query := "SELECT validated FROM challenges WHERE id = ?"
+	err := db.QueryRow(query, challenge_id).Scan(&validated)
+	if err != nil {
+		return "Error getting challenge validation status: " + err.Error()
+	}
+	if !validated {
+		return "Challenge not validated"
+	}
+	return "OK"
+}
+
+func Get_challenge_id_by_title(challenge_title string) (int, string) {
+	db := database.Get_DB()
+	var challenge_id int
+	query := "SELECT id FROM challenges WHERE title = ?"
+	err := db.QueryRow(query, challenge_title).Scan(&challenge_id)
+	if err != nil && err.Error() == "sql: no rows in result set" {
+		return -1, "Challenge not found"
+	} else if err != nil {
+		return -1, "Error getting challenge ID: " + err.Error()
+	}
+	if challenge_id == 0 {
+		return -1, "Challenge not found"
+	}
+	return challenge_id, "OK"
+}
+
 func hints_treatment(hints []challenge_structs.Hint, challenge_id int) string {
 	// Etape 1 : Vérifier que les attributs de chaque hint sont valides
 	// Etape 2 : Injecter les hints dans la base de données
@@ -122,29 +209,29 @@ func characters_treatment(characters []challenge_structs.Characters, challenge_i
 	var next_id int
 
 	for i := 0; i < len(characters); i++ {
-		if characters[i].Symbolic_name == "" {
-			return characters[i].Symbolic_name + " symbolic_name is empty"
+		if characters[i].Character_name == "" {
+			return characters[i].Character_name + " symbolic_name is empty"
 		}
 		if characters[i].Title == "" {
-			return characters[i].Symbolic_name + " title is empty"
+			return characters[i].Character_name + " title is empty"
 		}
 		if characters[i].Advice_to_user == "" {
-			return characters[i].Symbolic_name + " advice_to_user is empty"
+			return characters[i].Character_name + " advice_to_user is empty"
 		}
 		if characters[i].Initial_suspicion < 0 || characters[i].Initial_suspicion > 10 {
-			return characters[i].Symbolic_name + " initial_suspicion is not between 0 and 10"
+			return characters[i].Character_name + " initial_suspicion is not between 0 and 10"
 		}
 		if characters[i].Communication_type == "" {
-			return characters[i].Symbolic_name + " communication_type is empty (has to be 'email', 'phone', 'in-person', 'social_media')"
+			return characters[i].Character_name + " communication_type is empty (has to be 'email', 'phone', 'in-person', 'social_media')"
 		}
-		if characters[i].Symbolic_osint_data == "" {
-			return characters[i].Symbolic_name + " symbolic_osint_data is empty"
+		if characters[i].Osint_data == "" {
+			return characters[i].Character_name + " symbolic_osint_data is empty"
 		}
 		if characters[i].Holds_hint == "" && characters[i].Holds_hint != "null" {
-			return characters[i].Symbolic_name + " holds_hint is empty"
+			return characters[i].Character_name + " holds_hint is empty"
 		}
 		if characters[i].Is_available_from_start && !characters[i].Is_available_from_start {
-			return characters[i].Symbolic_name + " is_available_from_start is not a boolean"
+			return characters[i].Character_name + " is_available_from_start is not a boolean"
 		}
 		if characters[i].Knows_contact_of != "" {
 			// On vérifie que le contact est valide
@@ -175,7 +262,7 @@ func characters_treatment(characters []challenge_structs.Characters, challenge_i
 
 		// Si tout est valide, on peut injecter le character dans la base de données
 		query := "INSERT INTO characters (id, challenge_id, advice_to_user, symbolic_name, title, initial_suspicion, communication_type, symbolic_osint_data, knows_contact_of, holds_hint, is_available_from_start) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-		_, err := db.Exec(query, next_id, challenge_id, characters[i].Advice_to_user, characters[i].Symbolic_name, characters[i].Title, characters[i].Initial_suspicion, characters[i].Communication_type, characters[i].Symbolic_osint_data, characters[i].Knows_contact_of, characters[i].Holds_hint, characters[i].Is_available_from_start)
+		_, err := db.Exec(query, next_id, challenge_id, characters[i].Advice_to_user, characters[i].Character_name, characters[i].Title, characters[i].Initial_suspicion, characters[i].Communication_type, characters[i].Osint_data, characters[i].Knows_contact_of, characters[i].Holds_hint, characters[i].Is_available_from_start)
 		if err != nil {
 			return "Error inserting character: " + err.Error()
 		}
@@ -202,7 +289,7 @@ func check_challenge_coherence(challenge challenge_structs.Challenge) string {
 	// 1. Cartographie
 	charByName := make(map[string]*challenge_structs.Characters)
 	for i := range challenge.Characters {
-		charByName[challenge.Characters[i].Symbolic_name] = &challenge.Characters[i]
+		charByName[challenge.Characters[i].Character_name] = &challenge.Characters[i]
 	}
 	hintByTitle := make(map[string]*challenge_structs.Hint)
 	for i := range challenge.Hints {
@@ -219,8 +306,8 @@ func check_challenge_coherence(challenge challenge_structs.Challenge) string {
 
 	for _, c := range challenge.Characters {
 		if c.Is_available_from_start {
-			accessibleChars[c.Symbolic_name] = true
-			queueChars = append(queueChars, c.Symbolic_name)
+			accessibleChars[c.Character_name] = true
+			queueChars = append(queueChars, c.Character_name)
 		}
 	}
 	for _, h := range challenge.Hints {
@@ -272,7 +359,7 @@ func check_challenge_coherence(challenge challenge_structs.Challenge) string {
 	// 3. Contrôle : tout est accessible ?
 	msg := ""
 	for _, c := range challenge.Characters {
-		if !accessibleChars[c.Symbolic_name] {
+		if !accessibleChars[c.Character_name] {
 			msg += fmt.Sprintf("Character '%s' inaccessible; ", c.Title)
 		}
 	}

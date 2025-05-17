@@ -4,11 +4,12 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"soceng-ai/internals/utils/prompts"
 
 	_ "github.com/mattn/go-sqlite3" // Import the SQLite driver
 )
 
-var db_name = "database/data.db"
+var db_name = "database.db"
 
 var db *sql.DB = nil
 
@@ -16,9 +17,10 @@ func Init_DB() {
 	// Si la base de données n'existe pas, la créer
 	if _, err := os.Stat(Get_DB_path()); os.IsNotExist(err) {
 		create_DB()
-		fmt.Println("Database created")
+		fmt.Println(prompts.Prompt + prompts.Success + "Database created")
 	} else {
 		Set_DB(Get_DB_path())
+		fmt.Println(prompts.Prompt + prompts.Success + "Database opened")
 	}
 
 }
