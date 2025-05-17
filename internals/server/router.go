@@ -40,6 +40,8 @@ func init() {
 
 		/* Gestion des sessions de parties */
 		newRoute("/api/sessions/([^/]+)", api.Sessions_handler), // Créer une session de jeu (challenge_id)
+		newRoute("/api/dashboard", api.Dashboard_handler),       // Récupérer les informations de session de challenge
+		//get dashboard-data
 
 		// Récupérer les informations de session de challenge
 		// Récupérer les informations de conversation (affichant à la fois les données du personnage et des messages échangés)

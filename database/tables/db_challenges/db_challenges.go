@@ -6,6 +6,7 @@ import (
 	"soceng-ai/database"
 	db_challenges_structs "soceng-ai/database/tables/db_challenges/db_challenges_structs"
 	"soceng-ai/internals/server/handlers/api/challenge/challenge_structs"
+	"soceng-ai/internals/server/handlers/api/dashboard/dashboard_structs"
 )
 
 func Create_challenge(challenge challenge_structs.Challenge, r *http.Request, w http.ResponseWriter) string {
@@ -401,3 +402,64 @@ func Validate_challenge(title string) {
 		fmt.Println("Error validating challenge:", err)
 	}
 }
+
+// Get_available_challenges récupère la liste des challenges disponibles en base de données puis transmet celles-ci dans un array de challenges formatté pour le dashboard
+func Get_available_challenges(username string) []dashboard_structs.Challenge {
+	db := database.Get_DB()
+	var challenges []db_challenges_structs.Challenge
+	query := "SELECT * FROM challenges WHERE validated = TRUE"
+	rows, err := db.Query(query)
+	if err != nil {
+		fmt.Println("Error getting available challenges:", err)
+		return nil
+	}
+	defer rows.Close()
+
+	// Parcours des résultats de la requête
+	// On crée un tableau de challenges
+	for rows.Next() {
+		var challenge db_challenges_structs.Challenge
+		err := rows.Scan(&challenge.ID, &challenge.Title, &challenge.Lore_for_player, &challenge.Lore_for_ai, &challenge.Difficulty, &challenge.Illustration, &challenge.Created_at, &challenge.Updated_at, &challenge.Validated, &challenge.Osint_data)
+		if err != nil {
+			fmt.Println("Error scanning challenge:", err)
+			continue
+		}
+		challenges = append(challenges, challenge)
+	}
+	// On crée un tableau de challenges formaté pour le dashboard
+	dashboard_challenges := []dashboard_structs.Challenge{}
+	for i := 0; i < len(challenges); i++ {
+		var dashboard_challenge dashboard_structs.Challenge
+		dashboard_challenge.ID = challenges[i].ID
+		dashboard_challenge.Name = challenges[i].Title
+		dashboard_challenge.Description = challenges[i].Lore_for_player
+		dashboard_challenge.Illustration_filename = challenges[i].Illustration
+		dashboard_challenge.Status = "available"
+		dashboard_challenges = append(dashboard_challenges, dashboard_challenge)
+	}
+
+	return dashboard_challenges
+}
+
+/*
+type Challenge struct {
+	ID                    int    `json:"id"`
+	Name                  string `json:"name"`
+	Description           string `json:"description"`
+	Illustration_filename string `json:"illustration_filename"`
+	Status                string `json:"status"`
+}
+
+CREATE TABLE challenges (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    lore_for_player TEXT NOT NULL,
+    lore_for_ai TEXT NOT NULL,
+    difficulty INT NOT NULL CHECK (difficulty BETWEEN 1 AND 5),
+    illustration VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    validated BOOLEAN DEFAULT FALSE,
+    osint_data TEXT
+);
+*/

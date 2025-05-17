@@ -26,3 +26,16 @@ type Db_hint struct {
 	Is_available_from_start bool   `json:"is_available_from_start"`
 	Is_capital              bool   `json:"is_capital"`
 }
+
+type Challenge struct {
+	ID              int    `json:"id"`
+	Title           string `json:"title"`
+	Lore_for_player string `json:"lore_for_player"`
+	Lore_for_ai     string `json:"lore_for_ai"`
+	Difficulty      string `json:"difficulty"`
+	Illustration    string `json:"illustration"`
+	Created_at      string `json:"created_at"`
+	Updated_at      string `json:"updated_at"`
+	Validated       bool   `json:"validated"`
+	Osint_data      string `json:"osint_data"`
+}

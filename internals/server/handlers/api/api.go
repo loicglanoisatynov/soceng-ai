@@ -1,11 +1,15 @@
 package api
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"soceng-ai/database/tables/db_cookies"
 	challenge "soceng-ai/internals/server/handlers/api/challenge"
+	dashboard "soceng-ai/internals/server/handlers/api/dashboard"
 	sessions "soceng-ai/internals/server/handlers/api/sessions"
 	authentification "soceng-ai/internals/server/handlers/authentification"
+	"soceng-ai/internals/utils/prompts"
 )
 
 func Challenge_handler(w http.ResponseWriter, r *http.Request) {
@@ -138,4 +142,41 @@ func process_cookies(r *http.Request) string {
 		return "Invalid cookie"
 	}
 	return "OK"
+}
+
+// Renvoie les données à afficher sur le tableau de bord
+func Dashboard_handler(w http.ResponseWriter, r *http.Request) {
+
+	cookies_status := process_cookies(r)
+	if cookies_status != "OK" {
+		http.Error(w, "Error processing cookies: "+cookies_status, http.StatusUnauthorized)
+		return
+	}
+
+	switch r.Method {
+	case "GET":
+		error_status, data := dashboard.Get_dashboard(r)
+		if error_status != "OK" {
+			fmt.Println(prompts.Error + "soceng-ai/internals/server/handlers/api/dashboard/dashboard.go:Dashboard_handler():Error getting dashboard data: " + error_status)
+			http.Error(w, "Error getting dashboard data: "+error_status, http.StatusInternalServerError)
+			return
+		}
+		responseData, err := json.Marshal(data)
+		if err != nil {
+			fmt.Println(prompts.Error + "soceng-ai/internals/server/handlers/api/dashboard/dashboard.go:Dashboard_handler():Error marshalling dashboard data: " + err.Error())
+			http.Error(w, "Error marshalling dashboard data: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, err = w.Write(responseData)
+		if err != nil {
+			fmt.Println(prompts.Error + "soceng-ai/internals/server/handlers/api/dashboard/dashboard.go:Dashboard_handler():Error writing response: " + err.Error())
+			http.Error(w, "Error writing response: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+
 }

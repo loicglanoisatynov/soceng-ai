@@ -6,6 +6,7 @@ import (
 	"net/http"
 	database "soceng-ai/database"
 	"soceng-ai/database/tables/db_challenges"
+	"soceng-ai/database/tables/db_sessions/db_sessions_structs"
 	"soceng-ai/database/tables/db_users"
 	"soceng-ai/internals/utils/prompts"
 	"time"
@@ -53,6 +54,38 @@ func Create_game_session(username string, challenge_title string) (string, int) 
 	}
 
 	return "OK", http.StatusOK
+}
+
+func Get_sessions_by_username(username string) (string, []db_sessions_structs.Session) {
+	user_id := db_users.Get_user_id_by_username_or_email(username)
+	if user_id == 0 {
+		return "Error getting user id", nil
+	}
+	db := database.Get_DB()
+	rows, err := db.Query("SELECT id, user_id, challenge_id, session_key, start_time, status FROM game_sessions WHERE user_id = $1", user_id)
+	if err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:Get_sessions_by_username():Error getting sessions by username: " + err.Error())
+		return "Error getting sessions by username: " + err.Error(), nil
+	}
+	defer rows.Close()
+	var sessions []db_sessions_structs.Session
+	for rows.Next() {
+		var session db_sessions_structs.Session
+		err := rows.Scan(&session.ID, &session.UserID, &session.ChallengeID, &session.SessionKey, &session.StartTime, &session.Status)
+		if err != nil {
+			fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:Get_sessions_by_username():Error scanning session: " + err.Error())
+			return "Error scanning session: " + err.Error(), nil
+		}
+		sessions = append(sessions, session)
+	}
+	if err := rows.Err(); err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:Get_sessions_by_username():Error iterating over rows: " + err.Error())
+		return "Error iterating over rows: " + err.Error(), nil
+	}
+	if len(sessions) < 0 {
+		return "Error : negative number of sessions", nil
+	}
+	return "OK", sessions
 }
 
 func delete_previous_game_session_data(challenge_id int, user_id int) string {
