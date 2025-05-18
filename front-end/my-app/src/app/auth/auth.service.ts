@@ -53,6 +53,8 @@ export class AuthService {
    * - observe:'response' pour capter le status
    */
   login(creds: { username: string; password: string }): Observable<LoginResponse> {
+    console.log('🔐 Tentative login avec :', creds); // ✅ DEBUG FRONT
+  
     return this.http.post<LoginResponse>(
       `${this.API}/login`,
       creds,
@@ -61,12 +63,12 @@ export class AuthService {
       tap(res => {
         this.loggedIn$.next(res.status);
         if (res.status) {
-          // on recharge le profil dès la connexion
           this.loadProfile().subscribe();
         }
       })
     );
   }
+  
 
   /** Déconnexion */
   logout(): Observable<void> {

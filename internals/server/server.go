@@ -3,9 +3,16 @@ package server
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
+	"runtime"
+	"soceng-ai/internals/utils/colors"
+	"soceng-ai/internals/utils/prompts"
 	"strings"
+	"strconv"
+    "soceng-ai/internals/server/handlers"
+	
 
 )
 
@@ -17,26 +24,20 @@ var (
 
 type ctxKey struct{}
 
-// getField extrait un paramètre capturé par la regex dans le contexte de la requête
 func getField(r *http.Request, index int) string {
 	fields := r.Context().Value(ctxKey{}).([]string)
 	return fields[index]
 }
 
-// Serve est le routeur principal (avec CORS géré en middleware)
 func Serve(w http.ResponseWriter, r *http.Request) {
-	// Le CORS est désormais géré en amont par handlers.WithCORS
-	// =======================
-
 	var allow []string
 	for _, route := range routes {
 		matches := route.Get_route_regex().FindStringSubmatch(r.URL.Path)
 		if len(matches) > 0 {
-			if r.Method != route.Get_route_method() {
-				allow = append(allow, route.Get_route_method())
-				continue
-			}
-
+			// if r.Method != route.Get_route_method() {
+			// 	allow = append(allow, route.Get_route_method())
+			// 	continue
+			// }
 			ctx := context.WithValue(r.Context(), ctxKey{}, matches[1:])
 			route.Get_route_handler()(w, r.WithContext(ctx))
 			return
@@ -61,32 +62,31 @@ func clearTerminal() {
 func StartServer(args []string) {
 	parseArgs(args)
 
-	// On enregistre désormais Serve sur DefaultServeMux
 	http.HandleFunc("/", Serve)
 
 	if https {
 		fmt.Println("HTTPS not yet implemented.")
 		os.Exit(1)
+		// http.ListenAndServeTLS(":"+port, "cert.pem", "key.pem", nil)
 	}
-
-	addr := host + ":" + port
-	fmt.Println("Serveur HTTP démarré sur", addr)
-	// Le ListenAndServe final est appelé dans main.go pour injecter le middleware CORS
+	if runtime.GOOS != "windows" {
+		pInt, err := strconv.Atoi(port)
+		if err == nil && pInt < 1024 {
+			fmt.Println("Démarrez le serveur avec sudo pour utiliser un port inférieur à 1024.")
+			os.Exit(0)
+		}
+	}
+	fmt.Println(prompts.Prompt + prompts.Success + "Serveur HTTP démarré sur " + colors.Cyan + host + colors.Reset + ":" + colors.Cyan + port + colors.Reset)
+	log.Fatal(http.ListenAndServe(":"+port, handlers.WithCORS(http.DefaultServeMux)))
 }
 
-// parseArgs lit les arguments pour le port, l'hôte et le mode HTTPS
-func parseArgs(args []string) {
-	for i, s := range args {
-		switch s {
-		case "-p":
-			if i+1 < len(args) {
-				port = args[i+1]
-			}
-		case "-h":
-			if i+1 < len(args) {
-				host = args[i+1]
-			}
-		case "-s":
+func parseArgs(strings []string) {
+	for i, s := range strings {
+		if s == "-p" && i+1 < len(strings) {
+			port = strings[i+1]
+		} else if s == "-h" && i+1 < len(strings) {
+			host = strings[i+1]
+		} else if s == "-s" {
 			https = true
 		}
 	}
