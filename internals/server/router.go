@@ -20,15 +20,15 @@ func routes_index_handler(w http.ResponseWriter, r *http.Request) {
 
 func init() {
 	routes = []Route{
-		newRoute("GET/routes", routes_index_handler),
-		newRoute("GET/", handlers.Home),
-		newRoute("POST/create-user", registering.Register_user),
-		newRoute("POSTcheck-register", registering.Check_register),
-		newRoute("DELETE/delete-user", registering.Delete_user),
-		newRoute("POST/login", handlers_logging.Login),
-		newRoute("DELETE/logout", handlers_logging.Logout),
-		newRoute("PUT/edit-profile", profiles_handling.Edit_profile),
-		newRoute("PUT/edit-user", profiles_handling.Edit_user),
+		newRoute("/routes", routes_index_handler),
+		newRoute("/", handlers.Home),
+		newRoute("/create-user", registering.Register_user),
+		newRoute("/check-register", registering.Check_register),
+		newRoute("/delete-user", registering.Delete_user),
+		newRoute("/login", handlers_logging.Login),
+		newRoute("/logout", handlers_logging.Logout),
+		newRoute("/edit-profile", profiles_handling.Edit_profile),
+		newRoute("/edit-user", profiles_handling.Edit_user),
 
 		// newRoute("GET", "/contact", contact),
 		// newRoute("GET", "/([^/]+)/admin", widgetAdmin),
