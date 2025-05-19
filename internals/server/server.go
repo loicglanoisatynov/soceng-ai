@@ -10,6 +10,10 @@ import (
 	"soceng-ai/internals/utils/colors"
 	"soceng-ai/internals/utils/prompts"
 	"strings"
+	"strconv"
+    "soceng-ai/internals/server/handlers"
+	
+
 )
 
 var (
@@ -63,22 +67,22 @@ func StartServer(args []string) {
 	if https {
 		fmt.Println("HTTPS not yet implemented.")
 		os.Exit(1)
-		// http.ListenAndServeTLS(":"+port, "cert.pem", "key.pem", nil)
 	}
-	if runtime.GOOS != "windows" && port > "1024" {
-		fmt.Println("Démarrez le serveur avec sudo pour utiliser un port inférieur à 1024.")
-		os.Exit(0)
+
+	addr := host + ":" + port
+	fmt.Println("Serveur HTTP démarré sur", addr)
+	if err := http.ListenAndServe(addr, nil); err != nil {
+		log.Fatalf("Erreur lors du démarrage du serveur : %v", err)
 	}
-	fmt.Println(prompts.Prompt + prompts.Success + "Serveur HTTP démarré sur " + colors.Cyan + host + colors.Reset + ":" + colors.Cyan + port + colors.Reset)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
-func parseArgs(strings []string) {
-	for i, s := range strings {
-		if s == "-p" && i+1 < len(strings) {
-			port = strings[i+1]
-		} else if s == "-h" && i+1 < len(strings) {
-			host = strings[i+1]
+// parseArgs lit les arguments pour le port, l'hôte et le mode HTTPS
+func parseArgs(args []string) {
+	for i, s := range args {
+		if s == "-p" && i+1 < len(args) {
+			port = args[i+1]
+		} else if s == "-h" && i+1 < len(args) {
+			host = args[i+1]
 		} else if s == "-s" {
 			https = true
 		}
