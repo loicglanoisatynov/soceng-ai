@@ -1,6 +1,6 @@
 <section
   class="relative w-full h-[60vh] bg-cover bg-center border-b-4 border-[#FF8600]"
-  [style.backgroundImage]="'url(/assets/images/boitumelo-fP9VEkZ-L0s-unsplash.jpg)'"
+  [style.backgroundImage]="'url(\'/assets/images/boitumelo-fP9VEkZ-L0s-unsplash.jpg\')'"
 >
   <div class="absolute inset-0 bg-black/50"></div>
 
@@ -16,17 +16,16 @@
                     border-4 border-[#FF8600]
                     overflow-hidden bg-[#5C00BF]">
           <img
-            [src]="user.avatarUrl"
-            [alt]="user.username"
+            [src]="profile.avatarUrl"
+            [alt]="profile.username"
             class="w-full h-full object-cover"
           />
         </div>
         <div class="mt-4">
-          <h3 class="text-2xl font-bold">{{ user.username }}</h3>
-          <p class="text-sm">{{ user.email }}</p>
-          <!-- NOUVELLE LIGNE POUR LA BIOGRAPHIE -->
-          <p *ngIf="user.biography" class="mt-2 text-xs italic">
-            {{ user.biography }}
+          <h3 class="text-2xl font-bold">{{ profile.username }}</h3>
+          <p class="text-sm">{{ profile.email }}</p>
+          <p *ngIf="profile.biography" class="mt-2 text-xs italic">
+            {{ profile.biography }}
           </p>
         </div>
       </div>
@@ -34,8 +33,8 @@
       <!-- Stats + Help + Sociaux -->
       <div class="px-4 pb-4 font-mono">
         <div class="text-center space-y-1">
-          <p class="font-semibold">Score: {{ user.score }}/100</p>
-          <p class="font-semibold">Progress: {{ user.progress }}%</p>
+          <p class="font-semibold">Score: {{ profile.score }}/100</p>
+          <p class="font-semibold">Progress: {{ profile.progress }}%</p>
         </div>
 
         <div class="mt-4">

@@ -1,3 +1,4 @@
+// src/app/auth/auth.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams, HttpResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from 'rxjs';
@@ -26,23 +27,18 @@ interface ApiResponse {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  /**
-   * En développement, on profite du proxy Angular pour appeler '/login', '/logout', etc.
-   * proxy.conf.json doit mapper ces routes vers http://localhost:8080
-   */
-  private readonly API = '';
+  /** Préfixe API pour le proxy Angular */
+  private readonly API = '/api';
 
   public loggedIn$ = new BehaviorSubject<boolean>(false);
   public profile$  = new BehaviorSubject<UserProfile | null>(null);
 
   constructor(private http: HttpClient) {}
 
-  /** Accès synchrone au profil courant */
   get profile(): UserProfile | null {
     return this.profile$.value;
   }
 
-  /** Inscription (JSON) */
   signup(data: { name: string; email: string; password: string }): Observable<string> {
     return this.http.post<string>(
       `${this.API}/create-user`,
@@ -51,12 +47,6 @@ export class AuthService {
     );
   }
 
-  /**
-   * Connexion:
-   * - on envoie application/x-www-form-urlencoded
-   * - on observe _la réponse complète_ en texte
-   * - on se base sur resp.status pour définir LoginResponse
-   */
   login(creds: { username: string; password: string }): Observable<LoginResponse> {
     console.log('🔐 Tentative login avec :', creds);
 
@@ -93,20 +83,18 @@ export class AuthService {
     );
   }
 
-  /** Déconnexion */
   logout(): Observable<ApiResponse> {
     return this.http.delete<ApiResponse>(
-      `/logout`,
+      `${this.API}/logout`,
       { withCredentials: true }
     ).pipe(
-      tap(res => {
+      tap(() => {
         this.loggedIn$.next(false);
         this.profile$.next(null);
       })
     );
   }
 
-  /** Chargement stub du profil à partir du cookie */
   loadProfile(): Observable<UserProfile> {
     const username = document.cookie
       .split('; ')
@@ -129,29 +117,18 @@ export class AuthService {
   }
 
   /** Mise à jour du profil public */
-  updateProfile(data: { username: string; biography: string; avatar: string }): Observable<ApiResponse> {
-    return this.http.put<ApiResponse>(
-      `/edit-profile`,
+  updateProfile(data: { username: string; biography: string; avatar: string }) {
+    return this.http.post<ApiResponse>(
+      `${this.API}/edit-profiles`,
       data,
       { withCredentials: true }
-    ).pipe(
-      tap(res => {
-        if (res.status && this.profile) {
-          this.profile$.next({
-            ...this.profile,
-            username:  data.username,
-            biography: data.biography,
-            avatarUrl: data.avatar
-          });
-        }
-      })
     );
   }
 
   /** Mise à jour des identifiants */
   updateUser(data: { email?: string; password: string; newpassword?: string }): Observable<ApiResponse> {
-    return this.http.put<ApiResponse>(
-      `/edit-user`,
+    return this.http.post<ApiResponse>(
+      `${this.API}/edit-user`,
       data,
       { withCredentials: true }
     ).pipe(
