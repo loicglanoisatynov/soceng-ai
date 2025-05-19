@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"regexp"
 	handlers "soceng-ai/internals/server/handlers"
-	handlers_logging "soceng-ai/internals/server/handlers/logging"
+	handlers_logging "soceng-ai/internals/server/handlers/authentification"
 	profiles_handling "soceng-ai/internals/server/handlers/profiles_handling"
 	registering "soceng-ai/internals/server/handlers/registering"
 )
@@ -20,15 +20,15 @@ func routes_index_handler(w http.ResponseWriter, r *http.Request) {
 
 func init() {
 	routes = []Route{
-		newRoute("GET", "/routes", routes_index_handler),
-		newRoute("GET", "/", handlers.Home),
-		newRoute("POST", "/create-user", registering.Register_user),
-		newRoute("POST", "/check-register", registering.Check_register),
-		newRoute("DELETE", "/delete-user", registering.Delete_user),
-		newRoute("POST", "/login", handlers_logging.Login),
-		newRoute("DELETE", "/logout", handlers_logging.Logout),
-		newRoute("PUT", "/edit-profile", profiles_handling.Edit_profile),
-		newRoute("PUT", "/edit-user", profiles_handling.Edit_user),
+		newRoute("GET/routes", routes_index_handler),
+		newRoute("GET/", handlers.Home),
+		newRoute("POST/create-user", registering.Register_user),
+		newRoute("POSTcheck-register", registering.Check_register),
+		newRoute("DELETE/delete-user", registering.Delete_user),
+		newRoute("POST/login", handlers_logging.Login),
+		newRoute("DELETE/logout", handlers_logging.Logout),
+		newRoute("PUT/edit-profile", profiles_handling.Edit_profile),
+		newRoute("PUT/edit-user", profiles_handling.Edit_user),
 
 		// newRoute("GET", "/contact", contact),
 		// newRoute("GET", "/([^/]+)/admin", widgetAdmin),
