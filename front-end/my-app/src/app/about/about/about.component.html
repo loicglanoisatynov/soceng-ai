@@ -6,27 +6,27 @@
   <!-- Overlay noir -->
   <div class="absolute inset-0 bg-black/50 pointer-events-none"></div>
 
-  <div class="absolute top-0 left-20 h-full flex flex-col justify-center items-start">
-    <h1 class="text-4xl md:text-5xl font-bold text-orange-400 tracking-wide shadow">
+  <div class="absolute top-0 left-4 sm:left-8 md:left-20 h-full flex flex-col justify-center items-start px-4">
+    <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-orange-400 tracking-wide drop-shadow-lg">
       {{ 'ABOUT.HERO.TITLE' | translate }}
     </h1>
-    <div class="bg-purple-600 h-2 ml-4 w-10 mt-2"></div>
-    <p class="text-base md:text-lg lg:text-xl leading-relaxed text-[#FF8600] max-w-2xl mt-6">
+    <div class="bg-purple-600 h-1 sm:h-2 w-8 sm:w-10 mt-2 ml-2"></div>
+    <p class="mt-4 text-sm sm:text-base md:text-lg lg:text-xl leading-relaxed text-[#FF8600] max-w-md sm:max-w-lg md:max-w-2xl">
       {{ 'ABOUT.HERO.TEXT' | translate }}
     </p>
   </div>
 </section>
 
 <!-- Section Deux colonnes -->
-<section class="flex h-[700px]">
+<section class="flex flex-col lg:flex-row h-auto lg:h-[700px]">
   <!-- Texte -->
-  <div class="w-1/2 flex flex-col justify-center items-center p-8 bg-[#2E2E2E]">
-    <p class="text-base md:text-lg leading-relaxed mb-6 text-[#FF8600] text-center">
+  <div class="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 bg-[#2E2E2E]">
+    <p class="text-sm sm:text-base md:text-lg lg:text-xl leading-relaxed mb-6 text-[#FF8600] text-center max-w-lg">
       {{ 'ABOUT.TWO_COLUMNS.TEXT' | translate }}
     </p>
   </div>
   <!-- Image -->
-  <div class="w-1/2 relative overflow-hidden">
+  <div class="w-full lg:w-1/2 relative h-80 sm:h-96 lg:h-full overflow-hidden">
     <img
       src="assets/images/wesley-ford-0rBYLrHWcFw-unsplash.jpg"
       alt="{{ 'ABOUT.TWO_COLUMNS.IMAGE_ALT' | translate }}"
@@ -38,33 +38,33 @@
 <!-- Section La Team -->
 <section class="py-12 bg-[#2E2E2E] border-[5px] border-[#FF8600]">
   <div class="max-w-7xl mx-auto px-4">
-    <h2 class="text-center text-4xl font-bold mb-12 text-orange-400 tracking-wide">
+    <h2 class="text-center text-3xl sm:text-4xl font-bold mb-6 text-orange-400 tracking-wide">
       {{ 'ABOUT.TEAM.TITLE' | translate }}
     </h2>
-    <p class="text-center text-base font-bold mb-12 tracking-wide text-orange-400">
+    <p class="text-center text-sm sm:text-base font-bold mb-12 tracking-wide text-orange-400">
       {{ 'ABOUT.TEAM.INTRO' | translate }}
     </p>
-    <div class="grid grid-cols-4 gap-8">
-      <!-- Carte Team (4 fois) -->
-      <ng-container *ngFor="let card of [1,2,3,4]">
-        <div class="bg-white shadow-sm dark:bg-[#2E2E2E]">
-          <a href="#">
-            <img
-              class="rounded-t-lg"
-              src="assets/images/shahadat-rahman-BfrQnKBulYQ-unsplash.jpg"
-              alt="{{ 'ABOUT.TEAM.CARD.IMAGE_ALT' | translate }}"
-            />
-          </a>
-          <div class="p-5 border-[2px] border-[#FF8600]">
-            <p class="mb-3 font-normal text-gray-700 dark:text-gray-400 text-center">
-              {{ 'ABOUT.TEAM.CARD.TEXT' | translate }}
-            </p>
-          </div>
-        </div>
-      </ng-container>
-    </div>
 
-    <div class="relative z-10 flex items-end justify-center w-full text-center text-white p-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 items-stretch">
+      <div
+        *ngFor="let member of team"
+        class="flex flex-col bg-white shadow-sm dark:bg-[#2E2E2E] h-full"
+      >
+        <!-- carré + décalage vers le bas de l’image -->
+        <a href="#" class="block w-full aspect-square overflow-hidden mt-4">
+          <img
+            class="w-full h-full object-cover"
+            [src]="'assets/images/' + member.image"
+            alt="{{ 'ABOUT.TEAM.CARD.IMAGE_ALT' | translate }}"
+          />
+        </a>
+        <!-- texte centré, occupe tout l’espace restant -->
+        <div class="p-5 border-[2px] border-[#FF8600] flex-1 flex items-center justify-center">
+          <p class="font-normal text-gray-700 dark:text-gray-400 text-center">
+            {{ member.textKey | translate }}
+          </p>
+        </div>
+      </div>
     </div>
   </div>
 </section>

@@ -19,7 +19,7 @@
           "options": {
             "outputPath": "dist/my-app",
             "index": "src/index.html",
-            "main": "src/main.ts",
+            "browser": "src/main.ts",
             "polyfills": [
               "zone.js"
             ],
@@ -74,7 +74,7 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "proxyConfig": "src/proxy.conf.json"
+            "proxyConfig": "proxy.conf.json"
           },
           "configurations": {
             "production": {

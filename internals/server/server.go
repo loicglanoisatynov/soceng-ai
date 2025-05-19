@@ -6,9 +6,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"runtime"
-	"soceng-ai/internals/utils/colors"
-	"soceng-ai/internals/utils/prompts"
 	"strings"
 )
 
@@ -31,8 +28,8 @@ func Serve(w http.ResponseWriter, r *http.Request) {
 		matches := route.Get_route_regex().FindStringSubmatch(r.URL.Path)
 		if len(matches) > 0 {
 			// if r.Method != route.Get_route_method() {
-			// 	allow = append(allow, route.Get_route_method())
-			// 	continue
+			// allow = append(allow, route.Get_route_method())
+			// continue
 			// }
 			ctx := context.WithValue(r.Context(), ctxKey{}, matches[1:])
 			route.Get_route_handler()(w, r.WithContext(ctx))
