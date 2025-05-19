@@ -65,7 +65,7 @@ func StartServer(args []string) {
 		os.Exit(1)
 		// http.ListenAndServeTLS(":"+port, "cert.pem", "key.pem", nil)
 	}
-	if runtime.GOOS != "windows" && port > "1024" {
+	if runtime.GOOS != "windows" && port < "1024" {
 		fmt.Println("Démarrez le serveur avec sudo pour utiliser un port inférieur à 1024.")
 		os.Exit(0)
 	}
