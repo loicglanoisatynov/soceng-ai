@@ -6,9 +6,6 @@ import (
 "log"
 "net/http"
 "os"
-"runtime"
-"soceng-ai/internals/utils/colors"
-"soceng-ai/internals/utils/prompts"
 "strings"
 )
 
