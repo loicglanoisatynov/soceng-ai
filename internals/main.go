@@ -20,7 +20,7 @@ func main() {
 		os.Args = append(os.Args, "-h")
 		os.Args = append(os.Args, "127.0.0.1")
 		os.Args = append(os.Args, "-p")
-		os.Args = append(os.Args, "80")
+		os.Args = append(os.Args, "8080")
 	}
 
 	parseArgs(os.Args)
