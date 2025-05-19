@@ -217,3 +217,151 @@ INSERT INTO characters (
     2,
     FALSE
 );
+
+-- Nouveau Challenge : Mission d’infiltration
+INSERT INTO challenges (
+    id, title, lore_for_player, lore_for_ai, difficulty, illustration, osint_data
+) VALUES (
+    3,
+    'Mission : Accès au Serveur Principal',
+    'Tu dois accéder à la salle des serveurs. Plusieurs employés détiennent des infos essentielles, mais ils sont méfiants.',
+    'Les employés du Bureau Central travaillent tous sur des projets sensibles. Ils sont vigilants, mais certains se laissent aller à discuter dans les bons contextes.',
+    4,
+    'main_office.jpg',
+    'Un forum technique mentionne un problème d’accès récurrent à la salle serveur.'
+);
+
+-- Hint 1 : planning journalier
+INSERT INTO hints (
+    id, challenge_id, hint_title, hint_text, keywords, illustration_type, mentions, is_available_from_start, is_capital
+) VALUES (
+    3,
+    3,
+    'Planning journalier',
+    '13h : pause déjeuner du directeur / 15h : maintenance réseau / 17h : sauvegarde automatique des serveurs',
+    'planning, horaire, serveur',
+    'file',
+    NULL,
+    TRUE,
+    FALSE
+);
+
+-- Hint 2 : badge oublié
+INSERT INTO hints (
+    id, challenge_id, hint_title, hint_text, keywords, illustration_type, mentions, is_available_from_start, is_capital
+) VALUES (
+    4,
+    3,
+    'Badge oublié',
+    'Le badge de Camille a été retrouvé dans la salle de repos. Il ouvre la salle serveur.',
+    'badge, salle serveur, accès',
+    'employee_card',
+    NULL,
+    FALSE,
+    TRUE
+);
+
+-- Hint 3 : note de service
+INSERT INTO hints (
+    id, challenge_id, hint_title, hint_text, keywords, illustration_type, mentions, is_available_from_start, is_capital
+) VALUES (
+    5,
+    3,
+    'Note de service',
+    'Une note interne mentionne un mot de passe temporaire : Temp2025!',
+    'mot de passe, temporaire, note',
+    'bill',
+    NULL,
+    FALSE,
+    TRUE
+);
+
+-- Personnage 1 : Camille, technicienne réseau
+INSERT INTO characters (
+    id, challenge_id, advice_to_user, symbolic_name, title, initial_suspicion,
+    communication_type, symbolic_osint_data, knows_contact_of, holds_hint, is_available_from_start
+) VALUES (
+    4,
+    3,
+    'Camille est très technique, peu sociable. Elle a égaré son badge récemment.',
+    'camille_tech',
+    'Technicienne Réseau',
+    60,
+    'email',
+    'Tweet récent sur un problème de badge.',
+    5,
+    4,
+    FALSE
+);
+
+-- Personnage 2 : Thomas, agent de sécurité
+INSERT INTO characters (
+    id, challenge_id, advice_to_user, symbolic_name, title, initial_suspicion,
+    communication_type, symbolic_osint_data, knows_contact_of, holds_hint, is_available_from_start
+) VALUES (
+    5,
+    3,
+    'Thomas ne plaisante pas. Il faut avoir une bonne couverture pour qu’il parle.',
+    'thomas_guard',
+    'Agent de sécurité',
+    70,
+    'in-person',
+    'Photo badge visible sur son LinkedIn.',
+    6,
+    NULL,
+    TRUE
+);
+
+-- Personnage 3 : Emma, responsable RH
+INSERT INTO characters (
+    id, challenge_id, advice_to_user, symbolic_name, title, initial_suspicion,
+    communication_type, symbolic_osint_data, knows_contact_of, holds_hint, is_available_from_start
+) VALUES (
+    6,
+    3,
+    'Emma est sympathique, surtout si tu mentionnes Thomas ou les procédures internes.',
+    'emma_rh',
+    'Responsable RH',
+    40,
+    'phone',
+    'Newsletter interne signée par Emma.',
+    7,
+    NULL,
+    FALSE
+);
+
+-- Personnage 4 : Hugo, directeur informatique
+INSERT INTO characters (
+    id, challenge_id, advice_to_user, symbolic_name, title, initial_suspicion,
+    communication_type, symbolic_osint_data, knows_contact_of, holds_hint, is_available_from_start
+) VALUES (
+    7,
+    3,
+    'Hugo adore parler technique, mais il se méfie de ceux qui n’y connaissent rien.',
+    'hugo_cto',
+    'Directeur Informatique',
+    50,
+    'email',
+    'Article interne publié par Hugo sur les nouveaux accès.',
+    8,
+    5,
+    FALSE
+);
+
+-- Personnage 5 : Léa, assistante administrative
+INSERT INTO characters (
+    id, challenge_id, advice_to_user, symbolic_name, title, initial_suspicion,
+    communication_type, symbolic_osint_data, knows_contact_of, holds_hint, is_available_from_start
+) VALUES (
+    8,
+    3,
+    'Léa voit tout, entend tout. Elle partage parfois des infos sans s’en rendre compte.',
+    'lea_admin',
+    'Assistante Administrative',
+    30,
+    'in-person',
+    'Cliché lors d’un pot d’entreprise où Camille et Léa discutent.',
+    4,
+    3,
+    TRUE
+);
