@@ -7,6 +7,7 @@ import (
 	db_challenges_structs "soceng-ai/database/tables/db_challenges/db_challenges_structs"
 	"soceng-ai/internals/server/handlers/api/challenge/challenge_structs"
 	"soceng-ai/internals/server/handlers/api/dashboard/dashboard_structs"
+	"soceng-ai/internals/utils/prompts"
 )
 
 func Create_challenge(challenge challenge_structs.Challenge, r *http.Request, w http.ResponseWriter) string {
@@ -430,7 +431,6 @@ func Get_available_challenges(username string) []dashboard_structs.Challenge {
 	dashboard_challenges := []dashboard_structs.Challenge{}
 	for i := 0; i < len(challenges); i++ {
 		var dashboard_challenge dashboard_structs.Challenge
-		dashboard_challenge.ID = challenges[i].ID
 		dashboard_challenge.Name = challenges[i].Title
 		dashboard_challenge.Description = challenges[i].Lore_for_player
 		dashboard_challenge.Illustration_filename = challenges[i].Illustration
@@ -439,6 +439,18 @@ func Get_available_challenges(username string) []dashboard_structs.Challenge {
 	}
 
 	return dashboard_challenges
+}
+
+func Get_challenge_data(challenge_id int) (db_challenges_structs.Challenge, string) {
+	db := database.Get_DB()
+	var challenge db_challenges_structs.Challenge
+	query := "SELECT * FROM challenges WHERE id = ?"
+	err := db.QueryRow(query, challenge_id).Scan(&challenge.ID, &challenge.Title, &challenge.Lore_for_player, &challenge.Lore_for_ai, &challenge.Difficulty, &challenge.Illustration, &challenge.Created_at, &challenge.Updated_at, &challenge.Validated, &challenge.Osint_data)
+	if err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_challenges/db_challenges.go:Get_challenge_data():Error getting challenge data: " + err.Error())
+		return db_challenges_structs.Challenge{}, "Error getting challenge data: " + err.Error()
+	}
+	return challenge, "OK"
 }
 
 /*

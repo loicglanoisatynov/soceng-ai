@@ -67,8 +67,10 @@ func Get_available_challenges(username string) []dashboard_structs.Challenge {
 	}
 	for i := 0; i < len(sessions); i++ {
 		for j := 0; j < len(dashboard_challenges); j++ {
+
 			if sessions[i].ChallengeID == dashboard_challenges[j].ID {
 				dashboard_challenges[j].Status = "in progress"
+				break
 			}
 		}
 	}

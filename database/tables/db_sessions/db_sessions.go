@@ -1,11 +1,13 @@
 package db_sessions
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"net/http"
 	database "soceng-ai/database"
 	"soceng-ai/database/tables/db_challenges"
+	"soceng-ai/database/tables/db_challenges/db_challenges_structs"
 	"soceng-ai/database/tables/db_sessions/db_sessions_structs"
 	"soceng-ai/database/tables/db_users"
 	"soceng-ai/internals/utils/prompts"
@@ -187,28 +189,43 @@ func get_next_game_session_available_id() int {
 	return next_id
 }
 
-/*
-CREATE TABLE game_sessions (
-    id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    challenge_id INT NOT NULL REFERENCES challenges(id) ON DELETE CASCADE,
-    session_key VARCHAR(50) NOT NULL UNIQUE,
-    start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status VARCHAR(50) NOT NULL CHECK (status IN ('in_progress', 'completed'))
-);
+func Check_session_id(session_id string) string {
+	db := database.Get_DB()
+	var exists bool
+	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM game_sessions WHERE session_key = $1)", session_id).Scan(&exists)
+	if err != nil {
+		return "Error checking session ID: " + err.Error()
+	}
+	if !exists {
+		return "Session ID does not exist"
+	}
+	return "OK"
+}
 
-CREATE TABLE session_characters (
-    id SERIAL PRIMARY KEY,
-    session_id INT NOT NULL REFERENCES game_sessions(id) ON DELETE CASCADE,
-    character_id INT NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
-    suspicion_level INT NOT NULL CHECK (suspicion_level BETWEEN 0 AND 100),
-    is_accessible BOOLEAN DEFAULT FALSE
-);
+func Get_challenge_data(session_id string) (string, int, []byte) {
+	var error_status string
+	var status_code int
+	var payload []byte
+	var challenge_id int
+	var challenge_data db_challenges_structs.Challenge
+	db := database.Get_DB()
+	err := db.QueryRow("SELECT challenge_id FROM game_sessions WHERE session_key = $1", session_id).Scan(&challenge_id)
+	if err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:Get_challenge_data():Error getting challenge data: " + err.Error())
+		return "Error getting challenge data: " + err.Error(), http.StatusNoContent, nil
+	}
+	if challenge_id == 0 {
+		return "Error: no challenge ID found", http.StatusNoContent, nil
+	}
+	challenge_data, error_status = db_challenges.Get_challenge_data(challenge_id)
+	if error_status != "OK" {
+		return error_status, http.StatusNoContent, nil
+	}
+	if payload == nil {
+		return "Error: no challenge data found", http.StatusNoContent, nil
+	}
+	status_code = http.StatusOK
+	payload, err = json.Marshal(challenge_data)
+	return "OK", status_code, payload
 
-CREATE TABLE session_hints (
-    id SERIAL PRIMARY KEY,
-    session_id INT NOT NULL REFERENCES game_sessions(id) ON DELETE CASCADE,
-    hint_id INT NOT NULL REFERENCES hints(id) ON DELETE CASCADE,
-    is_accessible BOOLEAN DEFAULT FALSE
-)
-*/
+}

@@ -2,12 +2,14 @@ package profiles_handling
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"soceng-ai/database/tables/db_cookies"
 	db_profiles "soceng-ai/database/tables/db_profiles"
 	db_users "soceng-ai/database/tables/db_users"
 	authentification "soceng-ai/internals/server/handlers/authentification"
 	registering "soceng-ai/internals/server/handlers/registering"
+	"soceng-ai/internals/utils/prompts"
 )
 
 type Profile struct {
@@ -138,9 +140,13 @@ func Edit_user(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	valid, _ := registering.IsValidPassword(request.Password)
+	valid, error_status := registering.Is_password_users(username_cookie.Value, request.Password)
+	fmt.Println(prompts.Debug + "soceng-ai/internals/server/handlers/profiles_handling/profiles_handling.go:Edit_user():Password validity : " + fmt.Sprint(valid))
+	fmt.Println(prompts.Debug + "soceng-ai/internals/server/handlers/profiles_handling/profiles_handling.go:Edit_user():Password received : " + request.Password)
+
 	if !valid {
-		http.Error(w, "Invalid password.\n", http.StatusBadRequest)
+
+		http.Error(w, "Invalid password : "+error_status+"\n", http.StatusBadRequest)
 		return
 	}
 

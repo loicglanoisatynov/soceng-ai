@@ -286,3 +286,12 @@ INSERT INTO characters (
     3,
     FALSE
 );
+
+CREATE TABLE session_messages (
+    id SERIAL PRIMARY KEY,
+    session_character_id INT NOT NULL REFERENCES session_characters(id) ON DELETE CASCADE,
+    sender VARCHAR(50) NOT NULL CHECK (sender IN ('user', 'character')),
+    message TEXT NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    holds_hint BOOLEAN DEFAULT FALSE
+);

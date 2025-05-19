@@ -219,3 +219,10 @@ func IsValidPassword(password string) (bool, string) {
 	}
 	return true, ""
 }
+
+func Is_password_users(username string, password string) (bool, string) {
+	if db_users.Is_password_valid(db_users.Get_user_id_by_username_or_email(username), password) {
+		return true, ""
+	}
+	return false, "Invalid password"
+}

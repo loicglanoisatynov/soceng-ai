@@ -15,7 +15,7 @@ curl -X POST http://localhost:80/create-user -H "Content-Type: application/json"
 
 Se logger (et récupérer le cookie de session) :
 ```bash
-curl -X POST http://localhost:80/login -H "Content-Type: application/json" -d '{"username": "lglanois", "password": "very_solid_password"}' -c cookie.txt
+curl -X POST http://localhost:80/login -H "Content-Type: application/json" -d '{"username": "lglanois", "password": "very_solid_password"}' -c cookie.txt && echo
 ```
 
 Se logout :
@@ -24,6 +24,15 @@ Afficher les cookies de session récupérés :
 ```bash
 grep "socengai" cookie.txt -A 1
 ```
+
+Editer son profil utilisateur (implique d'être logged in) :
+```bash
+curl -X PUT http://localhost:80/edit-user \
+  -H "Content-Type: application/json" \
+  -d '{"email": "newemail@gmail.com", "password": "very_solid_password", "newpassword":"even_better_password"}' \
+  -b cookie.txt -v
+```
+
 
 ## API Challenges
 
