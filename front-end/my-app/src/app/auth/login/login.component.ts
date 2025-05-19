@@ -1,4 +1,3 @@
-// src/app/auth/login/login.component.ts
 import { Component, OnInit, inject } from '@angular/core';
 import {
   FormBuilder,
@@ -14,7 +13,7 @@ import {
 import { CommonModule }    from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { finalize }        from 'rxjs/operators';
-import { AuthService }     from '../auth.service';
+import { AuthService, LoginResponse } from '../auth.service';
 import { environment }     from '../../../environments/environment';
 
 @Component({
@@ -57,9 +56,8 @@ export class LoginComponent implements OnInit {
     this.auth.login({ username, password })
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
-        next: (isAuth: boolean) => {
-          if (isAuth) {
-            // on récupère la route du dashboard depuis l'env
+        next: (res: LoginResponse) => {
+          if (res.status) {
             const returnUrl =
               this.route.snapshot.queryParamMap.get('returnUrl')
                 || environment.routes.dashboard;
