@@ -23,10 +23,10 @@ func main() {
 		os.Args = append(os.Args, "8080")
 	}
 
-	parseArgs(os.Args)
-
+    parseArgs(os.Args[1:]) 
+    
 	database.Init_DB()
-	server.StartServer(os.Args)
+    server.StartServer(os.Args[1:])
 }
 
 func Get_prompt() string {
