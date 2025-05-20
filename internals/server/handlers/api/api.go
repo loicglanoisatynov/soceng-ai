@@ -46,6 +46,7 @@ func Challenge_handler(w http.ResponseWriter, r *http.Request) {
 
 // Récupère les requêtes commençant par /api/sessions
 func Sessions_handler(w http.ResponseWriter, r *http.Request) {
+
 	var response = http.Response{
 		StatusCode: http.StatusBadRequest,
 		Status:     "Bad Request",
@@ -72,6 +73,7 @@ func Sessions_handler(w http.ResponseWriter, r *http.Request) {
 			session_id := r.URL.Path[len("/api/sessions/"):]
 			switch r.Method {
 			case "GET":
+				fmt.Println(prompts.Debug + "soceng-ai/internals/server/handlers/api/sessions/sessions.go:Sessions_handler(): getting session data for session ID: " + session_id)
 				response = sessions.Get_session_data(r, session_id)
 			default:
 

@@ -19,8 +19,10 @@ Lançable sur Docker ?
     - [Commandes invalides](#commandes-invalides-1)
   - [Validation de challenge](#validation-de-challenge)
     - [Commandes valides](#commandes-valides-3)
-  - [Commencer un challenge](#commencer-un-challenge)
+  - [Enumérer les challenges dispo (dashboard) :](#enumérer-les-challenges-dispo-dashboard-)
     - [Commande valide](#commande-valide)
+  - [Commencer un challenge](#commencer-un-challenge)
+    - [Commande valide](#commande-valide-1)
     - [Commandes invalides](#commandes-invalides-2)
       - [Pas de cookie de session](#pas-de-cookie-de-session)
       - [Pas de payload](#pas-de-payload)
@@ -29,6 +31,8 @@ Lançable sur Docker ?
       - [Payload mal formé (erreur de syntaxe)](#payload-mal-formé-erreur-de-syntaxe)
       - [Challenge inexistant](#challenge-inexistant)
       - [Challenge non validé](#challenge-non-validé)
+  - [Récupérer le challenge en cours](#récupérer-le-challenge-en-cours)
+    - [Commande valide](#commande-valide-2)
 
 ## Opérations basiques de serveur
 
@@ -135,6 +139,15 @@ Valider un challenge (implique d'être admin) :
 curl -X PUT http://localhost:80/api/challenge -H "Content-Type: application/json" -d '{"operation":"validate", "title": "Welcome to the Game", "description": "Un petit challenge introductif", "illustration": "illustration.png"}' -b cookie.txt -v
 ```
 
+### Enumérer les challenges dispo (dashboard) :
+#### Commande valide
+```bash
+curl -X GET http://localhost:80/api/dashboard \
+-H "Content-Type: application/json" \
+-b cookie.txt -v \
+&& echo
+```
+
 ### Commencer un challenge
 
 #### Commande valide
@@ -201,3 +214,13 @@ curl -X POST http://localhost:80/api/sessions/start-challenge \
 ```
 
 Output attendu :
+
+### Récupérer le challenge en cours
+
+#### Commande valide
+```bash
+curl -X GET http://localhost:80/api/sessions/Z7GTH1 \
+  -H "Content-Type: application/json" \
+  -b cookie.txt -v \
+  && echo
+```

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"soceng-ai/database"
 	db_challenges_structs "soceng-ai/database/tables/db_challenges/db_challenges_structs"
+	"soceng-ai/database/tables/db_users"
 	"soceng-ai/internals/server/handlers/api/challenge/challenge_structs"
 	"soceng-ai/internals/server/handlers/api/dashboard/dashboard_structs"
 	"soceng-ai/internals/utils/prompts"
@@ -405,14 +406,15 @@ func Validate_challenge(title string) {
 }
 
 // Get_available_challenges récupère la liste des challenges disponibles en base de données puis transmet celles-ci dans un array de challenges formatté pour le dashboard
-func Get_available_challenges(username string) []dashboard_structs.Challenge {
+func Get_available_challenges(username string) ([]dashboard_structs.Challenge, string) {
+	var error_status string
 	db := database.Get_DB()
 	var challenges []db_challenges_structs.Challenge
 	query := "SELECT * FROM challenges WHERE validated = TRUE"
 	rows, err := db.Query(query)
 	if err != nil {
-		fmt.Println("Error getting available challenges:", err)
-		return nil
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_challenges/db_challenges.go:Get_available_challenges():Error getting available challenges: " + err.Error())
+		return nil, err.Error()
 	}
 	defer rows.Close()
 
@@ -435,10 +437,30 @@ func Get_available_challenges(username string) []dashboard_structs.Challenge {
 		dashboard_challenge.Description = challenges[i].Lore_for_player
 		dashboard_challenge.Illustration_filename = challenges[i].Illustration
 		dashboard_challenge.Status = "available"
+		dashboard_challenge.Session_key, error_status = Get_session_key_by_username_and_challenge_id(username, challenges[i].ID)
+		if error_status != "OK" {
+			fmt.Println(prompts.Error + "soceng-ai/database/tables/db_challenges/db_challenges.go:Get_available_challenges():Error getting session key: " + error_status)
+			return nil, error_status
+		}
 		dashboard_challenges = append(dashboard_challenges, dashboard_challenge)
 	}
 
-	return dashboard_challenges
+	return dashboard_challenges, "OK"
+}
+
+// String 1 : clé de session, String 2 : message d'erreur. Si aucune clé de session n'est trouvée mais qu'il n'y a pas d'erreur, la session n'existe pas
+func Get_session_key_by_username_and_challenge_id(username string, challenge_id int) (string, string) {
+	user_id := db_users.Get_user_id_by_username_or_email(username)
+	if user_id == 0 {
+		return "", "Error getting user id"
+	}
+	db := database.Get_DB()
+	var session_key string
+	err := db.QueryRow("SELECT session_key FROM game_sessions WHERE user_id = $1 AND challenge_id = $2", user_id, challenge_id).Scan(&session_key)
+	if err != nil {
+		return "", "OK"
+	}
+	return session_key, "OK"
 }
 
 func Get_challenge_data(challenge_id int) (db_challenges_structs.Challenge, string) {

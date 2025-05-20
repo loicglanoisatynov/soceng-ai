@@ -16,9 +16,15 @@ import (
 // Récupère les données de dashboard (donc l'énumération des challenges disponibles)
 func Get_dashboard(request *http.Request) (string, dashboard_structs.Dashboard) {
 	// Récupérer les données de dashboard
+
+	challenges, error_status := db_challenges.Get_available_challenges(authentification.Get_cookie_value(request, "socengai-username"))
+	if error_status != "OK" {
+		fmt.Println(prompts.Error + "soceng-ai/internals/server/handlers/api/dashboard/dashboard.go:Get_dashboard():Error getting available challenges: " + error_status)
+		return error_status, dashboard_structs.Dashboard{}
+	}
 	dashboard_data := dashboard_structs.Dashboard{
 		Score:      db_achievements.Get_user_score(authentification.Get_cookie_value(request, "socengai-username")),
-		Challenges: db_challenges.Get_available_challenges(authentification.Get_cookie_value(request, "socengai-username")),
+		Challenges: challenges,
 	}
 
 	return "OK", dashboard_data

@@ -6,10 +6,10 @@ import (
 	"math/rand"
 	"net/http"
 	database "soceng-ai/database"
-	"soceng-ai/database/tables/db_challenges"
-	"soceng-ai/database/tables/db_challenges/db_challenges_structs"
+	db_challenges "soceng-ai/database/tables/db_challenges"
 	"soceng-ai/database/tables/db_sessions/db_sessions_structs"
 	"soceng-ai/database/tables/db_users"
+	"soceng-ai/internals/utils/colors"
 	"soceng-ai/internals/utils/prompts"
 	"time"
 )
@@ -215,30 +215,154 @@ func Check_session_id(session_id string) string {
 	return "OK"
 }
 
-func Get_challenge_data(session_id string) (string, int, []byte) {
+func Get_session_data(session_id string) (string, int, []byte) {
 	var error_status string
 	var status_code int
 	var payload []byte
 	var challenge_id int
-	var challenge_data db_challenges_structs.Challenge
+	var session_data db_sessions_structs.Session
 	db := database.Get_DB()
 	err := db.QueryRow("SELECT challenge_id FROM game_sessions WHERE session_key = $1", session_id).Scan(&challenge_id)
 	if err != nil {
-		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:Get_challenge_data():Error getting challenge data: " + err.Error())
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_challenge_data():Error getting challenge data: " + err.Error())
 		return "Error getting challenge data: " + err.Error(), http.StatusNoContent, nil
 	}
 	if challenge_id == 0 {
 		return "Error: no challenge ID found", http.StatusNoContent, nil
 	}
-	challenge_data, error_status = db_challenges.Get_challenge_data(challenge_id)
+	session_data, error_status = Get_session_data_by_session_id(session_id)
 	if error_status != "OK" {
 		return error_status, http.StatusNoContent, nil
 	}
-	if payload == nil {
-		return "Error: no challenge data found", http.StatusNoContent, nil
+	if session_data.ID == 0 {
+		return "Error: no session data found", http.StatusNoContent, nil
+	}
+	payload, err = json.Marshal(session_data)
+	if err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_challenge_data():Error marshalling session data: " + err.Error())
+		return "Error marshalling session data: " + err.Error(), http.StatusNoContent, nil
 	}
 	status_code = http.StatusOK
-	payload, err = json.Marshal(challenge_data)
 	return "OK", status_code, payload
+}
 
+func Get_session_data_by_session_id(session_id string) (db_sessions_structs.Session, string) {
+	db := database.Get_DB()
+	var session_data db_sessions_structs.Session
+	err := db.QueryRow("SELECT id, user_id, challenge_id, session_key, start_time, status FROM game_sessions WHERE session_key = $1", session_id).Scan(&session_data.ID, &session_data.UserID, &session_data.ChallengeID, &session_data.SessionKey, &session_data.StartTime, &session_data.Status)
+	if err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_session_data_by_session_id():Error getting session data by session ID: " + err.Error())
+		return db_sessions_structs.Session{}, "Error getting session data by session ID: " + err.Error()
+	}
+	session_characters, error_status := Get_session_characters_by_session_id(session_data.ID)
+	if error_status != "OK" {
+		return db_sessions_structs.Session{}, error_status
+	}
+	session_hints, error_status := Get_session_hints_by_session_id(session_data.ID)
+	if error_status != "OK" {
+		return db_sessions_structs.Session{}, error_status
+	}
+	session_data.Characters = session_characters
+	session_data.Hints = session_hints
+	return session_data, "OK"
+}
+
+func Get_session_characters_by_session_id(session_id int) ([]db_sessions_structs.Session_character, string) {
+	db := database.Get_DB()
+	session_rows, err := db.Query("SELECT id, session_id, character_id, suspicion_level, is_accessible FROM session_characters WHERE session_id = $1", session_id)
+	if err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_session_characters_by_session_id():Error getting session characters by session ID: " + err.Error())
+		return nil, "Error getting session characters by session ID: " + err.Error()
+	}
+	defer session_rows.Close()
+
+	character_rows, err := db.Query("SELECT id, character_name, title, advice_to_user, communication_type, osint_data FROM characters WHERE id = $1", session_id)
+	if err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_session_characters_by_session_id():Error getting character data: " + err.Error())
+		return nil, "Error getting character data: " + err.Error()
+	}
+	defer character_rows.Close()
+
+	var session_characters []db_sessions_structs.Session_character
+	for session_rows.Next() {
+		var session_character db_sessions_structs.Session_character
+		err := session_rows.Scan(&session_character.ID, &session_character.SessionID, &session_character.CharacterID, &session_character.Suspicion, &session_character.IsAccessible)
+		if err != nil {
+			fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_session_characters_by_session_id():Error scanning session character: " + err.Error())
+			return nil, "Error scanning session character: " + err.Error()
+		}
+		fmt.Println(prompts.Debug + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_session_characters_by_session_id():Character data retrieved: " + fmt.Sprintf("%+v", session_character))
+
+		for character_rows.Next() {
+			err := character_rows.Scan(&session_character.ID, &session_character.Name, &session_character.Title, &session_character.Advice_to_user, &session_character.CommunicationType, &session_character.OsintData)
+			if err != nil {
+				fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_session_characters_by_session_id():Error scanning character data: " + err.Error())
+				return nil, "Error scanning character data: " + err.Error()
+			}
+		}
+		session_characters = append(session_characters, session_character)
+	}
+	if err := session_rows.Err(); err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_session_characters_by_session_id():Error iterating over rows: " + err.Error())
+		return nil, "Error iterating over rows: " + err.Error()
+	}
+	return session_characters, "OK"
+}
+
+func Get_session_hints_by_session_id(session_id int) ([]db_sessions_structs.Session_hint, string) {
+	db := database.Get_DB()
+	session_rows, err := db.Query("SELECT id, session_id, hint_id, is_accessible FROM session_hints WHERE session_id = $1", session_id)
+	if err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_session_hints_by_session_id():Error getting session hints by session ID: " + err.Error())
+		return nil, "Error getting session hints by session ID: " + err.Error()
+	}
+	defer session_rows.Close()
+	hint_rows, err := db.Query("SELECT id, hint_title, hint_text, illustration_type, mentions, is_capital FROM hints WHERE id = $1", session_id)
+	if err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_session_hints_by_session_id():Error getting hint data: " + colors.Red + err.Error() + colors.Reset)
+		return nil, "Error getting hint data: " + err.Error()
+	}
+	defer hint_rows.Close()
+	var session_hints []db_sessions_structs.Session_hint
+	for session_rows.Next() {
+		var session_hint db_sessions_structs.Session_hint
+		err := session_rows.Scan(&session_hint.ID, &session_hint.SessionID, &session_hint.HintID, &session_hint.IsAvailable)
+		if err != nil {
+			fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_session_hints_by_session_id():Error scanning session hint: " + err.Error())
+			return nil, "Error scanning session hint: " + err.Error()
+		}
+		fmt.Println(prompts.Debug + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_session_hints_by_session_id():Hint data retrieved: " + fmt.Sprintf("%+v", session_hint))
+
+		session_hints = append(session_hints, session_hint)
+	}
+
+	for i, session_hint := range session_hints {
+		for hint_rows.Next() {
+			err := hint_rows.Scan(&session_hint.ID, &session_hint.Title, &session_hint.Text, &session_hint.IllustrationType, &session_hint.Mentions, &session_hint.IsCapital)
+			fmt.Println()
+			fmt.Println(err.Error())
+			fmt.Println()
+			if err != nil && err.Error() == "sql: Scan error on column index 4, name \"mentions\": converting NULL to int is unsupported" {
+				session_hints[i].Mentions = 0
+			} else if err != nil {
+				fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_session_hints_by_session_id():Error scanning hint data: " + err.Error())
+				return nil, "Error scanning hint data: " + err.Error()
+			}
+			session_hints[i].Title = session_hint.Title
+			session_hints[i].Text = session_hint.Text
+			session_hints[i].IllustrationType = session_hint.IllustrationType
+			session_hints[i].Mentions = session_hint.Mentions
+			session_hints[i].IsCapital = session_hint.IsCapital
+		}
+		if err := hint_rows.Err(); err != nil {
+			fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_session_hints_by_session_id():Error iterating over rows: " + err.Error())
+			return nil, "Error iterating over rows: " + err.Error()
+		}
+	}
+
+	if err := session_rows.Err(); err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_session_hints_by_session_id():Error iterating over rows: " + err.Error())
+		return nil, "Error iterating over rows: " + err.Error()
+	}
+	return session_hints, "OK"
 }

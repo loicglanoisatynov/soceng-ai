@@ -67,11 +67,14 @@ func Get_session_data(r *http.Request, session_id string) http.Response {
 		}
 	}
 	if session_id == "" {
+		fmt.Println(prompts.Error + "soceng-ai/internals/server/handlers/api/sessions/sessions.go:Get_session_data():Error: session ID is empty")
 		payload = []byte(`{"message": "Session ID cannot be empty"}`)
 		status_code = http.StatusBadRequest
 	} else {
-		returned_status, status_code, payload = db_sessions.Get_challenge_data(session_id)
+		returned_status, status_code, payload = db_sessions.Get_session_data(session_id)
+
 		if returned_status != "OK" {
+			fmt.Println(prompts.Error + "soceng-ai/internals/server/handlers/api/sessions/sessions.go:Get_session_data():Error getting challenge data: " + returned_status + " for session ID: " + session_id + " queried by user: " + authentification.Get_cookie_value(r, "socengai-username"))
 			payload = []byte(`{"message": "Error getting challenge data : ` + returned_status + `"}`)
 			status_code = http.StatusNoContent
 		}
