@@ -9,7 +9,6 @@ import (
 	db_challenges "soceng-ai/database/tables/db_challenges"
 	"soceng-ai/database/tables/db_sessions/db_sessions_structs"
 	"soceng-ai/database/tables/db_users"
-	"soceng-ai/internals/utils/colors"
 	"soceng-ai/internals/utils/prompts"
 	"time"
 )
@@ -269,100 +268,78 @@ func Get_session_data_by_session_id(session_id string) (db_sessions_structs.Sess
 
 func Get_session_characters_by_session_id(session_id int) ([]db_sessions_structs.Session_character, string) {
 	db := database.Get_DB()
-	session_rows, err := db.Query("SELECT id, session_id, character_id, suspicion_level, is_accessible FROM session_characters WHERE session_id = $1", session_id)
+
+	query := `
+	SELECT 
+		sc.id, sc.session_id, sc.character_id, sc.suspicion_level, sc.is_accessible,
+		c.character_name, c.title, c.advice_to_user, c.communication_type, c.osint_data
+	FROM session_characters sc
+	JOIN characters c ON sc.character_id = c.id
+	WHERE sc.session_id = $1
+	`
+
+	rows, err := db.Query(query, session_id)
 	if err != nil {
-		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_session_characters_by_session_id():Error getting session characters by session ID: " + err.Error())
 		return nil, "Error getting session characters by session ID: " + err.Error()
 	}
-	defer session_rows.Close()
+	defer rows.Close()
 
-	character_rows, err := db.Query("SELECT id, character_name, title, advice_to_user, communication_type, osint_data FROM characters WHERE id = $1", session_id)
-	if err != nil {
-		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_session_characters_by_session_id():Error getting character data: " + err.Error())
-		return nil, "Error getting character data: " + err.Error()
-	}
-	defer character_rows.Close()
+	var results []db_sessions_structs.Session_character
 
-	var session_characters []db_sessions_structs.Session_character
-	for session_rows.Next() {
-		var session_character db_sessions_structs.Session_character
-		err := session_rows.Scan(&session_character.ID, &session_character.SessionID, &session_character.CharacterID, &session_character.Suspicion, &session_character.IsAccessible)
+	for rows.Next() {
+		var sc db_sessions_structs.Session_character
+		err := rows.Scan(
+			&sc.ID, &sc.SessionID, &sc.CharacterID, &sc.Suspicion, &sc.IsAccessible,
+			&sc.Name, &sc.Title, &sc.Advice_to_user, &sc.CommunicationType, &sc.OsintData,
+		)
 		if err != nil {
-			fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_session_characters_by_session_id():Error scanning session character: " + err.Error())
 			return nil, "Error scanning session character: " + err.Error()
 		}
-		fmt.Println(prompts.Debug + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_session_characters_by_session_id():Character data retrieved: " + fmt.Sprintf("%+v", session_character))
-
-		for character_rows.Next() {
-			err := character_rows.Scan(&session_character.ID, &session_character.Name, &session_character.Title, &session_character.Advice_to_user, &session_character.CommunicationType, &session_character.OsintData)
-			if err != nil {
-				fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_session_characters_by_session_id():Error scanning character data: " + err.Error())
-				return nil, "Error scanning character data: " + err.Error()
-			}
-		}
-		session_characters = append(session_characters, session_character)
+		results = append(results, sc)
 	}
-	if err := session_rows.Err(); err != nil {
-		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_session_characters_by_session_id():Error iterating over rows: " + err.Error())
+	if err := rows.Err(); err != nil {
 		return nil, "Error iterating over rows: " + err.Error()
 	}
-	return session_characters, "OK"
+
+	return results, "OK"
 }
 
 func Get_session_hints_by_session_id(session_id int) ([]db_sessions_structs.Session_hint, string) {
 	db := database.Get_DB()
-	session_rows, err := db.Query("SELECT id, session_id, hint_id, is_accessible FROM session_hints WHERE session_id = $1", session_id)
+
+	query := `
+	SELECT 
+		sh.id, sh.session_id, sh.hint_id, sh.is_accessible,
+		h.hint_title, h.hint_text, h.illustration_type,
+		COALESCE(h.mentions, 0), h.is_capital
+	FROM session_hints sh
+	JOIN hints h ON sh.hint_id = h.id
+	WHERE sh.session_id = $1
+	`
+
+	rows, err := db.Query(query, session_id)
 	if err != nil {
-		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_session_hints_by_session_id():Error getting session hints by session ID: " + err.Error())
-		return nil, "Error getting session hints by session ID: " + err.Error()
+		return nil, "error getting session hints by session ID: " + err.Error()
 	}
-	defer session_rows.Close()
-	hint_rows, err := db.Query("SELECT id, hint_title, hint_text, illustration_type, mentions, is_capital FROM hints WHERE id = $1", session_id)
-	if err != nil {
-		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_session_hints_by_session_id():Error getting hint data: " + colors.Red + err.Error() + colors.Reset)
-		return nil, "Error getting hint data: " + err.Error()
-	}
-	defer hint_rows.Close()
-	var session_hints []db_sessions_structs.Session_hint
-	for session_rows.Next() {
-		var session_hint db_sessions_structs.Session_hint
-		err := session_rows.Scan(&session_hint.ID, &session_hint.SessionID, &session_hint.HintID, &session_hint.IsAvailable)
+	defer rows.Close()
+
+	var results []db_sessions_structs.Session_hint
+	for rows.Next() {
+		var sh db_sessions_structs.Session_hint
+		err := rows.Scan(
+			&sh.ID, &sh.SessionID, &sh.HintID, &sh.IsAvailable,
+			&sh.Title, &sh.Text, &sh.IllustrationType,
+			&sh.Mentions, &sh.IsCapital,
+		)
 		if err != nil {
-			fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_session_hints_by_session_id():Error scanning session hint: " + err.Error())
-			return nil, "Error scanning session hint: " + err.Error()
+			return nil, "error scanning session hint: " + err.Error()
 		}
-		fmt.Println(prompts.Debug + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_session_hints_by_session_id():Hint data retrieved: " + fmt.Sprintf("%+v", session_hint))
-
-		session_hints = append(session_hints, session_hint)
+		results = append(results, sh)
 	}
 
-	for i, session_hint := range session_hints {
-		for hint_rows.Next() {
-			err := hint_rows.Scan(&session_hint.ID, &session_hint.Title, &session_hint.Text, &session_hint.IllustrationType, &session_hint.Mentions, &session_hint.IsCapital)
-			fmt.Println()
-			fmt.Println(err.Error())
-			fmt.Println()
-			if err != nil && err.Error() == "sql: Scan error on column index 4, name \"mentions\": converting NULL to int is unsupported" {
-				session_hints[i].Mentions = 0
-			} else if err != nil {
-				fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_session_hints_by_session_id():Error scanning hint data: " + err.Error())
-				return nil, "Error scanning hint data: " + err.Error()
-			}
-			session_hints[i].Title = session_hint.Title
-			session_hints[i].Text = session_hint.Text
-			session_hints[i].IllustrationType = session_hint.IllustrationType
-			session_hints[i].Mentions = session_hint.Mentions
-			session_hints[i].IsCapital = session_hint.IsCapital
-		}
-		if err := hint_rows.Err(); err != nil {
-			fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_session_hints_by_session_id():Error iterating over rows: " + err.Error())
-			return nil, "Error iterating over rows: " + err.Error()
-		}
+	if err := rows.Err(); err != nil {
+		return nil, "error iterating over rows: " + err.Error()
 	}
 
-	if err := session_rows.Err(); err != nil {
-		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_session_hints_by_session_id():Error iterating over rows: " + err.Error())
-		return nil, "Error iterating over rows: " + err.Error()
-	}
-	return session_hints, "OK"
+	return results, "OK"
 }
