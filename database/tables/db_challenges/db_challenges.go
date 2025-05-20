@@ -103,13 +103,13 @@ func Get_hints_by_challenge_id(challenge_id int) ([]db_challenges_structs.Db_hin
 	return hints, "OK"
 }
 
-func Get_characters_by_challenge_id(challenge_id int) []db_challenges_structs.Db_character {
+func Get_characters_by_challenge_id(challenge_id int) ([]db_challenges_structs.Db_character, string) {
 	db := database.Get_DB()
 	query := "SELECT * FROM characters WHERE challenge_id = ?"
 	rows, err := db.Query(query, challenge_id)
 	if err != nil {
-		fmt.Println("Error getting characters:", err)
-		return nil
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_challenges/db_challenges.go:Get_characters_by_challenge_id():Error getting characters: " + err.Error())
+		return nil, err.Error()
 	}
 	defer rows.Close()
 
@@ -127,7 +127,7 @@ func Get_characters_by_challenge_id(challenge_id int) []db_challenges_structs.Db
 		}
 		characters = append(characters, character)
 	}
-	return characters
+	return characters, "OK"
 }
 
 func Is_challenge_validated(challenge_id int) string {

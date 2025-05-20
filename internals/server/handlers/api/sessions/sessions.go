@@ -15,6 +15,7 @@ import (
 // Fonction créant un objet game_session. Informations nécessaires : nom du challenge
 func Start_challenge(r *http.Request) http.Response {
 	var returned_status string
+	var session_key string
 	status_code := http.StatusBadRequest
 	payload := []byte(`{"message": "default message"}`)
 
@@ -31,12 +32,12 @@ func Start_challenge(r *http.Request) http.Response {
 		if username == "" {
 			fmt.Println("soceng-ai/internals/server/handlers/api/sessions/sessions.go:Start_challenge():Error: username not found in header")
 		}
-		returned_status, status_code = db_sessions.Create_game_session(username, create_session_request.Challenge_name)
+		returned_status, status_code, session_key = db_sessions.Create_game_session(username, create_session_request.Challenge_name)
 		if returned_status != "OK" {
 			payload = []byte(`{"message": "Error creating game session : ` + returned_status + `"}`)
-			// status_code = http.StatusNoContent
+			// status_code = http.StatusNoContent TODO
 		} else {
-			payload = []byte(`{"message": "Game session created successfully"}`)
+			payload = []byte(`{"message": "Game session created successfully", "session_key": "` + session_key + `"}`)
 			status_code = http.StatusOK
 		}
 	}

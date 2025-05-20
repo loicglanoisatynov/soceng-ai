@@ -20,13 +20,13 @@ func main() {
 		os.Args = append(os.Args, "-h")
 		os.Args = append(os.Args, "127.0.0.1")
 		os.Args = append(os.Args, "-p")
-		os.Args = append(os.Args, "8080")
+		os.Args = append(os.Args, "80")
 	}
 
-    parseArgs(os.Args[1:]) 
-    
+	parseArgs(os.Args[1:])
+
 	database.Init_DB()
-    server.StartServer(os.Args[1:])
+	server.StartServer(os.Args[1:])
 }
 
 func Get_prompt() string {

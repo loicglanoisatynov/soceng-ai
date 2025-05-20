@@ -65,22 +65,22 @@ func Sessions_handler(w http.ResponseWriter, r *http.Request) {
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
-	}
-
-	// Sinon, si la suite de l'URL est une chaîne de caractères aléatoire à 6 caractères
-	re := regexp.MustCompile(`^[a-zA-Z0-9]{6}$`)
-	if re.MatchString(r.URL.Path[len("/api/sessions/"):]) {
-		session_id := r.URL.Path[len("/api/sessions/"):]
-		switch r.Method {
-		case "GET":
-			response = sessions.Get_session_data(r, session_id)
-		default:
-
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
 	} else {
-		http.Error(w, "Invalid session ID", http.StatusBadRequest)
-		return
+		// Sinon, si la suite de l'URL est une chaîne de caractères aléatoire à 6 caractères
+		re := regexp.MustCompile(`^[a-zA-Z0-9]{6}$`)
+		if re.MatchString(r.URL.Path[len("/api/sessions/"):]) {
+			session_id := r.URL.Path[len("/api/sessions/"):]
+			switch r.Method {
+			case "GET":
+				response = sessions.Get_session_data(r, session_id)
+			default:
+
+				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			}
+		} else {
+			http.Error(w, "Invalid session ID", http.StatusBadRequest)
+			return
+		}
 	}
 
 	// On renvoie la réponse

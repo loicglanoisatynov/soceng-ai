@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"regexp"
 	handlers "soceng-ai/internals/server/handlers"
+	api "soceng-ai/internals/server/handlers/api"
 	handlers_logging "soceng-ai/internals/server/handlers/authentification"
 	profiles_handling "soceng-ai/internals/server/handlers/profiles_handling"
 	registering "soceng-ai/internals/server/handlers/registering"
@@ -29,15 +30,15 @@ func init() {
 		newRoute("/logout", handlers_logging.Logout),
 		newRoute("/edit-profile", profiles_handling.Edit_profile),
 		newRoute("/edit-user", profiles_handling.Edit_user),
+		newRoute("/api/challenge", api.Challenge_handler),
+		newRoute("/api/sessions/([^/]+)", api.Sessions_handler), // Créer une session de jeu (challenge_id)
+		newRoute("/api/dashboard", api.Dashboard_handler),
 
 		// newRoute("GET", "/contact", contact),
 		// newRoute("GET", "/([^/]+)/admin", widgetAdmin),
 		// newRoute("POST", "/([^/]+)/image", widgetImage),
 	}
 }
-
-// newRoute("GET", "/([^/]+)/admin", widgetAdmin),
-// newRoute("POST", "/([^/]+)/image", widgetImage),
 
 func Set_routes(new_routes []Route) {
 	routes = new_routes

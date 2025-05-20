@@ -3,19 +3,75 @@ Lançable sur Windows ?
 Lançable sur Linux ?
 Lançable sur Docker ?
 
+## Sommaire
+- [Sommaire](#sommaire)
+- [Opérations basiques de serveur](#opérations-basiques-de-serveur)
+- [Authentification](#authentification)
+  - [Créer un user (et récupérer le cookie de session) :](#créer-un-user-et-récupérer-le-cookie-de-session-)
+    - [Commandes valides](#commandes-valides)
+    - [Commandes invalides](#commandes-invalides)
+  - [Se logger (et récupérer le cookie de session) :](#se-logger-et-récupérer-le-cookie-de-session-)
+    - [Commandes valides](#commandes-valides-1)
+- [Customization](#customization)
+- [API Challenges](#api-challenges)
+  - [Création de challenge](#création-de-challenge)
+    - [Commandes valides](#commandes-valides-2)
+    - [Commandes invalides](#commandes-invalides-1)
+  - [Validation de challenge](#validation-de-challenge)
+    - [Commandes valides](#commandes-valides-3)
+  - [Commencer un challenge](#commencer-un-challenge)
+    - [Commande valide](#commande-valide)
+    - [Commandes invalides](#commandes-invalides-2)
+      - [Pas de cookie de session](#pas-de-cookie-de-session)
+      - [Pas de payload](#pas-de-payload)
+      - [Payload vide](#payload-vide)
+      - [Payload non-pertinent (clés hors-sujet)](#payload-non-pertinent-clés-hors-sujet)
+      - [Payload mal formé (erreur de syntaxe)](#payload-mal-formé-erreur-de-syntaxe)
+      - [Challenge inexistant](#challenge-inexistant)
+      - [Challenge non validé](#challenge-non-validé)
+
+## Opérations basiques de serveur
+
+Lancer le serveur :
+```bash
+(sudo) go run internals/main.go
+```
+ 
 Vérifier que le serveur est bien lancé sur le port 80 :
 ```bash
 curl -X GET http://localhost:80
 ```
 
-Créer un user (et récupérer le cookie de session) :
+## Authentification
+
+### Créer un user (et récupérer le cookie de session) :
+#### Commandes valides
 ```bash
-curl -X POST http://localhost:80/create-user -H "Content-Type: application/json" -d '{"username": "lglanois", "password": "password0!", "email":"loic.glanois@ynov.com"}' -c cookie.txt
+curl -X POST http://localhost:80/create-user \
+-H "Content-Type: application/json" \
+-d @tests/authentification/create/ok/payload.json \
+-c cookie.txt
 ```
+
+#### Commandes invalides
+Créer un user dont le nom d'utilisateur est déjà pris :
+```bash
+curl -X POST http://localhost:80/create-user \
+-H "Content-Type: application/json" \
+-d @tests/authentification/create/usernameexists/payload.json \
+-c cookie.txt
+```
+
+### Se logger (et récupérer le cookie de session) :
+
+#### Commandes valides
 
 Se logger (et récupérer le cookie de session) :
 ```bash
-curl -X POST http://localhost:80/login -H "Content-Type: application/json" -d '{"username": "lglanois", "password": "very_solid_password"}' -c cookie.txt && echo
+curl -X POST http://localhost:80/login \
+-H "Content-Type: application/json" \
+-d '{"username": "lglanois", "password": "very_solid_password"}' \
+-c cookie.txt
 ```
 
 Se logout :
@@ -24,6 +80,8 @@ Afficher les cookies de session récupérés :
 ```bash
 grep "socengai" cookie.txt -A 1
 ```
+
+## Customization
 
 Editer son profil utilisateur (implique d'être logged in) :
 ```bash
@@ -123,7 +181,7 @@ Commande :
 ```bash
 curl -X POST http://localhost:80/api/sessions/start-challenge \
   -H "Content-Type: application/json" \
-  -d @tests/session/create/notexistant/payload.json \
+  -d @tests/session/create/nonexistant/payload.json \
   -b cookie.txt -v \
   && echo
 ```

@@ -14,14 +14,14 @@ import (
 	"time"
 )
 
-func Create_game_session(username string, challenge_title string) (string, int) {
+func Create_game_session(username string, challenge_title string) (string, int, string) {
 	var error_status string
 	var challenge_id int
 	id := get_next_game_session_available_id()
 	user_id := db_users.Get_user_id_by_username_or_email(username)
 	challenge_id, error_status = db_challenges.Get_challenge_id_by_title(challenge_title)
 	if error_status != "OK" {
-		return error_status, http.StatusNoContent
+		return error_status, http.StatusNoContent, ""
 	}
 	session_key := generate_session_key()
 	start_time := get_current_time()
@@ -29,33 +29,46 @@ func Create_game_session(username string, challenge_title string) (string, int) 
 
 	error_status = db_challenges.Is_challenge_validated(challenge_id)
 	if error_status != "OK" {
-		return error_status, http.StatusUnauthorized
+		return error_status, http.StatusUnauthorized, ""
 	}
 
 	error_status = delete_previous_game_session_data(challenge_id, user_id)
 	if error_status != "OK" {
-		return "Aborting operation due to error : " + error_status, http.StatusInternalServerError
+		return "Aborting operation due to error : " + error_status, http.StatusInternalServerError, ""
 	}
 
 	// Crée une nouvelle session de jeu dans la base de données
 	return_value := create_game_session(id, user_id, challenge_id, session_key, start_time, status)
 	if return_value != "OK" {
-		return return_value, http.StatusInternalServerError
+		return return_value, http.StatusInternalServerError, ""
 	}
 
-	characters := db_challenges.Get_characters_by_challenge_id(challenge_id)
+	characters, error_status := db_challenges.Get_characters_by_challenge_id(challenge_id)
+	if characters == nil || error_status != "OK" {
+		delete_previous_game_session_data(challenge_id, user_id)
+		return "Error getting characters by challenge ID", http.StatusNoContent, ""
+	}
 	for _, character := range characters {
 		create_session_character(id, character.ID, character.Initial_suspicion, character.Is_accessible)
+		if error_status != "OK" {
+			delete_previous_game_session_data(challenge_id, user_id)
+			return error_status, http.StatusNoContent, ""
+		}
 	}
 	hints, error_status := db_challenges.Get_hints_by_challenge_id(challenge_id)
 	if hints == nil || error_status != "OK" {
-		return error_status, http.StatusNoContent
+		delete_previous_game_session_data(challenge_id, user_id)
+		return error_status, http.StatusNoContent, ""
 	}
 	for _, hint := range hints {
-		create_session_hint(id, hint.ID, hint.Is_available_from_start)
+		error_status = create_session_hint(id, hint.ID, hint.Is_available_from_start)
+		if error_status != "OK" {
+			delete_previous_game_session_data(challenge_id, user_id)
+			return error_status, http.StatusNoContent, ""
+		}
 	}
 
-	return "OK", http.StatusOK
+	return "OK", http.StatusOK, session_key
 }
 
 func Get_sessions_by_username(username string) (string, []db_sessions_structs.Session) {
