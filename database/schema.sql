@@ -309,6 +309,22 @@ INSERT INTO hints (
     FALSE,
     TRUE
 );
+INSERT INTO characters (
+    id, challenge_id, advice_to_user, character_name, title, initial_suspicion,
+    communication_type, osint_data, knows_contact_of, holds_hint, is_available_from_start
+) VALUES (
+    4,
+    3,
+    'Le personnage est très prudent. Sois convaincant et mentionne le document compromettant.',
+    'personnage',
+    'Personnage',
+    8,
+    'in-person',
+    'Photo de l’équipe de direction lors d’un séminaire.',
+    NULL,
+    3,
+    FALSE
+);
 
 --     2,
 --     'Récupérer les accès internes',
@@ -374,7 +390,7 @@ INSERT INTO hints (
 INSERT INTO challenges (
     id, title, lore_for_player, lore_for_ai, difficulty, illustration, osint_data
 ) VALUES (
-    3,
+    4,
     'Infiltrer la salle serveur',
     'Accède à la salle serveur pour récupérer des données sensibles.',
     'La salle serveur est protégée par un mot de passe. Tu dois convaincre le responsable de te le donner.',
@@ -387,7 +403,7 @@ INSERT INTO hints (
     id, challenge_id, hint_title, hint_text, keywords, illustration_type, mentions, is_available_from_start, is_capital
 ) VALUES (
     3,
-    3,
+    4,
     'Note de sécurité',
     'Le responsable t’a glissé une note : mot de passe = Secure@2025',
     'sécurité, accès, serveur',
@@ -401,8 +417,8 @@ INSERT INTO characters (
     id, challenge_id, advice_to_user, character_name, title, initial_suspicion,
     communication_type, osint_data, knows_contact_of, holds_hint, is_available_from_start
 ) VALUES (
+    5,
     4,
-    3,
     'Le responsable est très prudent. Sois convaincant et mentionne la mise à jour de sécurité.',
     'responsable_srv',
     'Responsable IT',
