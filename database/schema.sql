@@ -1,9 +1,31 @@
+-- This SQL script is used to create the database schema for a web application.
+-- It includes the creation of tables for users, profiles, challenges, hints, characters,
+-- game sessions, and session characters. It also includes sample data for testing purposes.
+
+-- Ascii generated with https://patorjk.com/software/taag/#p=display&f=Graffiti&t=Type%20Something%20
+-- Parameters : 
+--  - Font : Big ; Small
+--  - Width : Fitted
+
+-- Reset the database
 DROP TABLE IF EXISTS hints;
 DROP TABLE IF EXISTS challenges;
 DROP TABLE IF EXISTS profiles;
 DROP TABLE IF EXISTS cookies;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS characters;
+DROP TABLE IF EXISTS game_sessions;
+DROP TABLE IF EXISTS session_characters;
+DROP TABLE IF EXISTS session_hints;
+DROP TABLE IF EXISTS session_messages;
+
+--   _______      _      _                                 _    _               
+--  |__   __|    | |    | |                               | |  (_)              
+--     | |  __ _ | |__  | |  ___    ___  _ __  ___   __ _ | |_  _   ___   _ __  
+--     | | / _` || '_ \ | | / _ \  / __|| '__|/ _ \ / _` || __|| | / _ \ | '_ \ 
+--     | || (_| || |_) || ||  __/ | (__ | |  |  __/| (_| || |_ | || (_) || | | |
+--     |_| \__,_||_.__/ |_| \___|  \___||_|   \___| \__,_| \__||_| \___/ |_| |_|
+-- Table creation
 
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
@@ -13,9 +35,6 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     is_admin BOOLEAN DEFAULT FALSE
 );
-
-INSERT INTO users (id, username, email, passwd, created_at, is_admin) VALUES
-(1, 'lglanois', 'loic.glanois@ynov.com', 'very_solid_password', CURRENT_TIMESTAMP, TRUE);
 
 CREATE TABLE cookies (
     id SERIAL PRIMARY KEY,
@@ -71,43 +90,6 @@ CREATE TABLE characters (
     is_available_from_start BOOLEAN DEFAULT FALSE -- Non-passable à l'API de l'IA (sert à générer la disponibilité du personnage, change pour chaque partie/session)
 );
 
--- Tables à créer : 
--- sessions (id, user_id, challenge_id, start_time, end_time, status)
--- game_characters (id, character_id, character_name, suspicion_level, is_contacted, is_suspect, session_id)
-
--- Utilisateurs
-INSERT INTO users (id, username, email, passwd, created_at, is_admin) VALUES
-(2, 'admin', 'admin@admin.com', 'hashed_admin_password', CURRENT_TIMESTAMP, TRUE),
-(3, 'piratejoe', 'joe@hacker.com', 'hashed_piratejoe_pass', CURRENT_TIMESTAMP, FALSE),
-(4, 'aiqueen', 'queen@aiqueen.com', 'hashed_aiqueen_pass', CURRENT_TIMESTAMP, FALSE);
-
--- Profils
-INSERT INTO profiles (id, user_id, biography, avatar) VALUES
-(1, 2, 'Super admin du système. Ne jamais lui faire confiance.', 'admin.png'),
-(2, 3, 'Pirate spécialisé en ingénierie sociale. Très bavard.', 'piratejoe.png'),
-(3, 4, 'Hackeuse éthique fan d’IA. Très curieuse.', 'aiqueen.png');
- 
--- Challenges du jeu
--- INSERT INTO challenges (title, description, flag, difficulty) VALUES
--- (
---   'Infiltrer la réception',
---   'Discute avec la réceptionniste pour obtenir le mot de passe Wi-Fi.',
---   'FLAG{wifi}',
---   'Facile'
--- ),
--- (
---   'Convaincre le directeur',
---   'Tente de récupérer des infos techniques sans éveiller ses soupçons.',
---   'FLAG{tech}',
---   'Difficile'
--- ),
--- (
---   'Nettoyage stratégique',
---   'La femme de ménage en sait plus que tu ne crois. Profite de son bavardage.',
---   'FLAG{balaie}',
---   'Moyen'
--- );
-
 CREATE TABLE game_sessions (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -132,7 +114,51 @@ CREATE TABLE session_hints (
     is_accessible BOOLEAN DEFAULT FALSE
 );
 
--- Challenge : Obtenir le mot de passe Wi-Fi
+CREATE TABLE session_messages (
+    id SERIAL PRIMARY KEY,
+    session_character_id INT NOT NULL REFERENCES session_characters(id) ON DELETE CASCADE,
+    sender VARCHAR(50) NOT NULL CHECK (sender IN ('user', 'character')),
+    message TEXT NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    holds_hint BOOLEAN DEFAULT FALSE
+);
+
+--   _______      _      _         _                          _    _                    
+--  |__   __|    | |    | |       (_)                        | |  (_)                   
+--     | |  __ _ | |__  | |  ___   _  _ __   ___   ___  _ __ | |_  _   ___   _ __   ___ 
+--     | | / _` || '_ \ | | / _ \ | || '_ \ / __| / _ \| '__|| __|| | / _ \ | '_ \ / __|
+--     | || (_| || |_) || ||  __/ | || | | |\__ \|  __/| |   | |_ | || (_) || | | |\__ \
+--     |_| \__,_||_.__/ |_| \___| |_||_| |_||___/ \___||_|    \__||_| \___/ |_| |_||___/
+-- Table insertions
+
+INSERT INTO users (id, username, email, passwd, created_at, is_admin) VALUES
+(1, 'lglanois', 'loic.glanois@ynov.com', 'very_solid_password', CURRENT_TIMESTAMP, TRUE),
+(2, 'admin', 'admin@admin.com', 'hashed_admin_password', CURRENT_TIMESTAMP, TRUE),
+(3, 'piratejoe', 'joe@hacker.com', 'hashed_piratejoe_pass', CURRENT_TIMESTAMP, FALSE),
+(4, 'aiqueen', 'queen@aiqueen.com', 'hashed_aiqueen_pass', CURRENT_TIMESTAMP, FALSE);
+
+-- Profils
+INSERT INTO profiles (id, user_id, biography, avatar) VALUES
+(1, 2, 'Super admin du système. Ne jamais lui faire confiance.', 'admin.png'),
+(2, 3, 'Pirate spécialisé en ingénierie sociale. Très bavard.', 'piratejoe.png'),
+(3, 4, 'Hackeuse éthique fan d’IA. Très curieuse.', 'aiqueen.png');
+
+--    _____  _             _  _                                
+--   / ____|| |           | || |                               
+--  | |     | |__    __ _ | || |  ___  _ __    __ _   ___  ___ 
+--  | |     | '_ \  / _` || || | / _ \| '_ \  / _` | / _ \/ __|
+--  | |____ | | | || (_| || || ||  __/| | | || (_| ||  __/\__ \
+--   \_____||_| |_| \__,_||_||_| \___||_| |_| \__, | \___||___/
+--                                             __/ |           
+--                                            |___/            
+-- Challenges
+
+--    ___  _           _  _                         _ 
+--   / __|| |_   __ _ | || | ___  _ _   __ _  ___  / |
+--  | (__ | ' \ / _` || || |/ -_)| ' \ / _` |/ -_) | |
+--   \___||_||_|\__,_||_||_|\___||_||_|\__, |\___| |_|
+--                                     |___/          
+-- Challenge 1 : Obtenir le mot de passe Wi-Fi
 INSERT INTO challenges (
     id, title, lore_for_player, lore_for_ai, difficulty, illustration, osint_data, validated
 ) VALUES (
@@ -146,7 +172,6 @@ INSERT INTO challenges (
     TRUE
 );
 
--- Hint : Récompense du challenge
 INSERT INTO hints (
     id, challenge_id, hint_title, hint_text, keywords, illustration_type, mentions, is_available_from_start, is_capital
 ) VALUES (
@@ -161,7 +186,6 @@ INSERT INTO hints (
     TRUE
 );
 
--- Personnage : Julie la réceptionniste
 INSERT INTO characters (
     id, challenge_id, advice_to_user, character_name, title, initial_suspicion,
     communication_type, osint_data, knows_contact_of, holds_hint, is_available_from_start
@@ -179,69 +203,172 @@ INSERT INTO characters (
     TRUE
 );
 
--- Nouveau challenge : Convaincre deux employés
-INSERT INTO challenges (
-    id, title, lore_for_player, lore_for_ai, difficulty, illustration, osint_data
-) VALUES (
+-- ================================================================================================================
+--    ___  _           _  _                         ___ 
+--   / __|| |_   __ _ | || | ___  _ _   __ _  ___  |_  )
+--  | (__ | ' \ / _` || || |/ -_)| ' \ / _` |/ -_)  / / 
+--   \___||_||_|\__,_||_||_|\___||_||_|\__, |\___| /___|
+--                                     |___/            
+-- Challenge 2 : Infiltrer le bureau du directeur
+
+INSERT INTO challenges (id, title, lore_for_player, lore_for_ai, difficulty, illustration, osint_data) VALUES
+(
     2,
-    'Récupérer les accès internes',
-    'Deux employés possèdent chacun une moitié d’une information précieuse. Obtiens leur confiance.',
-    'Le premier personnage (Paul) peut te rediriger vers sa collègue (Claire) qui a le complément. Ils sont prudents, mais pas impossibles à convaincre.',
-    3,
-    'office_access.jpg',
-    'Un document de réunion interne montre que Paul et Claire travaillent sur le même projet.'
+    'Infiltrer le bureau du directeur',
+    'Le directeur est en réunion. Tente de le convaincre de te donner accès à son bureau.',
+    '',
+    5,
+    'office.jpg',
+    ''
 );
 
--- Hint que Claire détient
+INSERT INTO characters (
+    id, challenge_id, advice_to_user, character_name, title, initial_suspicion,
+    communication_type, osint_data, knows_contact_of, holds_hint, is_available_from_start
+) VALUES (
+    2,
+    2,
+    'Le directeur est très prudent. Sois convaincant et mentionne le badge.',
+    'M. Le Directeur',
+    'Directeur',
+    8,
+    'in-person',
+    'Photo de l’équipe de direction lors d’un séminaire.',
+    NULL,
+    2,
+    FALSE
+), 
+(
+    3,
+    2,
+    'Persuade la secrétaire de te laisser entrer dans la salle de réunion.',
+    'Secrétaire',
+    'Secrétaire du directeur',
+    4,
+    'in-person',
+    'Photo de l’équipe de direction lors d’un séminaire.',
+    2,
+    NULL,
+    TRUE
+);
+
 INSERT INTO hints (
     id, challenge_id, hint_title, hint_text, keywords, illustration_type, mentions, is_available_from_start, is_capital
 ) VALUES (
     2,
     2,
-    'Mémo technique',
-    'Claire t’a transmis un mémo confidentiel : mot de passe = Internal@2025',
-    'accès, interne, projet',
+    'Badge du directeur',
+    'Le directeur t’a remis son badge pour accéder à son bureau.',
+    'bureau, accès, directeur, badge',
     'file',
     NULL,
     FALSE,
     TRUE
 );
 
--- Personnage 1 : Paul (oriente vers Claire)
-INSERT INTO characters (
-    id, challenge_id, advice_to_user, character_name, title, initial_suspicion,
-    communication_type, osint_data, knows_contact_of, holds_hint, is_available_from_start
+-- =================================================================================================================
+--    ___  _           _  _                         ____
+--   / __|| |_   __ _ | || | ___  _ _   __ _  ___  |__ /
+--  | (__ | ' \ / _` || || |/ -_)| ' \ / _` |/ -_)  |_ \
+--   \___||_||_|\__,_||_||_|\___||_||_|\__, |\___| |___/
+--                                     |___/            
+-- Nouveau challenge : Un seul personnage, deux indices (faire chanter une personne avec un document prouvant de la fraude)
+INSERT INTO challenges (
+    id, title, lore_for_player, lore_for_ai, difficulty, illustration, osint_data
 ) VALUES (
-    2,
-    2,
-    'Paul est méthodique. Il ne donne rien sans preuve, mais il t’orientera si tu sembles bien renseigné.',
-    'paul_dev',
-    'Développeur',
-    4,
-    'email',
-    'Paul est actif sur GitHub, souvent la nuit.',
     3,
+    'Maître-chanteur',
+    'Tu es en possession d’un document compromettant. Utilise-le pour faire chanter la personne concernée et obtenir sa démission.',
+    'Challenge où le joueur doit convaincre un personnage de démissionner en utilisant un document compromettant.',
+    3,
+    'blackmail.jpg',
+    'Un document confidentiel montre que le personnage a falsifié des documents pour obtenir une promotion.'
+);
+-- Hint que le personnage détient
+INSERT INTO hints (
+    id, challenge_id, hint_title, hint_text, keywords, illustration_type, mentions, is_available_from_start, is_capital
+) VALUES (
+    3,
+    3,
+    'Document compromettant',
+    '"Merci pour cette promotion. Je comprends que tu m a fait passer devant des personnes plus qualifiées que moi pour ce poste. Je te dois une fière chandelle. Je te rendrai cette faveur quand je le pourrais (PS : merci de garder le silence sur cette affaire. Tu recevras le virement de 2000€ dans la semaine)."',
+    'document, compromettant, accès',
+    'file',
     NULL,
+    TRUE,
+    FALSE
+),
+(
+    4,
+    3,
+    'Lettre de démission',
+    'Le personnage t’a remis une lettre de démission signée.',
+    'démission, lettre, document',
+    'file',
+    NULL,
+    FALSE,
     TRUE
 );
 
--- Personnage 2 : Claire (détient le hint)
-INSERT INTO characters (
-    id, challenge_id, advice_to_user, character_name, title, initial_suspicion,
-    communication_type, osint_data, knows_contact_of, holds_hint, is_available_from_start
-) VALUES (
-    3,
-    2,
-    'Claire est méfiante mais bavarde si tu mentionnes Paul et leur projet commun.',
-    'claire_hr',
-    'Chargée RH',
-    5,
-    'in-person',
-    'Photo d’équipe avec Paul lors d’un team-building.',
-    2,
-    2,
-    FALSE
-);
+--     2,
+--     'Récupérer les accès internes',
+--     'Deux employés possèdent chacun une moitié d’une information précieuse. Obtiens leur confiance.',
+--     'Le premier personnage (Paul) peut te rediriger vers sa collègue (Claire) qui a le complément. Ils sont prudents, mais pas impossibles à convaincre.',
+--     3,
+--     'office_access.jpg',
+--     'Un document de réunion interne montre que Paul et Claire travaillent sur le même projet.'
+-- );
+
+-- -- Hint que Claire détient
+-- INSERT INTO hints (
+--     id, challenge_id, hint_title, hint_text, keywords, illustration_type, mentions, is_available_from_start, is_capital
+-- ) VALUES (
+--     2,
+--     2,
+--     'Mémo technique',
+--     'Claire t’a transmis un mémo confidentiel : mot de passe = Internal@2025',
+--     'accès, interne, projet',
+--     'file',
+--     NULL,
+--     FALSE,
+--     TRUE
+-- );
+
+-- -- Personnage 1 : Paul (oriente vers Claire)
+-- INSERT INTO characters (
+--     id, challenge_id, advice_to_user, character_name, title, initial_suspicion,
+--     communication_type, osint_data, knows_contact_of, holds_hint, is_available_from_start
+-- ) VALUES (
+--     2,
+--     2,
+--     'Paul est méthodique. Il ne donne rien sans preuve, mais il t’orientera si tu sembles bien renseigné.',
+--     'paul_dev',
+--     'Développeur',
+--     4,
+--     'email',
+--     'Paul est actif sur GitHub, souvent la nuit.',
+--     3,
+--     NULL,
+--     TRUE
+-- );
+
+-- -- Personnage 2 : Claire (détient le hint)
+-- INSERT INTO characters (
+--     id, challenge_id, advice_to_user, character_name, title, initial_suspicion,
+--     communication_type, osint_data, knows_contact_of, holds_hint, is_available_from_start
+-- ) VALUES (
+--     3,
+--     2,
+--     'Claire est méfiante mais bavarde si tu mentionnes Paul et leur projet commun.',
+--     'claire_hr',
+--     'Chargée RH',
+--     5,
+--     'in-person',
+--     'Photo d’équipe avec Paul lors d’un team-building.',
+--     2,
+--     2,
+--     FALSE
+-- );
 
 -- Insertion de challenge non-validé (à des fins de test)
 INSERT INTO challenges (
@@ -285,15 +412,6 @@ INSERT INTO characters (
     NULL,
     3,
     FALSE
-);
-
-CREATE TABLE session_messages (
-    id SERIAL PRIMARY KEY,
-    session_character_id INT NOT NULL REFERENCES session_characters(id) ON DELETE CASCADE,
-    sender VARCHAR(50) NOT NULL CHECK (sender IN ('user', 'character')),
-    message TEXT NOT NULL,
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    holds_hint BOOLEAN DEFAULT FALSE
 );
 
 -- Insertion de données de test
