@@ -295,3 +295,9 @@ CREATE TABLE session_messages (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     holds_hint BOOLEAN DEFAULT FALSE
 );
+
+-- Insertion de données de test
+INSERT INTO game_sessions ( id, user_id, challenge_id, session_key, start_time, status ) VALUES ( 1, 1, 1, "TEST01", "202017-17-200 539:29:57", "in_progress" );
+INSERT INTO session_characters ( id, session_id, character_id, suspicion_level, is_accessible ) VALUES ( 1, 1, 1, 2, FALSE );
+INSERT INTO session_hints ( id, session_id, hint_id, is_accessible ) VALUES ( 1, 1, 1, FALSE );
+

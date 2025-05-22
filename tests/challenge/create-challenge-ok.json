@@ -29,7 +29,7 @@
       "characters": [
         {
           "advice_to_user": "Faites-vous passer pour ce que vous n'êtes pas.",
-          "symbolic_name": "Charlotte",
+          "character_name": "Charlotte",
           "title": "Hôtesse d'accueil",
           "initial_suspicion": 1,
           "communication_type": "in-person",
