@@ -325,72 +325,148 @@ INSERT INTO characters (
     3,
     FALSE
 );
+-- =================================================================================================================
+--    ___  _           _  _                         _ _  
+--   / __|| |_   __ _ | || | ___  _ _   __ _  ___  | | | 
+--  | (__ | ' \ / _` || || |/ -_)| ' \ / _` |/ -_) |_  _|
+--   \___||_||_|\__,_||_||_|\___||_||_|\__, |\___|   |_| 
+--                                     |___/             
+-- Challenge 4
+-- Nouveau Challenge : Mission d’infiltration
+INSERT INTO challenges (
+    id, title, lore_for_player, lore_for_ai, difficulty, illustration, osint_data
+) VALUES (
+    4,
+    'Mission : Accès au Serveur Principal',
+    'Tu dois accéder à la salle des serveurs. Plusieurs employés détiennent des infos essentielles, mais ils sont méfiants. Il te faudra le badge d accès de Camille et le mot de passe temporaire.',
+    'Les employés du Bureau Central travaillent tous sur des projets sensibles. Ils sont vigilants, mais certains se laissent aller à discuter dans les bons contextes.',
+    4,
+    'main_office.jpg',
+    'Un forum technique mentionne un problème d’accès récurrent à la salle serveur.'
+);
 
---     2,
---     'Récupérer les accès internes',
---     'Deux employés possèdent chacun une moitié d’une information précieuse. Obtiens leur confiance.',
---     'Le premier personnage (Paul) peut te rediriger vers sa collègue (Claire) qui a le complément. Ils sont prudents, mais pas impossibles à convaincre.',
---     3,
---     'office_access.jpg',
---     'Un document de réunion interne montre que Paul et Claire travaillent sur le même projet.'
--- );
+-- Hint 1 : planning journalier
+INSERT INTO hints (
+    id, challenge_id, hint_title, hint_text, keywords, illustration_type, mentions, is_available_from_start, is_capital
+) VALUES (
+    5,
+    4,
+    'Planning journalier',
+    '13h : pause déjeuner du directeur / 15h : maintenance réseau / 17h : sauvegarde automatique des serveurs',
+    'planning, journalier, accès',
+    'file',
+    NULL,
+    TRUE,
+    FALSE
+);
 
--- -- Hint que Claire détient
--- INSERT INTO hints (
---     id, challenge_id, hint_title, hint_text, keywords, illustration_type, mentions, is_available_from_start, is_capital
--- ) VALUES (
---     2,
---     2,
---     'Mémo technique',
---     'Claire t’a transmis un mémo confidentiel : mot de passe = Internal@2025',
---     'accès, interne, projet',
---     'file',
---     NULL,
---     FALSE,
---     TRUE
--- );
+-- Hint 2 : badge oublié
+INSERT INTO hints (
+    id, challenge_id, hint_title, hint_text, keywords, illustration_type, mentions, is_available_from_start, is_capital
+) VALUES (
+    6,
+    4,
+    'Badge oublié',
+    'Le badge de Camille a été retrouvé dans la salle de repos. Il ouvre la salle serveur.',
+    'badge, salle serveur, accès',
+    'employee_card',
+    NULL,
+    FALSE,
+    TRUE
+);
 
--- -- Personnage 1 : Paul (oriente vers Claire)
--- INSERT INTO characters (
---     id, challenge_id, advice_to_user, character_name, title, initial_suspicion,
---     communication_type, osint_data, knows_contact_of, holds_hint, is_available_from_start
--- ) VALUES (
---     2,
---     2,
---     'Paul est méthodique. Il ne donne rien sans preuve, mais il t’orientera si tu sembles bien renseigné.',
---     'paul_dev',
---     'Développeur',
---     4,
---     'email',
---     'Paul est actif sur GitHub, souvent la nuit.',
---     3,
---     NULL,
---     TRUE
--- );
+-- Hint 3 : note de service
+INSERT INTO hints (
+    id, challenge_id, hint_title, hint_text, keywords, illustration_type, mentions, is_available_from_start, is_capital
+) VALUES (
+    7,
+    4,
+    'Note de service',
+    'Une note interne mentionne un mot de passe temporaire : Temp2025!',
+    'mot de passe, temporaire, note',
+    'bill',
+    NULL,
+    FALSE,
+    TRUE
+);
 
--- -- Personnage 2 : Claire (détient le hint)
--- INSERT INTO characters (
---     id, challenge_id, advice_to_user, character_name, title, initial_suspicion,
---     communication_type, osint_data, knows_contact_of, holds_hint, is_available_from_start
--- ) VALUES (
---     3,
---     2,
---     'Claire est méfiante mais bavarde si tu mentionnes Paul et leur projet commun.',
---     'claire_hr',
---     'Chargée RH',
---     5,
---     'in-person',
---     'Photo d’équipe avec Paul lors d’un team-building.',
---     2,
---     2,
---     FALSE
--- );
+-- Personnage 1 : Camille, technicienne réseau
+INSERT INTO characters (
+    id, challenge_id, advice_to_user, character_name, title, initial_suspicion,
+    communication_type, osint_data, knows_contact_of, holds_hint, is_available_from_start
+) VALUES (
+    5,    
+    4,
+    'Camille est très technique, peu sociable. Elle a égaré son badge récemment.',
+    'camille_tech',
+    'Technicienne Réseau',
+    6,
+    'email',
+    'Tweet récent sur un problème de badge.',
+    6,
+    NULL,
+    FALSE
+);
+
+-- Personnage 2 : Thomas, agent de sécurité
+INSERT INTO characters (
+    id, challenge_id, advice_to_user, character_name, title, initial_suspicion,
+    communication_type, osint_data, knows_contact_of, holds_hint, is_available_from_start
+) VALUES (
+    6,
+    4,
+    'Thomas fait souvent des rondes sur le site. Peut-être a-t-il trouvé le badge de Camille.',
+    'thomas_guard',
+    'Agent de sécurité',
+    7,
+    'in-person',
+    'Photo badge visible sur son LinkedIn.',
+    6,
+    NULL,
+    TRUE
+);
+
+-- Personnage 3 : Emma, responsable RH
+INSERT INTO characters (
+    id, challenge_id, advice_to_user, character_name, title, initial_suspicion,
+    communication_type, osint_data, knows_contact_of, holds_hint, is_available_from_start
+) VALUES (
+    7,
+    4,
+    'Peut-être peut-elle te rediriger vers quelqu un qui dispose du mot de passe temporaire.',
+    'emma_rh',
+    'Responsable RH',
+    4,
+    'phone',
+    'Newsletter interne signée par Emma.',
+    8,
+    NULL,
+    TRUE
+);
+
+-- Personnage 4 : Hugo, directeur informatique
+INSERT INTO characters (
+    id, challenge_id, advice_to_user, character_name, title, initial_suspicion,
+    communication_type, osint_data, knows_contact_of, holds_hint, is_available_from_start
+) VALUES (
+    8,
+    4,
+    'Hugo adore parler technique, mais il se méfie de ceux qui n’y connaissent rien.',
+    'hugo_cto',
+    'Directeur Informatique',
+    5,
+    'email',
+    'Article interne publié par Hugo sur les nouveaux accès.',
+    NULL,
+    7,
+    FALSE
+);
 
 -- Insertion de challenge non-validé (à des fins de test)
 INSERT INTO challenges (
     id, title, lore_for_player, lore_for_ai, difficulty, illustration, osint_data
 ) VALUES (
-    4,
+    5,
     'Infiltrer la salle serveur',
     'Accède à la salle serveur pour récupérer des données sensibles.',
     'La salle serveur est protégée par un mot de passe. Tu dois convaincre le responsable de te le donner.',
@@ -402,7 +478,7 @@ INSERT INTO challenges (
 INSERT INTO hints (
     id, challenge_id, hint_title, hint_text, keywords, illustration_type, mentions, is_available_from_start, is_capital
 ) VALUES (
-    3,
+    8,
     4,
     'Note de sécurité',
     'Le responsable t’a glissé une note : mot de passe = Secure@2025',
@@ -417,7 +493,7 @@ INSERT INTO characters (
     id, challenge_id, advice_to_user, character_name, title, initial_suspicion,
     communication_type, osint_data, knows_contact_of, holds_hint, is_available_from_start
 ) VALUES (
-    5,
+    9,
     4,
     'Le responsable est très prudent. Sois convaincant et mentionne la mise à jour de sécurité.',
     'responsable_srv',
@@ -434,4 +510,3 @@ INSERT INTO characters (
 INSERT INTO game_sessions ( id, user_id, challenge_id, session_key, start_time, status ) VALUES ( 1, 1, 1, "TEST01", "202017-17-200 539:29:57", "in_progress" );
 INSERT INTO session_characters ( id, session_id, character_id, suspicion_level, is_accessible ) VALUES ( 1, 1, 1, 2, FALSE );
 INSERT INTO session_hints ( id, session_id, hint_id, is_accessible ) VALUES ( 1, 1, 1, FALSE );
-

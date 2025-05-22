@@ -1,0 +1,12 @@
+{
+    "challenge": {
+      "title": "Challenge sans description",
+      "illustration": "img.png",
+      "lore_for_player": "Lore joueur",
+      "lore_for_ai": "Lore IA",
+      "osint_data": "",
+      "hints": [],
+      "characters": []
+    }
+  }
+  
