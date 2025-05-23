@@ -14,6 +14,8 @@ import (
 	"soceng-ai/internals/utils/prompts"
 )
 
+var re = regexp.MustCompile(`^[a-zA-Z0-9]{6}$`)
+
 func Challenge_handler(w http.ResponseWriter, r *http.Request) {
 
 	cookies_status := process_cookies(r)
@@ -45,7 +47,21 @@ func Challenge_handler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// Récupère les requêtes commençant par /api/sessions
+// Récupère les requêtes commençant par /api/sessions.
+//
+// Résumé :
+//
+// - POST : /api/sessions/start-challenge `'{"challenge_name": "challenge_name"}'` -> Crée une nouvelle session de jeu
+//
+// - GET : /api/sessions/{session_id} -> Récupère les données de session en JSON
+//
+// - POST : /api/sessions/{session_id} `'{"character_name": "character_name", "message": "message"}'` -> Envoie un message au personnage
+//
+// Concerne la collecte des données de jeu et l'envoi de
+// messages aux personnages. Contrôle par cookies. Si la méthode est GET, on envoie les données de session. Si la
+// méthode est POST, elle doit contenir sa clé de session dans l'URL. On vérifie que la clé de session est valide.
+// Si c'est le cas, on récupère les données de session contenant le nom du personnage adressé et le message envoyé.
+// Gère également la création de session de jeu pour un challenge donné.
 func Sessions_handler(w http.ResponseWriter, r *http.Request) {
 	var error_status string
 	var response = http.Response{
@@ -68,8 +84,6 @@ func Sessions_handler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	} else {
-		// Sinon, si la suite de l'URL est une chaîne de caractères aléatoire à 6 caractères
-		re := regexp.MustCompile(`^[a-zA-Z0-9]{6}$`)
 		if re.MatchString(r.URL.Path[len("/api/sessions/"):]) {
 			session_id := r.URL.Path[len("/api/sessions/"):]
 			// On vérifie que la session existe
@@ -94,54 +108,8 @@ func Sessions_handler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// On renvoie la réponse
 	response.Write(w)
 }
-
-/*🔹 1. Création et gestion des sessions
-
-POST /api/sessions/start-challenge
-➤ Démarre une nouvelle session de jeu pour un challenge donné.
-Payload : { challenge_id }
-Opération backend : créer un objet game_session pointant vers l'objet challenge associé. Création des substituts (noms uniques générés).
-Retourne : session_id, personnages initiaux, documents initiaux
-
-GET /api/sessions/{session_id}
-➤ Récupère les métadonnées et l’état courant d’une session existante.
-Inclut : état (en cours, terminé), timestamp, progression éventuelle.
-
-🔹 2. Personnages (agents simulés)
-
-GET /api/sessions/{session_id}/characters
-➤ Liste des personnages disponibles dans la session, avec leur nom unique généré.
-
-GET /api/sessions/{session_id}/characters/{character_id}/chat
-➤ Récupère l’historique des messages échangés avec ce personnage.
-
-POST /api/sessions/{session_id}/characters/{character_id}/chat
-➤ Envoie un message à un personnage, reçoit la réponse IA.
-Payload : { message }
-
-🔹 3. Documents et indices
-
-GET /api/sessions/{session_id}/documents
-➤ Récupère la liste des documents découverts par le joueur jusqu’à présent.
-
-GET /api/sessions/{session_id}/documents/{doc_id}
-➤ Récupère le contenu d’un document spécifique.
-
-POST /api/sessions/{session_id}/documents/unlock
-➤ Débloque un document par une action utilisateur (indice résolu, interaction IA, etc.)
-Payload : { trigger }
-
-🔹 4. Progression et état final
-
-POST /api/sessions/{session_id}/submit-flag
-➤ L’utilisateur pense avoir trouvé le flag, on vérifie et marque la session comme terminée.
-Payload : { flag }
-
-GET /api/sessions/{session_id}/progress
-➤ (Optionnel) Donne un feedback sur la progression (nombre de documents trouvés, interactions faites…)*/
 
 func process_cookies(r *http.Request) string {
 	cookies := r.Cookies()

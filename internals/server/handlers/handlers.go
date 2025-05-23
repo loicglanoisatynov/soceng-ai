@@ -26,3 +26,7 @@ func Home(w http.ResponseWriter, r *http.Request) {
 func Helloworld(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Hello, world!"))
 }
+
+func Manual_handler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Manual page\n"))
+}

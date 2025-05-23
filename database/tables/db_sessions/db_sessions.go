@@ -97,8 +97,8 @@ func Get_sessions_by_username(username string) (string, []db_sessions_structs.Se
 		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:Get_sessions_by_username():Error iterating over rows: " + err.Error())
 		return "Error iterating over rows: " + err.Error(), nil
 	}
-	if len(sessions) < 0 {
-		return "Error : negative number of sessions", nil
+	if len(sessions) == 0 {
+		return "No sessions found", nil
 	}
 	return "OK", sessions
 }
@@ -363,6 +363,48 @@ func Check_session_key(r *http.Request, session_key string) (string, int) {
 	}
 	if session_id == 0 {
 		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:Check_session_key():Error: session ID is 0")
+		return "Error: session ID is 0", http.StatusUnauthorized
+	}
+
+	return "OK", http.StatusOK
+}
+
+// 3. Vérifier que le character_name pointe vers un personnage existant dans le challenge à partir duquel on a créé la session dont la clé est session_key
+// error_status, code_status = db_sessions.Check_character_existence(session_key, post_session_data_request.Character_name)
+
+func Check_character_existence(session_key string, character_name string) (string, int) {
+	db := database.Get_DB()
+	var character_id int
+	err := db.QueryRow("SELECT id FROM characters WHERE character_name = $1", character_name).Scan(&character_id)
+	if err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:Check_character_existence():Error getting character ID: " + err.Error())
+		return "Error getting character ID: " + err.Error(), http.StatusNoContent
+	}
+	if character_id == 0 {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:Check_character_existence():Error: character ID is 0")
+		return "Error: character ID is 0", http.StatusUnauthorized
+	}
+
+	// Récupère l'ID du challenge auquel appartient le personnage
+	var challenge_id int
+	err = db.QueryRow("SELECT challenge_id FROM characters WHERE id = $1", character_id).Scan(&challenge_id)
+	if err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:Check_character_existence():Error getting challenge ID: " + err.Error())
+		return "Error getting challenge ID: " + err.Error(), http.StatusNoContent
+	}
+	if challenge_id == 0 {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:Check_character_existence():Error: challenge ID is 0")
+		return "Error: challenge ID is 0", http.StatusUnauthorized
+	}
+	// Vérifie que la session existe pour le challenge_id
+	var session_id int
+	err = db.QueryRow("SELECT id FROM game_sessions WHERE session_key = $1 AND challenge_id = $2", session_key, challenge_id).Scan(&session_id)
+	if err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:Check_character_existence():Error getting session ID: " + err.Error())
+		return "Error getting session ID: " + err.Error(), http.StatusNoContent
+	}
+	if session_id == 0 {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:Check_character_existence():Error: session ID is 0")
 		return "Error: session ID is 0", http.StatusUnauthorized
 	}
 

@@ -89,24 +89,35 @@ func Get_session_data(r *http.Request, session_id string) http.Response {
 
 // Fonction qui traite de la réception des messages sur la partie en cours
 func Post_session_data(r *http.Request, session_key string) http.Response {
-	// Pseudo-code :
+	var error_status string
+	var post_session_data_request sessions_structs.Post_session_data_request
+	status_code := http.StatusNotImplemented
+	payload := []byte(`{"message": "default message"}`)
+
 	// 1. Récupérer le message du corps de la requête
-	// 2. Vérifier que la requête comporte un attribut "message" et "character_name"
-	// 3. Vérifier que le character_name pointe vers un personnage existant dans la session
-	// Requête : "est-ce que l'objet session_character peut être relié à une session (session_id) dont la clé est session_key et est-ce que un personnage du challenge a pour nom character_name ?"
+	err := json.NewDecoder(r.Body).Decode(&post_session_data_request)
+	// 2. Vérifier que l'objet json passé en requête comporte un sous-objet "message" et un sous-objet "character_name"
+	if err != nil {
+		payload = []byte(`{"message": "Error decoding JSON : ` + err.Error() + `"}`)
+		status_code = http.StatusBadRequest
+		fmt.Println(prompts.Error + "soceng-ai/internals/server/handlers/api/sessions/sessions.go:Post_session_data():Error decoding JSON: " + err.Error())
+	} else if post_session_data_request.Character_name == "" || post_session_data_request.Message == "" {
+		payload = []byte(`{"message": "Character name and message cannot be empty"}`)
+		status_code = http.StatusBadRequest
+	} else {
+		// 3. Vérifier que le character_name pointe vers un personnage existant dans le challenge à partir duquel on a créé la session dont la clé est session_key
+		error_status, status_code = db_sessions.Check_character_existence(session_key, post_session_data_request.Character_name)
+		if error_status != "OK" {
+			payload = []byte(`{"message": "Error checking character existence : ` + error_status + `"}`)
+			status_code = http.StatusNoContent
+			fmt.Println(prompts.Error + "soceng-ai/internals/server/handlers/api/sessions/sessions.go:Post_session_data():Error checking character existence: " + error_status)
+		} else {
+			// 4. Si le personnage existe dans le challenge d'origine de la session, on envoie le message à l'API d'IA et on récupère la réponse
+		}
+	}
 
-	// 4. Vérifier que le personnage existe (requête à db), récupérer l'identifiant du personnage
-
-	// 6. Récupérer l'id du personnage de session à partir de l'id de session et du nom du personnage
-
-	// 7. Vérifier que le personnage est disponible (is chall_character available ?)
-
-	// 8. Vérifier qu'un message se trouve dans le corps de la requête
-	//
-
-	// var returned_status string
-	// status_code := http.StatusBadRequest
-	// payload := []byte(`{"message": "default message"}`)
+	// 5. Si la réponse de l'IA est valide, on ajoute le message de l'utilisateur dans la DB (table session_messages) et on ajoute la réponse de l'IA dans la DB (table session_messages)
+	// 6. On envoie un message de validation
 
 	// var post_session_data_request sessions_structs.Post_session_data_request
 	// err := json.NewDecoder(r.Body).Decode(&post_session_data_request)
@@ -124,10 +135,6 @@ func Post_session_data(r *http.Request, session_key string) http.Response {
 	// 	}
 	// }
 
-	// var returned_status string
-	// var payload []byte
-	status_code := http.StatusBadRequest
-	payload := []byte(`{"message": "default message"}`)
 	return http.Response{
 		StatusCode: status_code,
 		Header:     http.Header{"Content-Type": []string{"application/json"}},

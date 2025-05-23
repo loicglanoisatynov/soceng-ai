@@ -21,6 +21,7 @@ func routes_index_handler(w http.ResponseWriter, r *http.Request) {
 
 func init() {
 	routes = []Route{
+		newRoute("/man/([^/]+)", handlers.Manual_handler),
 		newRoute("/routes", routes_index_handler),
 		newRoute("/", handlers.Home),
 		newRoute("/create-user", registering.Register_user),
