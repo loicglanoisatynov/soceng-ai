@@ -31,7 +31,7 @@ func init() {
 		newRoute("/edit-profile", profiles_handling.Edit_profile),
 		newRoute("/edit-user", profiles_handling.Edit_user),
 		newRoute("/api/challenge", api.Challenge_handler),
-		newRoute("/api/sessions/([^/]+)", api.Sessions_handler), // Créer une session de jeu (challenge_id)
+		newRoute("/api/sessions/([^/]+)", api.Sessions_handler),
 		newRoute("/api/dashboard", api.Dashboard_handler),
 
 		// newRoute("GET", "/contact", contact),

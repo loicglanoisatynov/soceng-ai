@@ -1,6 +1,7 @@
 package db_sessions
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"math/rand"
@@ -342,4 +343,28 @@ func Get_session_hints_by_session_id(session_id int) ([]db_sessions_structs.Sess
 	}
 
 	return results, "OK"
+}
+
+func Check_session_key(r *http.Request, session_key string) (string, int) {
+	username_cookie, _ := r.Cookie("socengai-username")
+	// Regarde dans la base de données si le cookie username correspond à un utilisateur
+	user_id := db_users.Get_user_id_by_username_or_email(username_cookie.Value)
+	if user_id == 0 {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:Check_session_key():Error: user ID is 0")
+		return "Error: user ID is 0", http.StatusUnauthorized
+	}
+	// Regarde dans la base de données si une session existe avec le cookie username et la clé de session
+	db := database.Get_DB()
+	var session_id int
+	err := db.QueryRow("SELECT id FROM game_sessions WHERE user_id = $1 AND session_key = $2", user_id, session_key).Scan(&session_id)
+	if err == sql.ErrNoRows {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:Check_session_key():Error: " + err.Error())
+		return "Error: " + err.Error(), http.StatusInternalServerError
+	}
+	if session_id == 0 {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:Check_session_key():Error: session ID is 0")
+		return "Error: session ID is 0", http.StatusUnauthorized
+	}
+
+	return "OK", http.StatusOK
 }

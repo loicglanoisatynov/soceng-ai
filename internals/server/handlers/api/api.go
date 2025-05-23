@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"regexp"
 	"soceng-ai/database/tables/db_cookies"
+	"soceng-ai/database/tables/db_sessions"
 	challenge "soceng-ai/internals/server/handlers/api/challenge"
 	dashboard "soceng-ai/internals/server/handlers/api/dashboard"
 	sessions "soceng-ai/internals/server/handlers/api/sessions"
@@ -46,7 +47,7 @@ func Challenge_handler(w http.ResponseWriter, r *http.Request) {
 
 // Récupère les requêtes commençant par /api/sessions
 func Sessions_handler(w http.ResponseWriter, r *http.Request) {
-
+	var error_status string
 	var response = http.Response{
 		StatusCode: http.StatusBadRequest,
 		Status:     "Bad Request",
@@ -71,10 +72,18 @@ func Sessions_handler(w http.ResponseWriter, r *http.Request) {
 		re := regexp.MustCompile(`^[a-zA-Z0-9]{6}$`)
 		if re.MatchString(r.URL.Path[len("/api/sessions/"):]) {
 			session_id := r.URL.Path[len("/api/sessions/"):]
+			// On vérifie que la session existe
+			error_status, response.StatusCode = db_sessions.Check_session_key(r, session_id)
+			if error_status != "OK" {
+				fmt.Println(prompts.Error + "soceng-ai/internals/server/handlers/api/sessions/sessions.go:Sessions_handler():Error checking session ID: " + error_status)
+				http.Error(w, "Error checking session ID: "+error_status, http.StatusBadRequest)
+				return
+			}
 			switch r.Method {
 			case "GET":
-				fmt.Println(prompts.Debug + "soceng-ai/internals/server/handlers/api/sessions/sessions.go:Sessions_handler(): getting session data for session ID: " + session_id)
 				response = sessions.Get_session_data(r, session_id)
+			case "POST":
+				response = sessions.Post_session_data(r, session_id)
 			default:
 
 				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
