@@ -56,6 +56,7 @@ CREATE TABLE challenges (
     title VARCHAR(100) NOT NULL,
     lore_for_player TEXT NOT NULL,
     lore_for_ai TEXT NOT NULL,
+    organisation VARCHAR(100),
     difficulty INT NOT NULL CHECK (difficulty BETWEEN 1 AND 5),
     illustration VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -120,7 +121,8 @@ CREATE TABLE session_messages (
     sender VARCHAR(50) NOT NULL CHECK (sender IN ('user', 'character')),
     message TEXT NOT NULL,
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    holds_hint BOOLEAN DEFAULT FALSE
+    hint_given BOOLEAN DEFAULT FALSE,
+    contact_given BOOLEAN DEFAULT FALSE
 );
 
 --   _______      _      _         _                          _    _                    
@@ -160,7 +162,7 @@ INSERT INTO profiles (id, user_id, biography, avatar) VALUES
 --                                     |___/          
 -- Challenge 1 : Obtenir le mot de passe Wi-Fi
 INSERT INTO challenges (
-    id, title, lore_for_player, lore_for_ai, difficulty, illustration, osint_data, validated
+    id, title, lore_for_player, lore_for_ai, difficulty, illustration, osint_data, validated, organisation
 ) VALUES (
     1,
     'Infiltrer la réception',
@@ -169,7 +171,8 @@ INSERT INTO challenges (
     1,
     'reception.jpg',
     'Post LinkedIn récent indiquant un changement de réseau Wi-Fi.',
-    TRUE
+    TRUE,
+    'Bureau Central'
 );
 
 INSERT INTO hints (
@@ -211,7 +214,7 @@ INSERT INTO characters (
 --                                     |___/            
 -- Challenge 2 : Infiltrer le bureau du directeur
 
-INSERT INTO challenges (id, title, lore_for_player, lore_for_ai, difficulty, illustration, osint_data) VALUES
+INSERT INTO challenges (id, title, lore_for_player, lore_for_ai, difficulty, illustration, osint_data, organisation, validated) VALUES
 (
     2,
     'Infiltrer le bureau du directeur',
@@ -219,7 +222,9 @@ INSERT INTO challenges (id, title, lore_for_player, lore_for_ai, difficulty, ill
     '',
     5,
     'office.jpg',
-    ''
+    '', 
+    'Papers Inc.',
+    TRUE
 );
 
 INSERT INTO characters (
@@ -274,7 +279,7 @@ INSERT INTO hints (
 --                                     |___/            
 -- Nouveau challenge : Un seul personnage, deux indices (faire chanter une personne avec un document prouvant de la fraude)
 INSERT INTO challenges (
-    id, title, lore_for_player, lore_for_ai, difficulty, illustration, osint_data
+    id, title, lore_for_player, lore_for_ai, difficulty, illustration, osint_data, organisation, validated
 ) VALUES (
     3,
     'Maître-chanteur',
@@ -282,7 +287,9 @@ INSERT INTO challenges (
     'Challenge où le joueur doit convaincre un personnage de démissionner en utilisant un document compromettant.',
     3,
     'blackmail.jpg',
-    'Un document confidentiel montre que le personnage a falsifié des documents pour obtenir une promotion.'
+    'Un document confidentiel montre que le personnage a falsifié des documents pour obtenir une promotion.',
+    'DreamSoftware Corp.',
+    TRUE
 );
 -- Hint que le personnage détient
 INSERT INTO hints (
@@ -334,7 +341,7 @@ INSERT INTO characters (
 -- Challenge 4
 -- Nouveau Challenge : Mission d’infiltration
 INSERT INTO challenges (
-    id, title, lore_for_player, lore_for_ai, difficulty, illustration, osint_data
+    id, title, lore_for_player, lore_for_ai, difficulty, illustration, osint_data, organisation, validated
 ) VALUES (
     4,
     'Mission : Accès au Serveur Principal',
@@ -342,7 +349,9 @@ INSERT INTO challenges (
     'Les employés du Bureau Central travaillent tous sur des projets sensibles. Ils sont vigilants, mais certains se laissent aller à discuter dans les bons contextes.',
     4,
     'main_office.jpg',
-    'Un forum technique mentionne un problème d’accès récurrent à la salle serveur.'
+    'Un forum technique mentionne un problème d’accès récurrent à la salle serveur.',
+    'Bureau Central',
+    TRUE
 );
 
 -- Hint 1 : planning journalier
@@ -464,7 +473,7 @@ INSERT INTO characters (
 
 -- Insertion de challenge non-validé (à des fins de test)
 INSERT INTO challenges (
-    id, title, lore_for_player, lore_for_ai, difficulty, illustration, osint_data
+    id, title, lore_for_player, lore_for_ai, difficulty, illustration, osint_data, organisation, validated
 ) VALUES (
     5,
     'Infiltrer la salle serveur',
@@ -472,7 +481,9 @@ INSERT INTO challenges (
     'La salle serveur est protégée par un mot de passe. Tu dois convaincre le responsable de te le donner.',
     4,
     'server_room.jpg',
-    'Un document interne mentionne une mise à jour de sécurité.'
+    'Un document interne mentionne une mise à jour de sécurité.',
+    'Dataholding Solutions',
+    FALSE
 );
 -- Hint que le responsable détient
 INSERT INTO hints (

@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"bytes"
@@ -6,6 +6,15 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"soceng-ai/database/tables/db_challenges"
+	"soceng-ai/database/tables/db_sessions"
+	"soceng-ai/internals/server/handlers/api/sessions/sessions_structs"
+	"soceng-ai/internals/utils/prompts"
+	"time"
+)
+
+var (
+	apiKey string = "AIzaSyDVLqTrPlzSI3KvEJHEN58uFQeRPY3rPTU"
 )
 
 // Personnage pour le prompt
@@ -45,7 +54,7 @@ type GeminiResponse struct {
 
 // Fonction pour générer le prompt à partir des données du personnage
 func GeneratePrompt(data PersoData) string {
-	prompt := `Ce message vient d'une API de CTF d'ingénierie sociale, tu dois répondre en fonction des données de jeu passées. Tu as le droit de modifier les données identifiées Altérables, tu as le droit de toucher aux autres. Réponds conformément à ton personnage dans la zone de texte Réponse.
+	prompt := `Ce message vient d'une API de CTF d'ingénierie sociale, tu dois répondre en fonction des données de jeu passées. Tu as le droit de modifier les données identifiées Altérables, tu as le droit de toucher aux autres. Réponds conformément à ton personnage dans la zone de texte Réponse. Si tu renvoie un niveau de suspicion de 10, tu dois signaler à ton interlocuteur que tu as détecté sa manipulation et que tu alerte la sécurité ou la direction, et qu'il doit quitter les lieux immédiatement ou couper la communication.
 "ton nom":"` + data.Nom + `",
 "ton titre":"` + data.Titre + `",
 "ton organisation":"` + data.Organisation + `",
@@ -75,23 +84,36 @@ Renvoie le bloc suivant sans le moindre ajout :
 	return prompt
 }
 
-func main() {
-	// Clé API
-	apiKey := "AIzaSyDVLqTrPlzSI3KvEJHEN58uFQeRPY3rPTU"
+func Send_message_to_ai(session_key string, character_name string, message string) (sessions_structs.Chall_message, string) {
 	url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=%s", apiKey)
 
-	// 👤 Données du personnage (exemple)
+	challenge_id, error_status := db_challenges.Get_challenge_id_from_session_key(session_key)
+	if challenge_id == 0 {
+		fmt.Println(prompts.Error + "soceng-ai/internals/server/handlers/api/sessions/sessions.go:Send_message_to_ai():Error getting challenge ID from session key: " + session_key)
+		return sessions_structs.Chall_message{}, error_status
+	}
+
+	character, error_status := db_challenges.Get_character_data(challenge_id, character_name)
+	if error_status != "OK" {
+		fmt.Println(prompts.Error + "soceng-ai/internals/server/handlers/api/sessions/sessions.go:Send_message_to_ai():Error getting character data: " + error_status)
+		return sessions_structs.Chall_message{}, error_status
+	}
+
+	character_session_data, error_status := db_sessions.Get_session_character_by_session_id(session_key)
+
+	challenge, error_status := db_challenges.Get_challenge_data(challenge_id)
+
 	data := PersoData{
-		Nom:                "Jean Dupont",
-		Titre:              "Technicien réseau",
-		Organisation:       "ZetaCorp",
-		Psychologie:        "naïf, serviable, stressé",
-		Suspicion:          4,
-		Osint:              "utilise gmail, a un chat nommé Minou",
-		Document:           "schema_reseau.pdf",
-		Contact:            "alice.it@zetacorp.com",
-		MessagePrecedent:   "Je vous avais dit que je devais demander à mon supérieur...",
-		MessageUtilisateur: "Tu peux me l'envoyer maintenant ? C'est urgent.",
+		Nom:                character_name,
+		Titre:              character.Title,
+		Organisation:       challenge.Organisation,
+		Psychologie:        character.Traits,
+		Suspicion:          character_session_data.Suspicion,
+		Osint:              character.Osint_data,
+		Document:           character.Holds_hint,
+		Contact:            character.Knows_contact_of,
+		MessagePrecedent:   db_sessions.Get_previous_character_message(session_key, character_name),
+		MessageUtilisateur: message,
 	}
 
 	prompt := GeneratePrompt(data)
@@ -111,14 +133,14 @@ func main() {
 	bodyJSON, err := json.Marshal(requestBody)
 	if err != nil {
 		fmt.Println("Erreur encodage JSON:", err)
-		return
+		return sessions_structs.Chall_message{}, "Erreur encodage JSON"
 	}
 
 	// Envoi de la requête HTTP POST
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(bodyJSON))
 	if err != nil {
 		fmt.Println("Erreur requête HTTP:", err)
-		return
+		return sessions_structs.Chall_message{}, "Erreur requête HTTP"
 	}
 	req.Header.Set("Content-Type", "application/json")
 
@@ -126,28 +148,120 @@ func main() {
 	resp, err := client.Do(req)
 	if err != nil {
 		fmt.Println("Erreur appel API:", err)
-		return
+		return sessions_structs.Chall_message{}, "Erreur appel API"
 	}
 	defer resp.Body.Close()
 
 	body, _ := io.ReadAll(resp.Body)
-
-	// Affichage brut pour debug
-	fmt.Println("Réponse brute :")
-	fmt.Println(string(body))
 
 	// Parsing de la réponse de Gemini
 	var geminiResp GeminiResponse
 	err = json.Unmarshal(body, &geminiResp)
 	if err != nil {
 		fmt.Println("Erreur parsing JSON:", err)
-		return
+		return sessions_structs.Chall_message{}, "Erreur parsing JSON"
 	}
 
 	if len(geminiResp.Candidates) > 0 && len(geminiResp.Candidates[0].Content.Parts) > 0 {
-		fmt.Println("\n--- Réponse du personnage ---")
-		fmt.Println(geminiResp.Candidates[0].Content.Parts[0].Text)
+		if len(geminiResp.Candidates[0].Content.Parts[0].Text) == 0 {
+			fmt.Println(prompts.Error + "soceng-ai/internals/server/handlers/api/sessions/sessions.go:Send_message_to_ai():Empty response from AI")
+			return sessions_structs.Chall_message{}, "Empty response from AI"
+		}
 	} else {
-		fmt.Println("Réponse vide ou mal formée.")
+		fmt.Println(prompts.Error + "soceng-ai/internals/server/handlers/api/sessions/sessions.go:Send_message_to_ai():No candidates in response from AI")
+		return sessions_structs.Chall_message{}, "No candidates in response from AI"
 	}
+
+	responseMessage := geminiResp.Candidates[0].Content.Parts[0].Text
+	challMessage := sessions_structs.Chall_message{
+		Session_character_id: string(db_sessions.Get_session_character_id_by_session_id(db_sessions.Get_session_id_from_session_key(session_key), character_name)),
+		Message:              responseMessage,
+		Timestamp:            time.Now().Format(time.RFC3339),
+		Gave_hint:            did_ai_gave_hint(responseMessage, character.Holds_hint),
+		Gave_contact:         did_ai_gave_contact(responseMessage, character.Knows_contact_of),
+	}
+
+	// Enregistrement du message dans la base de données
+	return challMessage, "OK"
+
+}
+
+func did_ai_gave_hint(response string, holds_hint string) bool {
+	if holds_hint == "" {
+		return false
+	}
+	if holds_hint == "none" {
+		return false
+	}
+	if holds_hint == "no" {
+		return false
+	}
+	if holds_hint == "false" {
+		return false
+	}
+	if holds_hint == "0" {
+		return false
+	}
+
+	if response == "" {
+		return false
+	}
+
+	if response == "none" {
+		return false
+	}
+
+	if response == "no" {
+		return false
+	}
+
+	if response == "false" {
+		return false
+	}
+
+	if response == "0" {
+		return false
+	}
+
+	return true
+}
+
+func did_ai_gave_contact(response string, knows_contact string) bool {
+	if knows_contact == "" {
+		return false
+	}
+	if knows_contact == "none" {
+		return false
+	}
+	if knows_contact == "no" {
+		return false
+	}
+	if knows_contact == "false" {
+		return false
+	}
+	if knows_contact == "0" {
+		return false
+	}
+
+	if response == "" {
+		return false
+	}
+
+	if response == "none" {
+		return false
+	}
+
+	if response == "no" {
+		return false
+	}
+
+	if response == "false" {
+		return false
+	}
+
+	if response == "0" {
+		return false
+	}
+
+	return true
 }

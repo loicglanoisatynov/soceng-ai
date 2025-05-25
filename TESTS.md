@@ -33,6 +33,7 @@ Lançable sur Docker ?
       - [Challenge non validé](#challenge-non-validé)
   - [Récupérer le challenge en cours](#récupérer-le-challenge-en-cours)
     - [Commande valide](#commande-valide-2)
+  - [Envoyer un message dans le chat du challenge](#envoyer-un-message-dans-le-chat-du-challenge)
 
 ## Opérations basiques de serveur
 
@@ -219,8 +220,18 @@ Output attendu :
 
 #### Commande valide
 ```bash
-curl -X GET http://localhost:80/api/sessions/Z7GTH1 \
-  -H "Content-Type: application/json" \
-  -b cookie.txt -v \
-  && echo
+curl -X GET http://localhost:80/api/sessions/TEST01 \
+-H "Content-Type: application/json" \
+-b cookie.txt -v \
+&& echo
 ```
+
+### Envoyer un message dans le chat du challenge
+```bash
+curl -X POST http://localhost:80/api/sessions/TEST01 \
+-H "Content-Type: application/json" \
+-d '{"character_name":"julie_recpt", "message": "Bonjour"}' \
+-b cookie.txt -v \   
+&& echo
+```
+

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	api_ia "soceng-ai/api"
 	db_sessions "soceng-ai/database/tables/db_sessions"
 	sessions_structs "soceng-ai/internals/server/handlers/api/sessions/sessions_structs"
 	authentification "soceng-ai/internals/server/handlers/authentification"
@@ -89,8 +90,12 @@ func Get_session_data(r *http.Request, session_id string) http.Response {
 
 // Fonction qui traite de la réception des messages sur la partie en cours
 func Post_session_data(r *http.Request, session_key string) http.Response {
+	var suspicion int
 	var error_status string
 	var post_session_data_request sessions_structs.Post_session_data_request
+	var ai_response_message sessions_structs.Chall_message
+	var hint_given string
+	var contact_given string
 	status_code := http.StatusNotImplemented
 	payload := []byte(`{"message": "default message"}`)
 
@@ -113,6 +118,28 @@ func Post_session_data(r *http.Request, session_key string) http.Response {
 			fmt.Println(prompts.Error + "soceng-ai/internals/server/handlers/api/sessions/sessions.go:Post_session_data():Error checking character existence: " + error_status)
 		} else {
 			// 4. Si le personnage existe dans le challenge d'origine de la session, on envoie le message à l'API d'IA et on récupère la réponse
+			ai_response_message, error_status = api_ia.Send_message_to_ai(session_key, post_session_data_request.Character_name, post_session_data_request.Message)
+			if error_status != "OK" {
+				payload = []byte(`{"message": "Error sending message to AI : ` + error_status + `"}`)
+				status_code = http.StatusNoContent
+				fmt.Println(prompts.Error + "soceng-ai/internals/server/handlers/api/sessions/sessions.go:Post_session_data():Error sending message to AI: " + error_status)
+			} else {
+				// 5. Si la réponse de l'IA est valide, on ajoute le message de l'utilisateur dans la DB (table session_messages) et on ajoute la réponse de l'IA dans la DB (table session_messages)
+				error_status, status_code, payload, hint_given, contact_given, suspicion = db_sessions.Register_messages(db_sessions.Get_session_character_id_by_session_id(db_sessions.Get_session_id_from_session_key(session_key), post_session_data_request.Character_name), post_session_data_request.Message, ai_response_message)
+				if error_status != "OK" {
+					payload = []byte(`{"message": "Error posting session data : ` + error_status + `"}`)
+					status_code = http.StatusNoContent
+					fmt.Println(prompts.Error + "soceng-ai/internals/server/handlers/api/sessions/sessions.go:Post_session_data():Error posting session data: " + error_status)
+				} else {
+					if suspicion < 10 {
+						payload = []byte(`{"message": "Session data posted successfully", "ai_response": "` + string(payload) + `", "hint_given": "` + hint_given + `", "contact_given": "` + contact_given + `", "status": "ongoing"}`)
+						status_code = http.StatusOK
+					} else {
+						payload = []byte(`{"message": "Session data posted successfully", "ai_response": "` + string(payload) + `", "hint_given": "` + hint_given + `", "contact_given": "` + contact_given + `", "status": "game_over"}`)
+						status_code = http.StatusForbidden
+					}
+				}
+			}
 		}
 	}
 

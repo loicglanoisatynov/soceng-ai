@@ -121,7 +121,7 @@ func Get_characters_by_challenge_id(challenge_id int) ([]db_challenges_structs.D
 		var character db_challenges_structs.Db_character
 		// On récupère les données de chaque personnage
 		// On les stocke dans la structure Characters
-		err := rows.Scan(&character.ID, &character.Challenge_id, &character.Advice_to_user, &character.Symbolic_name, &character.Title, &character.Initial_suspicion, &character.Communication_type, &character.Symbolic_osint_data, &character.Knows_contact_of, &character.Holds_hint, &character.Is_available_from_start)
+		err := rows.Scan(&character.ID, &character.Challenge_id, &character.Advice_to_user, &character.Character_name, &character.Title, &character.Initial_suspicion, &character.Communication_type, &character.Osint_data, &character.Knows_contact_of, &character.Holds_hint, &character.Is_available_from_start)
 		if err != nil {
 			fmt.Println("Error scanning character:", err)
 			continue
@@ -448,6 +448,35 @@ func Get_available_challenges(username string) ([]dashboard_structs.Challenge, s
 	return dashboard_challenges, "OK"
 }
 
+func Get_character_data(challenge_id int, character_name string) (db_challenges_structs.Db_character, string) {
+	db := database.Get_DB()
+	var character db_challenges_structs.Db_character
+	query := "SELECT * FROM characters WHERE challenge_id = ? AND character_name = ?"
+	err := db.QueryRow(query, challenge_id, character_name).Scan(&character.ID, &character.Challenge_id, &character.Advice_to_user, &character.Character_name, &character.Title, &character.Initial_suspicion, &character.Communication_type, &character.Osint_data, &character.Knows_contact_of, &character.Holds_hint, &character.Is_available_from_start)
+	if err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_challenges/db_challenges.go:Get_character_data():Error getting character data: " + err.Error())
+		return db_challenges_structs.Db_character{}, "Error getting character data: " + err.Error()
+	}
+	return character, "OK"
+}
+
+func Get_challenge_id_from_session_key(session_key string) (int, string) {
+	db := database.Get_DB()
+	var challenge_id int
+	query := "SELECT challenge_id FROM game_sessions WHERE session_key = ?"
+	err := db.QueryRow(query, session_key).Scan(&challenge_id)
+	if err != nil && err.Error() == "sql: no rows in result set" {
+		return -1, "Session key not found"
+	}
+	if err != nil {
+		return -1, "Error getting challenge ID: " + err.Error()
+	}
+	if challenge_id == 0 {
+		return -1, "Session key not found"
+	}
+	return challenge_id, "OK"
+}
+
 // String 1 : clé de session, String 2 : message d'erreur. Si aucune clé de session n'est trouvée mais qu'il n'y a pas d'erreur, la session n'existe pas
 func Get_session_key_by_username_and_challenge_id(username string, challenge_id int) (string, string) {
 	user_id := db_users.Get_user_id_by_username_or_email(username)
@@ -467,7 +496,7 @@ func Get_challenge_data(challenge_id int) (db_challenges_structs.Challenge, stri
 	db := database.Get_DB()
 	var challenge db_challenges_structs.Challenge
 	query := "SELECT * FROM challenges WHERE id = ?"
-	err := db.QueryRow(query, challenge_id).Scan(&challenge.ID, &challenge.Title, &challenge.Lore_for_player, &challenge.Lore_for_ai, &challenge.Difficulty, &challenge.Illustration, &challenge.Created_at, &challenge.Updated_at, &challenge.Validated, &challenge.Osint_data)
+	err := db.QueryRow(query, challenge_id).Scan(&challenge.ID, &challenge.Title, &challenge.Organisation, &challenge.Lore_for_player, &challenge.Lore_for_ai, &challenge.Difficulty, &challenge.Illustration, &challenge.Created_at, &challenge.Updated_at, &challenge.Validated, &challenge.Osint_data)
 	if err != nil {
 		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_challenges/db_challenges.go:Get_challenge_data():Error getting challenge data: " + err.Error())
 		return db_challenges_structs.Challenge{}, "Error getting challenge data: " + err.Error()

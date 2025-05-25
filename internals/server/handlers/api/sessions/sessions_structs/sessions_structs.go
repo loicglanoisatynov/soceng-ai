@@ -32,11 +32,12 @@ type Chall_hint struct {
 }
 
 type Chall_message struct {
-	User_or_character string `json:"user_or_character"`
-	Dialoging_with    string `json:"character_name"`
-	Message           string `json:"message"`
-	Timestamp         string `json:"timestamp"`
-	Holds_hint        bool   `json:"holds_hint"`
+	User_or_character    string `json:"user_or_character"`
+	Message              string `json:"message"`
+	Timestamp            string `json:"timestamp"`
+	Gave_hint            bool   `json:"gave_hint"`
+	Gave_contact         bool   `json:"gave_contact"`
+	Session_character_id string `json:"session_character_id"`
 }
 
 type Post_session_data_request struct {

@@ -10,7 +10,9 @@ import (
 	db_challenges "soceng-ai/database/tables/db_challenges"
 	"soceng-ai/database/tables/db_sessions/db_sessions_structs"
 	"soceng-ai/database/tables/db_users"
+	"soceng-ai/internals/server/handlers/api/sessions/sessions_structs"
 	"soceng-ai/internals/utils/prompts"
+	"strings"
 	"time"
 )
 
@@ -262,9 +264,66 @@ func Get_session_data_by_session_id(session_id string) (db_sessions_structs.Sess
 	if error_status != "OK" {
 		return db_sessions_structs.Session{}, error_status
 	}
+	session_messages, error_status := get_session_messages_by_session_id(session_data.ID)
+	if error_status != "OK" {
+		return db_sessions_structs.Session{}, error_status
+	}
+	session_data.Messages = session_messages
 	session_data.Characters = session_characters
 	session_data.Hints = session_hints
 	return session_data, "OK"
+}
+
+/*
+CREATE TABLE session_messages (
+    id SERIAL PRIMARY KEY,
+    session_character_id INT NOT NULL REFERENCES session_characters(id) ON DELETE CASCADE,
+    sender VARCHAR(50) NOT NULL CHECK (sender IN ('user', 'character')),
+    message TEXT NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    hint_given BOOLEAN DEFAULT FALSE,
+    contact_given BOOLEAN DEFAULT FALSE
+);
+*/
+
+func get_session_messages_by_session_id(session_id int) ([]db_sessions_structs.Session_message, string) {
+	db := database.Get_DB()
+
+	query := `
+	SELECT 
+		sm.id, sm.session_character_id, sm.sender, sm.message, sm.timestamp, sm.hint_given, sm.contact_given,
+		sc.character_id
+	FROM session_messages sm
+	JOIN session_characters sc ON sm.session_character_id = sc.id
+	JOIN characters c ON sc.character_id = c.id
+	WHERE sc.session_id = $1
+	ORDER BY sm.timestamp ASC
+	`
+
+	rows, err := db.Query(query, session_id)
+	if err != nil {
+		return nil, "Error getting session messages by session ID: " + err.Error()
+	}
+	defer rows.Close()
+
+	var results []db_sessions_structs.Session_message
+
+	for rows.Next() {
+		var sm db_sessions_structs.Session_message
+		err := rows.Scan(
+			&sm.ID, &sm.SessionCharacterID, &sm.Sender, &sm.Message, &sm.Timestamp,
+			&sm.HintGiven, &sm.ContactGiven, &sm.SessionCharacterID,
+		)
+		if err != nil {
+			return nil, "Error scanning session message: " + err.Error()
+		}
+		results = append(results, sm)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, "Error iterating over rows: " + err.Error()
+	}
+
+	return results, "OK"
 }
 
 func Get_session_characters_by_session_id(session_id int) ([]db_sessions_structs.Session_character, string) {
@@ -409,4 +468,302 @@ func Check_character_existence(session_key string, character_name string) (strin
 	}
 
 	return "OK", http.StatusOK
+}
+
+func Get_session_character_by_session_id(session_key string) (db_sessions_structs.Session_character, string) {
+	db := database.Get_DB()
+	var session_character db_sessions_structs.Session_character
+	err := db.QueryRow("SELECT id, session_id, character_id, suspicion_level, is_accessible FROM session_characters WHERE session_id = (SELECT id FROM game_sessions WHERE session_key = $1)", session_key).Scan(&session_character.ID, &session_character.SessionID, &session_character.CharacterID, &session_character.Suspicion, &session_character.IsAccessible)
+	if err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:Get_session_character_by_session_id():Error getting session character by session ID: " + err.Error())
+		return db_sessions_structs.Session_character{}, "Error getting session character by session ID: " + err.Error()
+	}
+	return session_character, "OK"
+}
+
+func Get_previous_character_message(session_key string, character_name string) string {
+	db := database.Get_DB()
+	var previous_message string
+	fmt.Println(prompts.Info + "soceng-ai/database/tables/db_sessions/db_session.go:Get_previous_character_message():Getting previous message for character " + character_name + " in session " + session_key)
+
+	err := db.QueryRow("SELECT message FROM session_messages WHERE session_character_id = (SELECT id FROM session_characters WHERE session_id = (SELECT id FROM game_sessions WHERE session_key = $1) AND character_id = (SELECT id FROM characters WHERE character_name = $2)) ORDER BY timestamp DESC LIMIT 1", session_key, character_name).Scan(&previous_message)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			fmt.Println(prompts.Info + "soceng-ai/database/tables/db_sessions/db_session.go:Get_previous_character_message():No previous message found for character " + character_name + " in session " + session_key)
+			return ""
+		}
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:Get_previous_character_message():Error getting previous character message: " + err.Error())
+		return "Error getting previous character message: " + err.Error()
+	}
+
+	fmt.Println(prompts.Info + "soceng-ai/database/tables/db_sessions/db_session.go:Get_previous_character_message():Previous message for character " + character_name + ": " + previous_message)
+	return previous_message
+}
+
+func Get_session_id_from_session_key(session_key string) int {
+	db := database.Get_DB()
+	var session_id int
+	err := db.QueryRow("SELECT id FROM game_sessions WHERE session_key = $1", session_key).Scan(&session_id)
+	if err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:Get_session_id_from_session_key():Error getting session ID from session key: " + err.Error())
+		return 0
+	}
+	if session_id == 0 {
+		return 0
+	}
+	return session_id
+}
+
+/*
+CREATE TABLE session_characters (
+    id SERIAL PRIMARY KEY,
+    session_id INT NOT NULL REFERENCES game_sessions(id) ON DELETE CASCADE,
+    character_id INT NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+    suspicion_level INT NOT NULL CHECK (suspicion_level BETWEEN 0 AND 100),
+    is_accessible BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE game_sessions (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    challenge_id INT NOT NULL REFERENCES challenges(id) ON DELETE CASCADE,
+    session_key VARCHAR(50) NOT NULL UNIQUE,
+    start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(50) NOT NULL CHECK (status IN ('in_progress', 'completed'))
+);
+
+CREATE TABLE characters (
+    id SERIAL PRIMARY KEY,
+    challenge_id INT NOT NULL REFERENCES challenges(id) ON DELETE CASCADE,
+    advice_to_user TEXT, -- Passable à l'API de l'IA.
+    character_name VARCHAR(50) NOT NULL, -- Passable à l'IA
+    title VARCHAR(50) NOT NULL, -- Passable à l'API de l'IA.
+    initial_suspicion INT NOT NULL CHECK (initial_suspicion BETWEEN 1 AND 10), -- Non-passable à l'API de l'IA (sert à générer la suspicion initiale du personnage, dynamique pendant la partie). Entre 1 et 10
+    communication_type VARCHAR(50) NOT NULL CHECK (communication_type IN ('email', 'phone', 'in-person', 'social_media')), -- Passable à l'API de l'IA (type de communication : email, phone, in-person, etc.)
+    osint_data TEXT, -- Non-passable à l'API de l'IA (sert à générer les données osint du personnage, change pour chaque partie/session)
+    knows_contact_of INT REFERENCES characters(id) ON DELETE CASCADE, -- passable à API de l'IA (passe le contact_string de la personne)
+    holds_hint INT REFERENCES hints(id) ON DELETE CASCADE, -- Non-passable à l'API de l'IA (sert à générer le hint du personnage, change pour chaque partie/session)
+    is_available_from_start BOOLEAN DEFAULT FALSE -- Non-passable à l'API de l'IA (sert à générer la disponibilité du personnage, change pour chaque partie/session)
+);
+
+CREATE TABLE challenges (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    lore_for_player TEXT NOT NULL,
+    lore_for_ai TEXT NOT NULL,
+    organisation VARCHAR(100),
+    difficulty INT NOT NULL CHECK (difficulty BETWEEN 1 AND 5),
+    illustration VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    validated BOOLEAN DEFAULT FALSE,
+    osint_data TEXT
+);
+*/
+
+func Get_session_character_id_by_session_id(session_id int, character_name string) int {
+	db := database.Get_DB()
+	var character_id int
+
+	// session_id est l'ID de la session, session ayant pour attribut un challenge_id
+	// character_name est le nom du personnage également lié à un challenge par un challenge_id
+	// On récupère l'ID du personnage de session dont le nom correspond à character_name
+
+	err := db.QueryRow("SELECT character_id FROM session_characters WHERE session_id = $1 AND character_id = (SELECT id FROM characters WHERE character_name = $2)", session_id, character_name).Scan(&character_id)
+	// Si la requête échoue, on gère l'erreur
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:Get_session_character_id_by_session_id():Error: no character found for session ID " + fmt.Sprint(session_id) + " and character name " + character_name)
+			return 0
+		}
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:Get_session_character_id_by_session_id():Error getting character ID: " + err.Error())
+		return 0
+	}
+	if character_id == 0 {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:Get_session_character_id_by_session_id():Error: character ID is 0 for session ID " + fmt.Sprint(session_id) + " and character name " + character_name)
+		return 0
+	}
+
+	return character_id
+}
+
+func Register_messages(session_character_id int, user_message string, ai_response sessions_structs.Chall_message) (string, int, []byte, string, string, int) {
+	var hint_given, contact_given string
+	var status_code int
+	texte_ia := extract_text_from_ai_response(ai_response.Message)
+	holds_hint, holds_contact := extract_concessions_from_ai_response(ai_response.Message)
+	if holds_hint {
+		hint_given = get_hint_name_by_id(session_character_id)
+	}
+	if holds_contact {
+		contact_given = get_contact_name_by_id(session_character_id)
+	}
+	suspicion := update_suspicion(session_character_id, ai_response.Message)
+
+	if session_character_id == 0 {
+		return "Error: character ID is 0", http.StatusNoContent, nil, "", "", 0
+	}
+
+	// On insère le message de l'utilisateur, puis la réponse de l'IA dans la base de données
+	db := database.Get_DB()
+	// Message de l'utilisateur
+	_, err := db.Exec("INSERT INTO session_messages (id, session_character_id, sender, message, timestamp) VALUES ($1, $2, $3, $4, $5)",
+		get_next_session_message_available_id(), session_character_id, "user", user_message, time.Now())
+	if err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:Register_messages():Error registering messages: " + err.Error())
+		return "Error registering messages: " + err.Error(), http.StatusNoContent, nil, "", "", 0
+	}
+
+	// Réponse de l'IA
+	_, err = db.Exec("INSERT INTO session_messages (id, session_character_id, sender, message, timestamp, hint_given, contact_given) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+		get_next_session_message_available_id(), session_character_id, "character", texte_ia, time.Now(), holds_hint, holds_contact)
+	if err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:Register_messages():Error registering AI response: " + err.Error())
+		return "Error registering AI response: " + err.Error(), http.StatusNoContent, nil, "", "", 0
+	}
+
+	status_code = http.StatusOK
+	return "OK", status_code, []byte(texte_ia), hint_given, contact_given, suspicion
+}
+
+func get_next_session_message_available_id() int {
+	var next_id int
+	db := database.Get_DB()
+	db.QueryRow("SELECT COALESCE(MAX(id) + 1, 1) FROM session_messages").Scan(&next_id)
+	return next_id
+}
+
+func get_hint_name_by_id(session_character_id int) string {
+	db := database.Get_DB()
+	var hint_name string
+	err := db.QueryRow("SELECT h.hint_title FROM session_hints sh JOIN hints h ON sh.hint_id = h.id WHERE sh.session_id = (SELECT session_id FROM session_characters WHERE id = $1)", session_character_id).Scan(&hint_name)
+	if err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:get_hint_name_by_id():Error getting hint name: " + err.Error())
+		return ""
+	}
+	return hint_name
+}
+
+func get_contact_name_by_id(session_character_id int) string {
+	db := database.Get_DB()
+	var contact_name string
+	err := db.QueryRow("SELECT c.character_name FROM session_characters sc JOIN characters c ON sc.character_id = c.id WHERE sc.id = $1", session_character_id).Scan(&contact_name)
+	if err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:get_contact_name_by_id():Error getting contact name: " + err.Error())
+		return ""
+	}
+	return contact_name
+}
+
+func extract_text_from_ai_response(ai_response string) string {
+	key := "\"Réponse (dialogue libre)\":"
+	start := strings.Index(ai_response, key)
+	if start == -1 {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:extract_text_from_ai_response():Error: key not found in AI response")
+		return ""
+	}
+	// Avancer après la clé
+	start += len(key)
+	// Sauter les espaces/blancs
+	rest := ai_response[start:]
+	rest = strings.TrimLeft(rest, " \t\n\r")
+	// Le champ doit maintenant commencer par un guillemet
+	if !strings.HasPrefix(rest, "\"") {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:extract_text_from_ai_response():Error: expected a quote at the start of the field")
+		return ""
+	}
+	// Récupérer juste après le premier guillemet
+	rest = rest[1:]
+	end := strings.Index(rest, "\"")
+	if end == -1 {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:extract_text_from_ai_response():Error: closing quote not found in AI response")
+		return ""
+	}
+	ai_response = rest[:end]
+
+	return ai_response
+}
+
+func update_suspicion(session_character_id int, ai_response string) int {
+	key := "\"Suspicion (entre 1 et 10)\":"
+	start := strings.Index(ai_response, key)
+	if start == -1 {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:update_suspicion():Error: key not found in AI response")
+		return 0
+	}
+	// Avancer après la clé
+	start += len(key)
+	// Sauter les espaces/blancs
+	rest := ai_response[start:]
+	rest = strings.TrimLeft(rest, " \t\n\r")
+	// Le champ doit maintenant commencer par un chiffre
+	if !strings.HasPrefix(rest, "\"") {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:update_suspicion():Error: expected a quote at the start of the field")
+		return 0
+	}
+	// Récupérer juste après le premier guillemet
+	rest = rest[1:]
+	end := strings.Index(rest, "\"")
+	if end == -1 {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:update_suspicion():Error: closing quote not found in AI response")
+		return 0
+	}
+	suspicion_level_str := rest[:end]
+	suspicion_level := 0
+	fmt.Sscanf(suspicion_level_str, "%d", &suspicion_level)
+
+	db := database.Get_DB()
+	_, err := db.Exec("UPDATE session_characters SET suspicion_level = $1 WHERE id = $2", suspicion_level, session_character_id)
+	if err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:update_suspicion():Error updating suspicion level: " + err.Error())
+		return 0
+	}
+	// fmt.Println(prompts.Info + "soceng-ai/database/tables/db_sessions/db_session.go:update_suspicion():Updated suspicion level to " + fmt.Sprint(suspicion_level) + " for session character ID " + fmt.Sprint(session_character_id))
+	return suspicion_level
+}
+
+func extract_concessions_from_ai_response(ai_response string) (bool, bool) {
+	key_hint := "\"Si_convaincu_donne_document (oui ou non)\":"
+	key_contact := "\"Si_convaincu_donne_contact (oui ou non)\":"
+	start_hint := strings.Index(ai_response, key_hint)
+	start_contact := strings.Index(ai_response, key_contact)
+	// Avancer après la clé
+	start_hint += len(key_hint)
+	start_contact += len(key_contact)
+	// Sauter les espaces/blancs
+	rest_hint := ai_response[start_hint:]
+	rest_contact := ai_response[start_contact:]
+	rest_hint = strings.TrimLeft(rest_hint, " \t\n\r")
+	rest_contact = strings.TrimLeft(rest_contact, " \t\n\r")
+	// Le champ doit maintenant commencer par un guillemet
+	if !strings.HasPrefix(rest_hint, "\"") || !strings.HasPrefix(rest_contact, "\"") {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:extract_concessions_from_ai_response():Error: expected a quote at the start of the field")
+		return false, false
+	}
+	// Récupérer juste après le premier guillemet
+	rest_hint = rest_hint[1:]
+	rest_contact = rest_contact[1:]
+	end_hint := strings.Index(rest_hint, "\"")
+	end_contact := strings.Index(rest_contact, "\"")
+	if end_hint == -1 || end_contact == -1 {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:extract_concessions_from_ai_response():Error: closing quote not found in AI response")
+		return false, false
+	}
+	ai_response_hint := rest_hint[:end_hint]
+	ai_response_contact := rest_contact[:end_contact]
+	// Convertir les réponses en booléens
+	gave_hint := strings.EqualFold(ai_response_hint, "oui") || strings.EqualFold(ai_response_hint, "yes") || strings.EqualFold(ai_response_hint, "true")
+	gave_contact := strings.EqualFold(ai_response_contact, "oui") || strings.EqualFold(ai_response_contact, "yes") || strings.EqualFold(ai_response_contact, "true")
+	if gave_hint {
+		fmt.Println(prompts.Info + "db_session.go:extract_concessions_from_ai_response():AI gave a hint")
+	} else {
+		fmt.Println(prompts.Info + "db_session.go:extract_concessions_from_ai_response():AI did not give a hint")
+	}
+	if gave_contact {
+		fmt.Println(prompts.Info + "db_session.go:extract_concessions_from_ai_response():AI gave a contact")
+	} else {
+		fmt.Println(prompts.Info + "db_session.go:extract_concessions_from_ai_response():AI did not give a contact")
+	}
+	return gave_hint, gave_contact
 }
