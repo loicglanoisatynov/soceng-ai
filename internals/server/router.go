@@ -21,6 +21,8 @@ func routes_index_handler(w http.ResponseWriter, r *http.Request) {
 
 func init() {
 	routes = []Route{
+		newRoute("/api/hello-world", api.HelloWorld_handler),
+		newRoute("/api/not-hello-world", api.NotHelloWorld_handler),
 		newRoute("/man/([^/]+)", handlers.Manual_handler),
 		newRoute("/routes", routes_index_handler),
 		newRoute("/", handlers.Home),
@@ -31,6 +33,7 @@ func init() {
 		newRoute("/logout", handlers_logging.Logout),
 		newRoute("/edit-profile", profiles_handling.Edit_profile),
 		newRoute("/edit-user", profiles_handling.Edit_user),
+		newRoute("/api/helloworld", api.HelloWorld_handler),
 		newRoute("/api/challenge", api.Challenge_handler),
 		newRoute("/api/sessions/([^/]+)", api.Sessions_handler),
 		newRoute("/api/dashboard", api.Dashboard_handler),
