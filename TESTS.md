@@ -88,14 +88,21 @@ grep "socengai" cookie.txt -A 1
 
 ## Customization
 
-Editer son profil utilisateur (implique d'être logged in) :
+Editer ses données utilisateur (implique d'être logged in) :
 ```bash
 curl -X PUT http://localhost:80/edit-user \
-  -H "Content-Type: application/json" \
-  -d '{"email": "newemail@gmail.com", "password": "very_solid_password", "newpassword":"even_better_password"}' \
-  -b cookie.txt -v
+-H "Content-Type: application/json" \
+-d '{"email": "newemail@gmail.com", "password": "very_solid_password", "newpassword":"even_better_password"}' \
+-b cookie.txt -v
 ```
 
+Editer son profil utilisateur (implique d'être logged in) :
+```bash
+curl -X PUT http://localhost:80/edit-profile \
+-H "Content-Type: application/json" \
+-d '{"username": "lglanois", "avatar": "https://example.com/avatar.png", "biography": "Ceci est ma bio"}' \
+-b cookie.txt -v
+```
 
 ## API Challenges
 

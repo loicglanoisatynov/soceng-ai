@@ -43,7 +43,7 @@ func Edit_profile(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		http.Error(w, "Invalid request.\nData needed : '{\"username\":\"<username>\", \"email\":\"<email>\", \"password\":\"<password>\", \"biography\":\"<biography>\", \"avatar\":\"<avatar>\"}'\n", http.StatusBadRequest)
+		http.Error(w, "Invalid request.\nData needed : '{\"username\":\"<username>\", \"biography\":\"<biography>\", \"avatar\":\"<avatar>\"}'\n", http.StatusBadRequest)
 		return
 	}
 
