@@ -1,9 +1,9 @@
 import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
-import { CommonModule, isPlatformBrowser }        from '@angular/common';
-import { RouterModule, Router }                   from '@angular/router';
-import { TranslateModule }                        from '@ngx-translate/core';
-import { LanguageService }                        from '../../core/language.service';
-import { AuthService }                            from '../../auth/auth.service';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { RouterModule, Router } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
+import { LanguageService } from '../../core/language.service';
+import { AuthService } from '../../auth/auth.service';
 
 @Component({
   selector: 'app-header',
@@ -42,18 +42,17 @@ export class HeaderComponent implements OnInit {
 
   onLogout(): void {
     this.auth.logout().subscribe({
-      next: () => {
-        this.menuOpen = false;
-        this.router.navigate(['/auth/login']);
-      },
-      error: () => {
-        this.menuOpen = false;
-        this.router.navigate(['/auth/login']);
-      }
+      next: () => this.navigateToLogin(),
+      error: () => this.navigateToLogin()
     });
   }
 
-  switchLang(lang: string) {
+  private navigateToLogin(): void {
+    this.menuOpen = false;
+    this.router.navigate(['/auth/login']);
+  }
+
+  switchLang(lang: string): void {
     this.lang.use(lang);
   }
 }

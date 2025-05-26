@@ -24,41 +24,8 @@ import { MyChallengeComponent }            from '../challenges/mychallenge/mycha
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
-  private auth = inject(AuthService);
-  private fb   = inject(FormBuilder);
-
-  profileForm!: FormGroup;
-  selectedTab: 'details' | 'settings' | 'challenges' | 'help' = 'details';
-
   ngOnInit(): void {
-    this.auth.loadProfile().pipe(take(1)).subscribe({
-      next: (p: UserProfile) => {
-        this.profileForm = this.fb.group({
-          fullName: [p.username],
-          email:    [p.email],
-          password: ['']
-        });
-      },
-      error: () => {
-        this.profileForm = this.fb.group({
-          fullName: [''],
-          email:    [''],
-          password: ['']
-        });
-      }
-    });
-  }
-
-  switchTab(tab: 'details' | 'settings' | 'challenges' | 'help'): void {
-    this.selectedTab = tab;
-  }
-
-  saveDetails(): void {
-    if (!this.profileForm.valid) return;
-    // …vous pouvez PUT /edit-profile ici si besoin
-  }
-
-  logout(): void {
-    this.auth.logout().pipe(take(1)).subscribe();
+    // Initialization logic here
+    console.log('DashboardComponent initialized');
   }
 }

@@ -9,22 +9,25 @@
 
   <div class="flex items-center space-x-8">
     <nav class="flex space-x-6">
-      <a routerLink="/challenge" class="text-lg text-[#FF8600] hover:text-white">
-        {{ 'HEADER.CHALLENGE' | translate }}
-      </a>
-      <a routerLink="/about" class="text-lg text-[#FF8600] hover:text-white">
-        {{ 'HEADER.ABOUT' | translate }}
-      </a>
-      <a routerLink="/contact" class="text-lg text-[#FF8600] hover:text-white">
-        {{ 'HEADER.CONTACT' | translate }}
-      </a>
-      <a *ngIf="isLoggedIn" routerLink="/dashboard"
-         class="text-lg text-[#FF8600] hover:text-white">
-        {{ 'HEADER.DASHBOARD' | translate }}
-      </a>
-    </nav>
+  <!-- Challenge link visible only when not logged in -->
+  <a *ngIf="!isLoggedIn" routerLink="/challenge" class="text-lg text-[#FF8600] hover:text-white">
+    {{ 'HEADER.CHALLENGE' | translate }}
+  </a>
+  <!-- My Challenge link for logged-in users -->
+  <a *ngIf="isLoggedIn" routerLink="/my-challenge" class="text-lg text-[#FF8600] hover:text-white">
+    {{ 'HEADER.MY_CHALLENGE' | translate }}
+  </a>
+  <a routerLink="/about" class="text-lg text-[#FF8600] hover:text-white">
+    {{ 'HEADER.ABOUT' | translate }}
+  </a>
+  <a routerLink="/contact" class="text-lg text-[#FF8600] hover:text-white">
+    {{ 'HEADER.CONTACT' | translate }}
+  </a>
+  <a *ngIf="isLoggedIn" routerLink="/dashboard" class="text-lg text-[#FF8600] hover:text-white">
+    {{ 'HEADER.DASHBOARD' | translate }}
+  </a>
+</nav>
 
-    <!-- Desktop controls -->
     <div class="hidden lg:flex items-center space-x-4 ml-8">
       <select (change)="switchLang($any($event.target).value)"
               class="px-2 py-1 border border-[#FF8600] rounded bg-[#AEB8FE] text-[#FF8600]">
@@ -55,19 +58,20 @@
       </button>
     </div>
 
-    <!-- Mobile toggle -->
     <button class="lg:hidden" (click)="toggleMenu()">
-      <!-- icône burger ici -->
-      <svg class="w-6 h-6 text-white"><!-- … --></svg>
+      <svg class="w-6 h-6 text-white"><!-- burger icon --></svg>
     </button>
   </div>
 </header>
 
-<!-- Mobile dropdown -->
 <div *ngIf="menuOpen"
      class="absolute top-full left-0 w-full bg-[rgba(92,0,191,0.95)] lg:hidden flex flex-col px-6 py-4 space-y-4">
-  <a routerLink="/challenge" (click)="toggleMenu()" class="text-lg text-white">
+  <!-- Challenge links in dropdown -->
+  <a *ngIf="!isLoggedIn" routerLink="/challenge" (click)="toggleMenu()" class="text-lg text-white">
     {{ 'HEADER.CHALLENGE' | translate }}
+  </a>
+  <a *ngIf="isLoggedIn" routerLink="/my-challenge" (click)="toggleMenu()" class="text-lg text-white">
+    {{ 'HEADER.MY_CHALLENGE' | translate }}
   </a>
   <a routerLink="/about" (click)="toggleMenu()" class="text-lg text-white">
     {{ 'HEADER.ABOUT' | translate }}
@@ -75,8 +79,7 @@
   <a routerLink="/contact" (click)="toggleMenu()" class="text-lg text-white">
     {{ 'HEADER.CONTACT' | translate }}
   </a>
-  <a *ngIf="isLoggedIn" routerLink="/dashboard" (click)="toggleMenu()"
-     class="text-lg text-white">
+  <a *ngIf="isLoggedIn" routerLink="/dashboard" (click)="toggleMenu()" class="text-lg text-white">
     {{ 'HEADER.DASHBOARD' | translate }}
   </a>
   <div class="flex items-center space-x-4">
@@ -93,7 +96,7 @@
             class="w-full border border-[#FF8600] text-[#FF8600] py-1 rounded hover:bg-[#FF8600] hover:text-white">
       {{ 'HEADER.SIGNUP' | translate }}
     </button>
-    <button *ngIf="isLoggedIn" (click)="onLogout()" class="w-full text-left text-red-500">
+    <button *ngIf="isLoggedIn" (click)="onLogout(); toggleMenu()" class="w-full text-left text-red-500">
       {{ 'HEADER.LOGOUT' | translate }}
     </button>
   </div>
