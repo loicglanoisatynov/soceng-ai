@@ -37,8 +37,3 @@ type Chall_message struct {
 	Timestamp         string `json:"timestamp"`
 	Holds_hint        bool   `json:"holds_hint"`
 }
-
-type Post_session_data_request struct {
-	Character_name string `json:"character_name"`
-	Message        string `json:"message"`
-}
