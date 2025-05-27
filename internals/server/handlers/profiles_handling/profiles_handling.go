@@ -10,6 +10,7 @@ import (
 	authentification "soceng-ai/internals/server/handlers/authentification"
 	registering "soceng-ai/internals/server/handlers/registering"
 	"soceng-ai/internals/utils/prompts"
+	"time"
 )
 
 type Profile struct {
@@ -37,7 +38,22 @@ type Edit_user_request struct {
 	Newpassword string `json:"newpassword"`
 }
 
-// Modification du profil utilisateur
+// @Summary		Éditer le profil de l'utilisateur (nom d'utilisateur, biographie, avatar)
+// @Description	Éditer le profil de l'utilisateur avec les informations fournies
+// @Tags			profiles, users, authentication, edit, profile, avatar, biography, username
+// @Accept			json
+// @Produce		json
+// @Param			username	body		string	true	"Nom d'utilisateur de l'utilisateur"
+// @Param			biography	body		string	true	"Biographie de l'utilisateur"
+// @Param			avatar		body		string	true	"Avatar de l'utilisateur (URL ou chemin d'accès)"
+// @Success		200			{object}	Response	"Profile updated successfully"
+// @Failure		400			{string}	string	"Bad Request"
+// @Failure		401			{string}	string	"Unauthorized"
+// @Failure 405 		{string}	string	"Method Not Allowed"
+// @Failure		500			{string}	string	"Internal Server Error"
+// @Security		socengai-username
+// @Security		socengai-auth
+// @Router			/edit-profile [put]
 func Edit_profile(w http.ResponseWriter, r *http.Request) {
 	request := Edit_profile_request{}
 
@@ -54,6 +70,7 @@ func Edit_profile(w http.ResponseWriter, r *http.Request) {
 	}
 	cookies_status := authentification.Cookies_relevant(cookies)
 	if cookies_status != "OK" {
+		prompts.Prompts_server(time.Now(), prompts.Error+"soceng-ai/internals/server/handlers/profiles_handling/profiles_handling.go:Edit_profile():Error processing cookies: "+cookies_status)
 		http.Error(w, "Needed cookies : socengai-username & socengai-auth\n", http.StatusUnauthorized)
 		return
 	}
@@ -62,11 +79,13 @@ func Edit_profile(w http.ResponseWriter, r *http.Request) {
 	auth_cookie, err := r.Cookie("socengai-auth")
 
 	if username_cookie.Value == "" || auth_cookie.Value == "" {
+		prompts.Prompts_server(time.Now(), prompts.Error+"soceng-ai/internals/server/handlers/profiles_handling/profiles_handling.go:Edit_profile():Missing cookie: socengai-username or socengai-auth")
 		http.Error(w, "Missing cookie.\n", http.StatusUnauthorized)
 		return
 	}
 
 	if !db_cookies.Is_cookie_valid(username_cookie.Value, auth_cookie.Value) {
+		prompts.Prompts_server(time.Now(), prompts.Error+"soceng-ai/internals/server/handlers/profiles_handling/profiles_handling.go:Edit_profile():Invalid cookie for user "+username_cookie.Value)
 		http.Error(w, "Invalid cookie.\n", http.StatusUnauthorized)
 		return
 	}
@@ -116,8 +135,22 @@ func Edit_profile(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Profile updated successfully\n"))
 }
 
-// Même chose, mais pour l'édition des informations sensibles (email, mot de passe), conditionné par le mot de passe
-// de l'utilisateur
+// @Summary		Éditer les informations sensibles de l'utilisateur (email, mot de passe)
+// @Description	Éditer les informations sensibles de l'utilisateur avec les informations fournies
+// @Tags			profiles, users, authentication, edit, profile, email, password
+// @Accept			json
+// @Produce		json
+// @Param			email		body		string	true	"Nouvel email de l'utilisateur"
+// @Param			password	body		string	true	"Mot de passe actuel de l'utilisateur"
+// @Param			newpassword	body	string	false	"Nouveau mot de passe de l'utilisateur"
+// @Success		200			{object}	Response	"User updated successfully"
+// @Failure		400			{string}	string	"Bad Request"
+// @Failure		401			{string}	string	"Unauthorized"
+// @Failure		405 		{string}	string	"Method Not Allowed"
+// @Failure		500			{string}	string	"Internal Server Error"
+// @Security		socengai-username
+// @Security		socengai-auth
+// @Router			/edit-user [put]
 func Edit_user(w http.ResponseWriter, r *http.Request) {
 	request := Edit_user_request{}
 
