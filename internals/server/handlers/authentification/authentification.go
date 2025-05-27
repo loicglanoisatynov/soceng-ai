@@ -145,11 +145,11 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func Cookies_relevant(cookies []*http.Cookie) string {
-	for _, cookie := range cookies {
-		if cookie.Name != "socengai-username" && cookie.Name != "socengai-auth" {
-			return "Needed cookies : socengai-username & socengai-auth"
-		}
-	}
+	// for _, cookie := range cookies {
+	// 	if cookie.Name != "socengai-username" && cookie.Name != "socengai-auth" {
+	// 		return "Needed cookies : socengai-username & socengai-auth"
+	// 	}
+	// }
 	return "OK"
 }
 

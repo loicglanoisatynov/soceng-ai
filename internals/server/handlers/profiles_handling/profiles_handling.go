@@ -63,17 +63,17 @@ func Edit_profile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// cookies := r.Cookies()
-	// if len(r.Cookies()) < 2 {
-	// 	http.Error(w, "Missing cookie.\n", http.StatusUnauthorized)
-	// 	return
-	// }
-	// cookies_status := authentification.Cookies_relevant(cookies)
-	// if cookies_status != "OK" {
-	// 	prompts.Prompts_server(time.Now(), prompts.Error+"soceng-ai/internals/server/handlers/profiles_handling/profiles_handling.go:Edit_profile():Error processing cookies: "+cookies_status)
-	// 	http.Error(w, "Needed cookies : socengai-username & socengai-auth\n", http.StatusUnauthorized)
-	// 	return
-	// }
+	cookies := r.Cookies()
+	if len(r.Cookies()) < 2 {
+		http.Error(w, "Missing cookie.\n", http.StatusUnauthorized)
+		return
+	}
+	cookies_status := authentification.Cookies_relevant(cookies)
+	if cookies_status != "OK" {
+		prompts.Prompts_server(time.Now(), prompts.Error+"soceng-ai/internals/server/handlers/profiles_handling/profiles_handling.go:Edit_profile():Error processing cookies: "+cookies_status)
+		http.Error(w, "Needed cookies : socengai-username & socengai-auth\n", http.StatusUnauthorized)
+		return
+	}
 
 	username_cookie, err := r.Cookie("socengai-username")
 	auth_cookie, err := r.Cookie("socengai-auth")
