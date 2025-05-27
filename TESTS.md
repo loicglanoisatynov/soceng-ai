@@ -59,6 +59,14 @@ curl -X POST http://localhost:80/create-user \
 ```
 
 #### Commandes invalides
+
+Créer un user avec la mauvaise méthode HTTP :
+```bash
+curl -X GET http://localhost:80/create-user \
+-H "Content-Type: application/json" \
+-d @tests/authentification/create/ok/payload.json
+```
+
 Créer un user dont le nom d'utilisateur est déjà pris :
 ```bash
 curl -X POST http://localhost:80/create-user \

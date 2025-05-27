@@ -2,11 +2,15 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	database "soceng-ai/database"
+	_ "soceng-ai/internals/docs" // Importez le package docs généré par Swaggo
 	"soceng-ai/internals/server"
 	"soceng-ai/internals/utils/prompts"
 	"time"
+
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 var (
@@ -15,6 +19,7 @@ var (
 )
 
 func main() {
+	http.HandleFunc("/swagger/", httpSwagger.WrapHandler)
 
 	if len(os.Args) < 2 {
 		os.Args = append(os.Args, "-h")

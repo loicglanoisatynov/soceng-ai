@@ -19,7 +19,6 @@ func Init_DB() {
 		prompts.Prompts_server(time.Now(), prompts.Success+"Database created at "+Get_DB_path())
 	} else {
 		Set_DB(Get_DB_path())
-		// fmt.Println(prompts.Prompt_server + prompts.Success + "Database opened")
 		prompts.Prompts_server(time.Now(), prompts.Success+"Database opened at "+Get_DB_path())
 	}
 

@@ -1,0 +1,52 @@
+definitions:
+  registering.Registering_response:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /create-user:
+    post:
+      consumes:
+      - application/json
+      description: Créer un nouvel utilisateur avec les informations fournies
+      parameters:
+      - description: Nom d'utilisateur de l'utilisateur
+        in: body
+        name: username
+        required: true
+        schema:
+          type: string
+      - description: Mot de passe de l'utilisateur
+        in: body
+        name: password
+        required: true
+        schema:
+          type: string
+      - description: Email de l'utilisateur
+        in: body
+        name: email
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/registering.Registering_response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/registering.Registering_response'
+      summary: Créer un nouvel utilisateur
+      tags:
+      - registering
+      - users
+      - authentication
+swagger: "2.0"
