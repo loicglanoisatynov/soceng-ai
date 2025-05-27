@@ -7,6 +7,7 @@ import {
   Validators
 } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
   selector: 'app-contact',
@@ -14,7 +15,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    TranslateModule      // ← indispensable pour la pipe | translate
+    TranslateModule
   ],
   templateUrl: './contact.component.html',
   styleUrls: ['./contact.component.scss']
@@ -22,6 +23,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 export class ContactComponent {
   private fb = inject(FormBuilder);
   private translate = inject(TranslateService);
+  private http = inject(HttpClient);
 
   loading = false;
   error: string | null = null;
@@ -41,16 +43,20 @@ export class ContactComponent {
     this.loading = true;
     this.error = null;
 
-    // Simule un appel HTTP
-    setTimeout(() => {
-      const success = Math.random() > 0.2;
-      if (success) {
+    const formData = this.contactForm.value;
+
+    const headers = new HttpHeaders({ 'Accept': 'application/json' });
+
+    this.http.post('https://formspree.io/f/xldbqrzz', formData, { headers }).subscribe({
+      next: () => {
         alert(this.translate.instant('CONTACT.SUCCESS_ALERT'));
         this.contactForm.reset();
-      } else {
+        this.loading = false;
+      },
+      error: () => {
         this.error = this.translate.instant('CONTACT.ERROR.SUBMIT_FAILED');
+        this.loading = false;
       }
-      this.loading = false;
-    }, 1500);
+    });
   }
 }

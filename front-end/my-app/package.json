@@ -13,6 +13,7 @@
     "@angular/platform-browser-dynamic": "^19.2.13",
     "@angular/platform-server": "^19.2.13",
     "@angular/router": "^19.2.13",
+    "@angular/service-worker": "^19.2.13",
     "@angular/ssr": "^19.2.13",
     "@ngx-translate/core": "^16.0.4",
     "@ngx-translate/http-loader": "^16.0.1",

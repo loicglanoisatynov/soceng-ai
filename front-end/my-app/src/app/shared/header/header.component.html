@@ -14,7 +14,7 @@
     {{ 'HEADER.CHALLENGE' | translate }}
   </a>
   <!-- My Challenge link for logged-in users -->
-  <a *ngIf="isLoggedIn" routerLink="/my-challenge" class="text-lg text-[#FF8600] hover:text-white">
+  <a *ngIf="isLoggedIn" routerLink="/mychallenge" class="text-lg text-[#FF8600] hover:text-white">
     {{ 'HEADER.MY_CHALLENGE' | translate }}
   </a>
   <a routerLink="/about" class="text-lg text-[#FF8600] hover:text-white">
@@ -70,7 +70,7 @@
   <a *ngIf="!isLoggedIn" routerLink="/challenge" (click)="toggleMenu()" class="text-lg text-white">
     {{ 'HEADER.CHALLENGE' | translate }}
   </a>
-  <a *ngIf="isLoggedIn" routerLink="/my-challenge" (click)="toggleMenu()" class="text-lg text-white">
+  <a *ngIf="isLoggedIn" routerLink="/mychallenge" (click)="toggleMenu()" class="text-lg text-white">
     {{ 'HEADER.MY_CHALLENGE' | translate }}
   </a>
   <a routerLink="/about" (click)="toggleMenu()" class="text-lg text-white">

@@ -9,7 +9,7 @@ import {
   withInterceptorsFromDi,
   HTTP_INTERCEPTORS
 } from '@angular/common/http';
-import { importProvidersFrom } from '@angular/core';
+import { importProvidersFrom, isDevMode } from '@angular/core';
 
 import { routes } from './app.routes';
 import { TokenInterceptor } from './core/token.interceptor';
@@ -17,6 +17,7 @@ import { TokenInterceptor } from './core/token.interceptor';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { HttpLoaderFactory } from './app.translate.loader';
 import { HttpClient } from '@angular/common/http';
+import { provideServiceWorker } from '@angular/service-worker';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -48,6 +49,9 @@ export const appConfig: ApplicationConfig = {
     ),
 
     // SSR hydration (si nécessaire)
-    provideClientHydration(withEventReplay())
+    provideClientHydration(withEventReplay()), provideServiceWorker('ngsw-worker.js', {
+            enabled: !isDevMode(),
+            registrationStrategy: 'registerWhenStable:30000'
+          })
   ]
 };

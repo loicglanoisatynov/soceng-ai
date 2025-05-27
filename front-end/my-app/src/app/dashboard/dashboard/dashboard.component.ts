@@ -1,24 +1,15 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule }                                    from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup }     from '@angular/forms';
-import { TranslateModule }                                 from '@ngx-translate/core';
-import { take }                                            from 'rxjs/operators';
-
-import { AuthService, UserProfile }        from '../../auth/auth.service';
-import { ProfileHeroComponent }            from '../../shared/profile-hero/profile-hero.component';
-import { SettingsComponent }               from '../../settings/settings/settings.component';
-import { MyChallengeComponent }            from '../challenges/mychallenge/mychallenge.component';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
+import { ProfileHeroComponent } from '../../shared/profile-hero/profile-hero.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule,
     TranslateModule,
-    ProfileHeroComponent,
-    SettingsComponent,
-    MyChallengeComponent
+    ProfileHeroComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']

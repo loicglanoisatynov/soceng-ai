@@ -5,7 +5,7 @@ import { TranslateModule }    from '@ngx-translate/core';
 import { ProfileHeroComponent } from '../../../shared/profile-hero/profile-hero.component';
 
 @Component({
-  selector: 'app-my-challenge',    // ← ici, avec le tiret
+  selector: 'app-mychallenge',
   standalone: true,
   imports: [CommonModule, TranslateModule, ProfileHeroComponent],
   templateUrl: './mychallenge.component.html',

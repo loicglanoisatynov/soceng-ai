@@ -12,8 +12,14 @@ import { UserProfile } from '../../auth/auth.service';
   styleUrls: ['./profile-hero.component.scss']
 })
 export class ProfileHeroComponent {
-  /**
-   * Profil complet, incluant avatarUrl, score, progress et biography
-   */
-  @Input() profile!: UserProfile & { avatarUrl: string; score: number; progress: number; biography?: string };
+  @Input() profile!: UserProfile & {
+    avatarUrl: string;
+    score: number;
+    progress: number;
+    biography?: string;
+  };
+
+  get avatar(): string {
+    return this.profile?.avatarUrl || '/assets/images/default-avatar.png';
+  }
 }

@@ -62,7 +62,7 @@ export const routes: Routes = [
       import('./settings/settings/settings.component').then(m => m.SettingsComponent)
   },
   {
-    path: 'my-challenge',
+    path: 'mychallenge',
     canActivate: [AuthGuard],
     loadComponent: () =>
       import('./dashboard/challenges/mychallenge/mychallenge.component')
