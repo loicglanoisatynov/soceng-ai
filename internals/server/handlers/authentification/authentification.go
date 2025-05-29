@@ -50,10 +50,7 @@ func IssueCookie(identifier string) string {
 
 func IsCookieValid(username string, cookie string) bool {
 	id := db_cookies.Get_user_id_by_cookie(username, cookie)
-	if id == -1 {
-		return false
-	}
-	return true
+	return id != -1
 }
 
 func Delete_cookie(username string, cookie string) bool {

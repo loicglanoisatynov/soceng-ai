@@ -2,7 +2,6 @@ package db_sessions
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"math/rand"
 	"net/http"
@@ -217,35 +216,35 @@ func Check_session_id(session_id string) string {
 	return "OK"
 }
 
-func Get_session_data(session_id string) (string, int, []byte) {
+func Get_session_data(session_id string) (string, int, db_sessions_structs.Session) {
 	var error_status string
 	var status_code int
-	var payload []byte
+	// var payload []byte
 	var challenge_id int
 	var session_data db_sessions_structs.Session
 	db := database.Get_DB()
 	err := db.QueryRow("SELECT challenge_id FROM game_sessions WHERE session_key = $1", session_id).Scan(&challenge_id)
 	if err != nil {
 		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_challenge_data():Error getting challenge data: " + err.Error())
-		return "Error getting challenge data: " + err.Error(), http.StatusNoContent, nil
+		return "Error getting challenge data: " + err.Error(), http.StatusNoContent, db_sessions_structs.Session{}
 	}
 	if challenge_id == 0 {
-		return "Error: no challenge ID found", http.StatusNoContent, nil
+		return "Error: no challenge ID found", http.StatusNoContent, db_sessions_structs.Session{}
 	}
 	session_data, error_status = Get_session_data_by_session_id(session_id)
 	if error_status != "OK" {
-		return error_status, http.StatusNoContent, nil
+		return error_status, http.StatusNoContent, db_sessions_structs.Session{}
 	}
 	if session_data.ID == 0 {
-		return "Error: no session data found", http.StatusNoContent, nil
+		return "Error: no session data found", http.StatusNoContent, db_sessions_structs.Session{}
 	}
-	payload, err = json.Marshal(session_data)
+	// payload, err = json.Marshal(session_data)
 	if err != nil {
 		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_sessions.go:Get_challenge_data():Error marshalling session data: " + err.Error())
-		return "Error marshalling session data: " + err.Error(), http.StatusNoContent, nil
+		return "Error marshalling session data: " + err.Error(), http.StatusNoContent, db_sessions_structs.Session{}
 	}
 	status_code = http.StatusOK
-	return "OK", status_code, payload
+	return "OK", status_code, session_data
 }
 
 func Get_session_data_by_session_id(session_id string) (db_sessions_structs.Session, string) {

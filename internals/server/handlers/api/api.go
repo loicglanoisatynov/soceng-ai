@@ -47,21 +47,6 @@ func Challenge_handler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// Récupère les requêtes commençant par /api/sessions.
-//
-// Résumé :
-//
-// - POST : /api/sessions/start-challenge `'{"challenge_name": "challenge_name"}'` -> Crée une nouvelle session de jeu
-//
-// - GET : /api/sessions/{session_id} -> Récupère les données de session en JSON
-//
-// - POST : /api/sessions/{session_id} `'{"character_name": "character_name", "message": "message"}'` -> Envoie un message au personnage
-//
-// Concerne la collecte des données de jeu et l'envoi de
-// messages aux personnages. Contrôle par cookies. Si la méthode est GET, on envoie les données de session. Si la
-// méthode est POST, elle doit contenir sa clé de session dans l'URL. On vérifie que la clé de session est valide.
-// Si c'est le cas, on récupère les données de session contenant le nom du personnage adressé et le message envoyé.
-// Gère également la création de session de jeu pour un challenge donné.
 func Sessions_handler(w http.ResponseWriter, r *http.Request) {
 	var error_status string
 	var response = http.Response{
@@ -140,7 +125,15 @@ func process_cookies(r *http.Request) string {
 	return "OK"
 }
 
-// Renvoie les données à afficher sur le tableau de bord
+// @Summary Dashboard handler
+// @Description Gère les requêtes pour récupérer les données du tableau des challenges de la page principale.
+// @Tags Dashboard, Challenges
+// @Accept json
+// @Produce json
+// @Success 200 {object} dashboard_structs.Dashboard
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /api/dashboard [get]
 func Dashboard_handler(w http.ResponseWriter, r *http.Request) {
 
 	cookies_status := process_cookies(r)
@@ -174,7 +167,6 @@ func Dashboard_handler(w http.ResponseWriter, r *http.Request) {
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
-
 }
 
 func HelloWorld_handler(w http.ResponseWriter, r *http.Request) {

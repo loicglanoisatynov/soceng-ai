@@ -4,6 +4,7 @@ type Response struct {
 	Dashboard Dashboard `json:"dashboard"`
 }
 
+// @Description	Structure contenant le dashboard de l'utilisateur
 type Dashboard struct {
 	Challenges []Challenge `json:"challenges"`
 	Score      int         `json:"score"`

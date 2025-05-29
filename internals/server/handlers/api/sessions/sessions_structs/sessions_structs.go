@@ -48,3 +48,52 @@ type Post_session_data_request struct {
 // L'autre sous-route de /api/sessions est la sous-route des clés de session (**/api/sessions/EXMPLE**) qui récupère toutes les données de session du challenge en question. Ces données sont : le nom du challenge (`json:"chall_name"`), la description du challenge (`json:"chall_desc"`), le nom de l'image d'illustration du challenge (`json:"illustration"`), la clé de session du challenge (pour qu'elle ne disparaisse pas ; `json:"session_key"`), un **array** contenant tous les personnages de la session (`json:"chall_characters"`) qui sont d'autres objets dont je vais t'énumérer également les attributs plus bas, les hints de la session (`json:"chall_hints"`) même chose que pour les personnages et le status du challenge (`json:"chall_status"`). Je précise que lorsque la mécanique des messages sera ajoutée, ils seront également dans ce bloc de json et posséderont leur propre array
 // Les personnages de la session sont des objets qui possèdent les attributs suivants : le nom du personnage (`json:"name"`), le titre du personnage (`json:"title"`), le conseil à l'utilisateur (`json:"advice_to_user"`), le niveau de suspicion (`json:"suspicion"`), le type de communication (`json:"communication_type"`) et les données OSINT (`json:"osint_data"`). Les hints de la session sont des objets qui possèdent les attributs suivants : le titre du hint (`json:"title"`), le texte du hint (`json:"text"`), le type d'illustration du hint (`json:"illustration_type"`), le nombre de mentions du hint dans la session (`json:"mentions"`), un booléen qui indique si le hint est capital ou non (`json:"is_capital"`) et un booléen qui indique si le hint est visible ou non (`json:"is_visible"`)
 // Les message du challenge auront les attributs `json:"user_or_character"`, `json:"message"`, `json:"character_name"`, `json:"timestamp"`, `json:"holds_hint"`
+
+// Redéfinitions pour swagger
+type Session struct {
+	ID          int                 `json:"id"`
+	UserID      int                 `json:"user_id"`
+	ChallengeID int                 `json:"challenge_id"`
+	SessionKey  string              `json:"session_key"`
+	StartTime   string              `json:"start_time"`
+	Status      string              `json:"status"`
+	Characters  []Session_character `json:"characters"`
+	Hints       []Session_hint      `json:"hints"`
+	Messages    []Session_message   `json:"messages"`
+}
+
+type Session_character struct {
+	ID                int    `json:"id"`
+	SessionID         int    `json:"session_id"`
+	Name              string `json:"name"`
+	Title             string `json:"title"`
+	Advice_to_user    string `json:"advice_to_user"`
+	CharacterID       int    `json:"character_id"`
+	Suspicion         int    `json:"current_suspicion"`
+	CommunicationType string `json:"communication_type"`
+	IsAccessible      bool   `json:"is_accessible"`
+	OsintData         string `json:"osint_data"`
+	HoldsHint         bool   `json:"holds_hint"`
+}
+
+type Session_hint struct {
+	ID               int    `json:"id"`
+	SessionID        int    `json:"session_id"`
+	HintID           int    `json:"hint_id"`
+	Title            string `json:"title"`
+	Text             string `json:"text"`
+	IllustrationType string `json:"illustration_type"`
+	Mentions         int    `json:"mentions"`
+	IsCapital        bool   `json:"is_capital"`
+	IsAvailable      bool   `json:"is_available"`
+}
+
+type Session_message struct {
+	ID                 int    `json:"id"`
+	SessionCharacterID int    `json:"session_character_id"`
+	Sender             string `json:"sender"` // 'user' or 'character'
+	Message            string `json:"message"`
+	Timestamp          string `json:"timestamp"`
+	HintGiven          bool   `json:"hint_given"`
+	ContactGiven       bool   `json:"contact_given"`
+}

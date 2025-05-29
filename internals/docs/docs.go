@@ -15,6 +15,191 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/dashboard": {
+            "get": {
+                "description": "Gère les requêtes pour récupérer les données du tableau des challenges de la page principale.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dashboard",
+                    "Challenges"
+                ],
+                "summary": "Dashboard handler",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dashboard_structs.Dashboard"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/sessions/{session_id}": {
+            "get": {
+                "security": [
+                    {
+                        "socengai-username": []
+                    },
+                    {
+                        "socengai-auth": []
+                    }
+                ],
+                "description": "Récupère les données de la session en cours à partir de l'ID de session (chaine de 6 caractères aléatoires) et renvoie les données du challenge en JSON",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sessions",
+                    "challenges",
+                    "game",
+                    "api"
+                ],
+                "summary": "Récupère les données de la session en cours",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID de session (chaine de 6 caractères aléatoires)",
+                        "name": "session_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Session data retrieved successfully",
+                        "schema": {
+                            "$ref": "#/definitions/sessions_structs.Session"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Session not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "405": {
+                        "description": "Method Not Allowed",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/sessions/{session_key}": {
+            "post": {
+                "security": [
+                    {
+                        "socengai-username": []
+                    },
+                    {
+                        "socengai-auth": []
+                    }
+                ],
+                "description": "Envoie les données de session (message de l'utilisateur et réponse de l'IA) à la base de données",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sessions",
+                    "challenges",
+                    "game",
+                    "api"
+                ],
+                "summary": "Envoie les données de session (message de l'utilisateur et réponse de l'IA) à la base de données",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clé de session (chaine de 6 caractères aléatoires)",
+                        "name": "session_key",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Message de l'utilisateur et nom du personnage",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sessions_structs.Post_session_data_request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Session data posted successfully",
+                        "schema": {
+                            "$ref": "#/definitions/sessions_structs.Chall_message"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "405": {
+                        "description": "Method Not Allowed",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/create-user": {
             "post": {
                 "description": "Créer un nouvel utilisateur avec les informations fournies",
@@ -74,9 +259,316 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/edit-profile": {
+            "put": {
+                "security": [
+                    {
+                        "socengai-username": []
+                    },
+                    {
+                        "socengai-auth": []
+                    }
+                ],
+                "description": "Éditer le profil de l'utilisateur avec les informations fournies",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profiles",
+                    "users",
+                    "authentication",
+                    "edit",
+                    "profile",
+                    "avatar",
+                    "biography",
+                    "username"
+                ],
+                "summary": "Éditer le profil de l'utilisateur (nom d'utilisateur, biographie, avatar)",
+                "parameters": [
+                    {
+                        "description": "Nom d'utilisateur de l'utilisateur",
+                        "name": "username",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Biographie de l'utilisateur",
+                        "name": "biography",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Avatar de l'utilisateur (URL ou chemin d'accès)",
+                        "name": "avatar",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Profile updated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/profiles_handling.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "405": {
+                        "description": "Method Not Allowed",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/edit-user": {
+            "put": {
+                "security": [
+                    {
+                        "socengai-username": []
+                    },
+                    {
+                        "socengai-auth": []
+                    }
+                ],
+                "description": "Éditer les informations sensibles de l'utilisateur avec les informations fournies",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profiles",
+                    "users",
+                    "authentication",
+                    "edit",
+                    "profile",
+                    "email",
+                    "password"
+                ],
+                "summary": "Éditer les informations sensibles de l'utilisateur (email, mot de passe)",
+                "parameters": [
+                    {
+                        "description": "Nouvel email de l'utilisateur",
+                        "name": "email",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Mot de passe actuel de l'utilisateur",
+                        "name": "password",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Nouveau mot de passe de l'utilisateur",
+                        "name": "newpassword",
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User updated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/profiles_handling.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "405": {
+                        "description": "Method Not Allowed",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/start-challenge": {
+            "post": {
+                "security": [
+                    {
+                        "socengai-username": []
+                    },
+                    {
+                        "socengai-auth": []
+                    }
+                ],
+                "description": "Gère les requêtes pour initier une session de jeu à partir du nom d'un challenge.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sessions",
+                    "challenges",
+                    "game",
+                    "api"
+                ],
+                "summary": "Handler des sessions",
+                "parameters": [
+                    {
+                        "description": "Nom du challenge à partir duquel on veut créer une session de jeu",
+                        "name": "challenge_name",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sessions_structs.Create_session_request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Session created successfully",
+                        "schema": {
+                            "$ref": "#/definitions/sessions.Session_creation_response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/sessions.Session_creation_response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/sessions.Session_creation_response"
+                        }
+                    },
+                    "405": {
+                        "description": "Method Not Allowed",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "dashboard_structs.Challenge": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "difficulty": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "illustration_filename": {
+                    "type": "string"
+                },
+                "lore_for_player": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "osint_data": {
+                    "type": "string"
+                },
+                "session_key": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "dashboard_structs.Dashboard": {
+            "description": "Structure contenant le dashboard de l'utilisateur",
+            "type": "object",
+            "properties": {
+                "challenges": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dashboard_structs.Challenge"
+                    }
+                },
+                "score": {
+                    "type": "integer"
+                }
+            }
+        },
+        "profiles_handling.Response": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "boolean"
+                }
+            }
+        },
         "registering.Registering_response": {
             "type": "object",
             "properties": {
@@ -84,6 +576,197 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "sessions.Session_creation_response": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "session_key": {
+                    "type": "string"
+                }
+            }
+        },
+        "sessions_structs.Chall_message": {
+            "type": "object",
+            "properties": {
+                "gave_contact": {
+                    "type": "boolean"
+                },
+                "gave_hint": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "session_character_id": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "user_or_character": {
+                    "type": "string"
+                }
+            }
+        },
+        "sessions_structs.Create_session_request": {
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "sessions_structs.Post_session_data_request": {
+            "type": "object",
+            "properties": {
+                "character_name": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "sessions_structs.Session": {
+            "type": "object",
+            "properties": {
+                "challenge_id": {
+                    "type": "integer"
+                },
+                "characters": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/sessions_structs.Session_character"
+                    }
+                },
+                "hints": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/sessions_structs.Session_hint"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/sessions_structs.Session_message"
+                    }
+                },
+                "session_key": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "sessions_structs.Session_character": {
+            "type": "object",
+            "properties": {
+                "advice_to_user": {
+                    "type": "string"
+                },
+                "character_id": {
+                    "type": "integer"
+                },
+                "communication_type": {
+                    "type": "string"
+                },
+                "current_suspicion": {
+                    "type": "integer"
+                },
+                "holds_hint": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_accessible": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "osint_data": {
+                    "type": "string"
+                },
+                "session_id": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "sessions_structs.Session_hint": {
+            "type": "object",
+            "properties": {
+                "hint_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "illustration_type": {
+                    "type": "string"
+                },
+                "is_available": {
+                    "type": "boolean"
+                },
+                "is_capital": {
+                    "type": "boolean"
+                },
+                "mentions": {
+                    "type": "integer"
+                },
+                "session_id": {
+                    "type": "integer"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "sessions_structs.Session_message": {
+            "type": "object",
+            "properties": {
+                "contact_given": {
+                    "type": "boolean"
+                },
+                "hint_given": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "sender": {
+                    "description": "'user' or 'character'",
+                    "type": "string"
+                },
+                "session_character_id": {
+                    "type": "integer"
+                },
+                "timestamp": {
                     "type": "string"
                 }
             }
