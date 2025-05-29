@@ -587,11 +587,26 @@ func Get_session_character_id_by_session_id(session_id int, character_name strin
 	return character_id
 }
 
+func get_session_id_from_session_character_id(session_character_id int) int {
+	db := database.Get_DB()
+	var session_id int
+	err := db.QueryRow("SELECT session_id FROM session_characters WHERE id = $1", session_character_id).Scan(&session_id)
+	if err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:get_session_id_from_session_character_id():Error getting session ID from session character ID: " + err.Error())
+		return 0
+	}
+	if session_id == 0 {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:get_session_id_from_session_character_id():Error: session ID is 0 for session character ID " + fmt.Sprint(session_character_id))
+		return 0
+	}
+	return session_id
+}
+
 func Register_messages(session_character_id int, user_message string, ai_response sessions_structs.Chall_message) (string, int, []byte, string, string, int) {
 	var hint_given, contact_given string
 	var status_code int
 	texte_ia := extract_text_from_ai_response(ai_response.Message)
-	holds_hint, holds_contact := extract_concessions_from_ai_response(ai_response.Message)
+	holds_hint, holds_contact := extract_concessions_from_ai_response(ai_response.Message, get_session_id_from_session_character_id(session_character_id))
 	if holds_hint {
 		hint_given = get_hint_name_by_id(session_character_id)
 	}
@@ -722,7 +737,7 @@ func update_suspicion(session_character_id int, ai_response string) int {
 	return suspicion_level
 }
 
-func extract_concessions_from_ai_response(ai_response string) (bool, bool) {
+func extract_concessions_from_ai_response(ai_response string, session_id int) (bool, bool) {
 	key_hint := "\"Si_convaincu_donne_document (oui ou non)\":"
 	key_contact := "\"Si_convaincu_donne_contact (oui ou non)\":"
 	start_hint := strings.Index(ai_response, key_hint)
@@ -756,13 +771,53 @@ func extract_concessions_from_ai_response(ai_response string) (bool, bool) {
 	gave_contact := strings.EqualFold(ai_response_contact, "oui") || strings.EqualFold(ai_response_contact, "yes") || strings.EqualFold(ai_response_contact, "true")
 	if gave_hint {
 		fmt.Println(prompts.Info + "db_session.go:extract_concessions_from_ai_response():AI gave a hint")
+		update_hint_availability(gave_hint, ai_response_hint, session_id)
 	} else {
 		fmt.Println(prompts.Info + "db_session.go:extract_concessions_from_ai_response():AI did not give a hint")
 	}
 	if gave_contact {
 		fmt.Println(prompts.Info + "db_session.go:extract_concessions_from_ai_response():AI gave a contact")
+		update_contact_availability(gave_contact, ai_response_contact, session_id)
 	} else {
 		fmt.Println(prompts.Info + "db_session.go:extract_concessions_from_ai_response():AI did not give a contact")
 	}
 	return gave_hint, gave_contact
+}
+
+func update_hint_availability(gave_hint bool, ai_response_hint string, session_id int) {
+	db := database.Get_DB()
+	var hint_id int
+	err := db.QueryRow("SELECT id FROM hints WHERE hint_title = $1", ai_response_hint).Scan(&hint_id)
+	if err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:update_hint_availability():Error getting hint ID: " + err.Error())
+		return
+	}
+	if hint_id == 0 {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:update_hint_availability():Error: hint ID is 0")
+		return
+	}
+	if gave_hint {
+		create_session_hint(session_id, hint_id, true)
+	} else {
+		create_session_hint(session_id, hint_id, false)
+	}
+}
+
+func update_contact_availability(gave_contact bool, ai_response_contact string, session_id int) {
+	db := database.Get_DB()
+	var character_id int
+	err := db.QueryRow("SELECT id FROM characters WHERE character_name = $1", ai_response_contact).Scan(&character_id)
+	if err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:update_contact_availability():Error getting character ID: " + err.Error())
+		return
+	}
+	if character_id == 0 {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:update_contact_availability():Error: character ID is 0")
+		return
+	}
+	if gave_contact {
+		create_session_character(session_id, character_id, 0, true) // Suspicion level is set to 0 for contacts
+	} else {
+		create_session_character(session_id, character_id, 0, false)
+	}
 }
