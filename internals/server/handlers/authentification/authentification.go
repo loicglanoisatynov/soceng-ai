@@ -8,7 +8,10 @@ import (
 	"net/http"
 	database "soceng-ai/database"
 	db_cookies "soceng-ai/database/tables/db_cookies"
+	"soceng-ai/database/tables/db_profiles"
 	db_users "soceng-ai/database/tables/db_users"
+	"soceng-ai/internals/utils/prompts"
+	"time"
 )
 
 type Login_request struct {
@@ -80,7 +83,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	user, err := db_users.Get_user(database.Get_DB(), "username", request.Username)
 	if err != nil {
-		http.Error(w, "Error getting user: %s\n"+err.Error(), http.StatusInternalServerError)
+		prompts.Prompts_server(time.Now(), prompts.Error+"Error getting user: "+err.Error())
+		http.Error(w, "Internal Error", http.StatusInternalServerError)
 		return
 	}
 
@@ -180,4 +184,38 @@ func Get_cookie_value(r *http.Request, cookie_name string) string {
 		}
 	}
 	return "Error : cookie not found"
+}
+
+func Get_user_info(r *http.Request) (string, map[string]interface{}) {
+	username_cookie, err := r.Cookie("socengai-username")
+	if err != nil {
+		return "Error getting username cookie: " + err.Error(), nil
+	}
+	auth_cookie, err := r.Cookie("socengai-auth")
+	if err != nil {
+		return "Error getting auth cookie: " + err.Error(), nil
+	}
+
+	if !IsCookieValid(username_cookie.Value, auth_cookie.Value) {
+		return "Invalid cookie", nil
+	}
+
+	user_info, err := db_users.Get_user(database.Get_DB(), "username", username_cookie.Value)
+	if err != nil {
+		return "Error getting user info: " + err.Error(), nil
+	}
+
+	profile, err := db_profiles.Get_profile(user_info.Username)
+	if err != nil {
+		return "Error getting user biography: profile not found or database error: " + err.Error(), nil
+	}
+
+	data := map[string]interface{}{
+		"username":  user_info.Username,
+		"email":     user_info.Email,
+		"admin":     user_info.Is_admin,
+		"biography": profile.Biography,
+	}
+
+	return "OK", data
 }

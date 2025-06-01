@@ -80,13 +80,13 @@ func Edit_profile(w http.ResponseWriter, r *http.Request) {
 
 	if username_cookie.Value == "" || auth_cookie.Value == "" {
 		prompts.Prompts_server(time.Now(), prompts.Error+"soceng-ai/internals/server/handlers/profiles_handling/profiles_handling.go:Edit_profile():Missing cookie: socengai-username or socengai-auth")
-		http.Error(w, "Missing cookie.\n", http.StatusUnauthorized)
+		http.Error(w, "Missing cookie", http.StatusUnauthorized)
 		return
 	}
 
-	if !db_cookies.Is_cookie_valid(username_cookie.Value, auth_cookie.Value) {
-		prompts.Prompts_server(time.Now(), prompts.Error+"soceng-ai/internals/server/handlers/profiles_handling/profiles_handling.go:Edit_profile():Invalid cookie for user "+username_cookie.Value)
-		http.Error(w, "Invalid cookie.\n", http.StatusUnauthorized)
+	cookies_valid, err_msg := db_cookies.Is_cookie_valid(username_cookie.Value, auth_cookie.Value)
+	if cookies_valid {
+		http.Error(w, "Invalid cookie: "+err_msg, http.StatusUnauthorized)
 		return
 	}
 
@@ -168,8 +168,9 @@ func Edit_user(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !db_cookies.Is_cookie_valid(username_cookie.Value, auth_cookie.Value) {
-		http.Error(w, "Invalid cookie.\n", http.StatusUnauthorized)
+	cookie_valid, err_msg := db_cookies.Is_cookie_valid(username_cookie.Value, auth_cookie.Value)
+	if !cookie_valid {
+		http.Error(w, "Invalid cookie: "+err_msg+"\n", http.StatusUnauthorized)
 		return
 	}
 

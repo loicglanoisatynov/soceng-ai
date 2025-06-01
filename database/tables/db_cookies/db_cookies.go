@@ -10,6 +10,9 @@ func Register_cookie(user_id int, cookie string) error {
 	db := database.Get_DB()
 
 	err := delete_previous_cookies(user_id)
+	if err != nil {
+		fmt.Println("Error deleting previous cookies:", err)
+	}
 
 	cookie_id := get_next_available_id()
 	date_timestamp := time.Now()
@@ -68,21 +71,20 @@ func Delete_cookie(user_id int, cookie string) error {
 	return nil
 }
 
-func Is_cookie_valid(username string, cookie string) bool {
+func Is_cookie_valid(username string, cookie string) (bool, string) {
 	db := database.Get_DB()
 	var user_id int
 	query := "SELECT id FROM users WHERE username = ?"
 	err := db.QueryRow(query, username).Scan(&user_id)
 	if err != nil {
-		fmt.Println("Error getting user ID by username:", err)
-		return false
+		return false, err.Error()
 	}
 	query = "SELECT COUNT(*) FROM cookies WHERE cookie_value = ? AND user_id = ?"
 	var count int
 	err = db.QueryRow(query, cookie, user_id).Scan(&count)
 	if err != nil {
 		fmt.Println("Error checking cookie validity:", err)
-		return false
+		return false, err.Error()
 	}
-	return count > 0
+	return count > 0, "OK"
 }

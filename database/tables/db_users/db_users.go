@@ -12,13 +12,14 @@ type User struct {
 	Email      string `json:"email"`
 	Password   string `json:"password"`
 	Created_at string `json:"created_at"`
+	Is_admin   bool   `json:"is_admin"`
 }
 
 func Create_user(db *sql.DB, user User) error {
-	query := "INSERT INTO users (id, username, email, passwd, created_at) VALUES ($1, $2, $3, $4, $5)"
+	query := "INSERT INTO users (id, username, email, passwd, created_at, is_admin) VALUES ($1, $2, $3, $4, $5, $6)"
 	time := time.Now().Format("2006-01-02 15:04:05")
 	id, _ := Get_next_id(db)
-	_, err := db.Exec(query, id, user.Username, user.Email, user.Password, time)
+	_, err := db.Exec(query, id, user.Username, user.Email, user.Password, time, false)
 	if err != nil {
 		return err
 	}
@@ -42,7 +43,7 @@ func Get_user(db *sql.DB, by string, value string) (User, error) {
 	var user User
 	query := "SELECT * FROM users WHERE " + by + " = $1"
 	row := db.QueryRow(query, value)
-	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.Created_at, &user.Created_at)
+	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.Created_at, &user.Is_admin)
 	if err != nil {
 		return user, err
 	}

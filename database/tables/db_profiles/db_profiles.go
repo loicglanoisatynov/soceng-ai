@@ -12,6 +12,21 @@ type Db_profile struct {
 	Avatar    string `json:"avatar"`
 }
 
+func Get_profile(username string) (Db_profile, error) {
+	db := database.Get_DB()
+	var profile Db_profile
+
+	err := db.QueryRow("SELECT u.username, p.biography, p.avatar FROM users u JOIN profiles p ON u.id = p.user_id WHERE u.username = ?", username).Scan(&profile.Username, &profile.Biography, &profile.Avatar)
+	if err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			return Db_profile{}, fmt.Errorf("profile not found for user: %s", username)
+		}
+		return Db_profile{}, fmt.Errorf("failed to get profile: %v", err)
+	}
+
+	return profile, nil
+}
+
 func Does_profile_exist(username string) bool {
 	db := database.Get_DB()
 	var count int

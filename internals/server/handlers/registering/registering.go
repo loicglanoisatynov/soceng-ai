@@ -58,14 +58,6 @@ func Register_user(w http.ResponseWriter, r *http.Request) {
 
 	if !valid {
 		http.Error(w, err, http.StatusBadRequest)
-		registering_response := Registering_response{
-			Status:  "failure",
-			Message: err,
-		}
-		if err := json.NewEncoder(w).Encode(registering_response); err != nil {
-			http.Error(w, "Failed to encode response: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
 		return
 	}
 
@@ -76,6 +68,7 @@ func Register_user(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := db_users.Create_user(database.Get_DB(), user); err != nil {
+		prompts.Prompts_server(time.Now(), prompts.Warning+"Failed to create user: "+err.Error())
 		http.Error(w, "Failed to create user : "+err.Error(), http.StatusInternalServerError)
 		return
 	}

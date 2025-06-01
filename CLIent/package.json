@@ -1,0 +1,21 @@
+{
+  "name": "socengai-client",
+  "version": "1.0.0",
+  "description": "js client for socengai project",
+  "main": "main.js",
+  "scripts": {
+    "test": "helloworld",
+    "start": "node main.js",
+    "lint": "eslint main.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.9.0",
+    "commander": "^14.0.0",
+    "socengai-client": "file:"
+  },
+  "devDependencies": {
+    "eslint": "^9.27.0"
+  }
+}

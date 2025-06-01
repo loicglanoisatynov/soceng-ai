@@ -37,6 +37,8 @@ func init() {
 		newRoute("/api/challenge", api.Challenge_handler),
 		newRoute("/api/sessions/([^/]+)", api.Sessions_handler),
 		newRoute("/api/dashboard", api.Dashboard_handler),
+		newRoute("/api/check-cookies", api.Check_cookies_handler),
+		newRoute("/api/user-info", api.User_info_handler),
 
 		// newRoute("GET", "/contact", contact),
 		// newRoute("GET", "/([^/]+)/admin", widgetAdmin),

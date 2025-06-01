@@ -134,7 +134,7 @@ CREATE TABLE session_messages (
 -- Table insertions
 
 INSERT INTO users (id, username, email, passwd, created_at, is_admin) VALUES
-(1, 'lglanois', 'loic.glanois@ynov.com', 'very_solid_password', CURRENT_TIMESTAMP, TRUE),
+(1, 'lglanois', 'loic.glanois@ynov.com', 'Password0!', CURRENT_TIMESTAMP, TRUE),
 (2, 'admin', 'admin@admin.com', 'hashed_admin_password', CURRENT_TIMESTAMP, TRUE),
 (3, 'piratejoe', 'joe@hacker.com', 'hashed_piratejoe_pass', CURRENT_TIMESTAMP, FALSE),
 (4, 'aiqueen', 'queen@aiqueen.com', 'hashed_aiqueen_pass', CURRENT_TIMESTAMP, FALSE);
