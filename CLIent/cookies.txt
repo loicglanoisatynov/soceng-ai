@@ -1,0 +1,2 @@
+socengai-username=lglanois
+socengai-auth=73974f84c8ec2cd38f3bdab082fb64b7

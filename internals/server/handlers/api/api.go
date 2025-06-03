@@ -228,7 +228,7 @@ func Check_cookies_handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cookie_valid, err_msg := db_cookies.Is_cookie_valid(username_cookie.Value, auth_cookie.Value)
-	if cookie_valid {
+	if !cookie_valid {
 		http.Error(w, "Invalid cookie : "+err_msg, http.StatusUnauthorized)
 		return
 	}
@@ -249,7 +249,7 @@ func User_info_handler(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		error_status, data := authentification.Get_user_info(r)
 		if error_status != "OK" {
-			fmt.Println(prompts.Error + "soceng-ai/internals/server/handlers/api/user_info.go:User_info_handler():Error getting user info: " + error_status)
+			prompts.Prompts_server(time.Now(), prompts.Error+"soceng-ai/internals/server/handlers/api/user_info.go:User_info_handler() : Error getting user info: "+error_status)
 			http.Error(w, "Error getting user info: "+error_status, http.StatusInternalServerError)
 			return
 		}

@@ -82,7 +82,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err := db_users.Get_user(database.Get_DB(), "username", request.Username)
-	if err != nil {
+	if user.ID == -1 {
+		http.Error(w, "User not found", http.StatusUnauthorized)
+		return
+	} else if err != nil {
 		prompts.Prompts_server(time.Now(), prompts.Error+"Error getting user: "+err.Error())
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
 		return
@@ -211,10 +214,12 @@ func Get_user_info(r *http.Request) (string, map[string]interface{}) {
 	}
 
 	data := map[string]interface{}{
-		"username":  user_info.Username,
-		"email":     user_info.Email,
-		"admin":     user_info.Is_admin,
-		"biography": profile.Biography,
+		"username":   user_info.Username,
+		"email":      user_info.Email,
+		"admin":      user_info.Is_admin,
+		"biography":  profile.Biography,
+		"created_at": user_info.Created_at,
+		"avatar":     profile.Avatar,
 	}
 
 	return "OK", data

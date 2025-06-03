@@ -38,12 +38,14 @@ func Delete_user(db *sql.DB, id int) error {
 	return nil
 }
 
-// db = la base de données où fouiller. "by" = la colonne à fouiller (username, email, id). "value" = la valeur à chercher
 func Get_user(db *sql.DB, by string, value string) (User, error) {
 	var user User
 	query := "SELECT * FROM users WHERE " + by + " = $1"
 	row := db.QueryRow(query, value)
 	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.Created_at, &user.Is_admin)
+	if err == sql.ErrNoRows {
+		return User{ID: -1}, nil
+	}
 	if err != nil {
 		return user, err
 	}

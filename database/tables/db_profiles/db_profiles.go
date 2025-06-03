@@ -19,7 +19,11 @@ func Get_profile(username string) (Db_profile, error) {
 	err := db.QueryRow("SELECT u.username, p.biography, p.avatar FROM users u JOIN profiles p ON u.id = p.user_id WHERE u.username = ?", username).Scan(&profile.Username, &profile.Biography, &profile.Avatar)
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
-			return Db_profile{}, fmt.Errorf("profile not found for user: %s", username)
+			return Db_profile{
+				Username:  username,
+				Biography: "",
+				Avatar:    "",
+			}, nil
 		}
 		return Db_profile{}, fmt.Errorf("failed to get profile: %v", err)
 	}

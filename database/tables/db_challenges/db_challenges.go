@@ -9,6 +9,7 @@ import (
 	"soceng-ai/internals/server/handlers/api/challenge/challenge_structs"
 	"soceng-ai/internals/server/handlers/api/dashboard/dashboard_structs"
 	"soceng-ai/internals/utils/prompts"
+	"time"
 )
 
 func Create_challenge(challenge challenge_structs.Challenge, r *http.Request, w http.ResponseWriter) string {
@@ -418,13 +419,11 @@ func Get_available_challenges(username string) ([]dashboard_structs.Challenge, s
 	}
 	defer rows.Close()
 
-	// Parcours des résultats de la requête
-	// On crée un tableau de challenges
 	for rows.Next() {
 		var challenge db_challenges_structs.Challenge
-		err := rows.Scan(&challenge.ID, &challenge.Title, &challenge.Lore_for_player, &challenge.Lore_for_ai, &challenge.Difficulty, &challenge.Illustration, &challenge.Created_at, &challenge.Updated_at, &challenge.Validated, &challenge.Osint_data)
+		err := rows.Scan(&challenge.ID, &challenge.Title, &challenge.Lore_for_player, &challenge.Lore_for_ai, &challenge.Organisation, &challenge.Difficulty, &challenge.Illustration, &challenge.Created_at, &challenge.Updated_at, &challenge.Validated, &challenge.Osint_data)
 		if err != nil {
-			fmt.Println("Error scanning challenge:", err)
+			prompts.Prompts_server(time.Now(), "soceng-ai/database/tables/db_challenges/db_challenges.go:Get_available_challenges():Error scanning challenge: "+err.Error())
 			continue
 		}
 		challenges = append(challenges, challenge)
