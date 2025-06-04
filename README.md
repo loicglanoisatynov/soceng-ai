@@ -5,9 +5,11 @@ Projet SocEng-AI - README
 - [Introduction](#introduction)
 - [Installation](#installation)
   - [Etape 1 : Cloner le dépôt](#etape-1--cloner-le-dépôt)
+  - [Etape 2 : Installer les dépendances](#etape-2--installer-les-dépendances)
 - [Lancement](#lancement)
-- [Gestion](#gestion)
-- [Utilisation](#utilisation)
+- [Contributeurs](#contributeurs)
+- [Licence](#licence)
+- [Contact](#contact)
 
 # Introduction
 
@@ -50,11 +52,48 @@ Pour installer le projet, il est nécessaire de cloner le dépôt Git et d'insta
     cd soceng-ai
     ```
 
+## Etape 2 : Installer les dépendances
 
-
+Le projet nécessite les dépendances suivantes pour fonctionner correctement :
+- `go`: Le langage de programmation utilisé pour développer le projet.
+- `node`: Utilisé pour le client en ligne de commandes.
+- `typescript`: Pour le développement du frontend.
+- `angular`: Framework pour le développement du frontend.
+- `tailwindcss`: Utilisé pour le style du frontend.
+- `ng`: Outil de ligne de commande pour Angular.
 
 # Lancement
 
-# Gestion
+Pour lancer le serveur du projet, suivez ces étapes :
+1. Assurez-vous d'avoir installé les dépendances nécessaires comme indiqué dans la section précédente.
+2. Ouvrez un terminal ou une invite de commande.
+3. Naviguez vers le répertoire du projet cloné :
+   ```bash
+   cd /chemin/vers/soceng-ai
+   ```
+4. Lancez le serveur avec la commande suivante :
+   ```bash
+    go run internals/main.go
+    ```
 
 # Utilisation
+
+En date du 4 juin 2025, seulement l'utilitaire en ligne de commande est fonctionnel. Pour l'utiliser, suivez ces étapes :
+1. Ouvrez un terminal ou une invite de commande.
+2. Naviguez vers le répertoire du projet cloné :
+   ```bash
+   node soceng-ai/CLIent/main.js
+   ```
+3. Suivez les instructions affichées pour interagir avec les personnages IA et progresser dans le jeu.
+
+# Contributeurs
+
+Ce projet a été développé par QUAGLIERI Lisa, KOUYATE Chouaib, DELPREE Corentin et Loïc GLANOIS, étudiants en B2 Info à Ynov Campus Lyon. Pour toute question ou contribution, n'hésitez pas à nous contacter via le dépôt GitHub.
+
+# Licence
+
+Ce projet est sous licence GPL-3.0. Vous pouvez librement utiliser, modifier et distribuer le code, à condition de respecter les termes de la licence. Pour plus de détails, consultez le fichier `LICENSE` dans le dépôt.
+
+# Contact
+
+Pour toute question ou suggestion concernant ce projet, vous pouvez nous contacter via le dépôt GitHub ou par email à l'adresse suivante : loic.glanois@ynov.com
