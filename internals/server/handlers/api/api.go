@@ -81,7 +81,8 @@ func Sessions_handler(w http.ResponseWriter, r *http.Request) {
 			}
 			switch r.Method {
 			case "GET":
-				response = sessions.Get_session_data(r, session_id)
+				sessions.Get_session_data(r, w, session_id)
+
 			case "POST":
 				response = sessions.Post_session_data(r, session_id)
 			default:
@@ -99,7 +100,7 @@ func Sessions_handler(w http.ResponseWriter, r *http.Request) {
 
 func process_cookies(r *http.Request) string {
 	cookies := r.Cookies()
-	if len(r.Cookies()) < 2 {
+	if len(cookies) < 2 {
 		return "Missing cookie"
 	}
 	cookies_status := authentification.Cookies_relevant(cookies)

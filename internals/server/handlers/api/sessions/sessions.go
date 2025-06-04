@@ -12,6 +12,7 @@ import (
 	sessions_structs "soceng-ai/internals/server/handlers/api/sessions/sessions_structs"
 	authentification "soceng-ai/internals/server/handlers/authentification"
 	"soceng-ai/internals/utils/prompts"
+	"strings"
 	"time"
 )
 
@@ -93,7 +94,7 @@ func Start_challenge(r *http.Request) http.Response {
 // @Router		/api/sessions/{session_id} [get]
 // @Security		socengai-username
 // @Security		socengai-auth
-func Get_session_data(r *http.Request, session_id string) http.Response {
+func Get_session_data(r *http.Request, w http.ResponseWriter, session_id string) {
 	var returned_status string
 	var error_status string
 	status_code := http.StatusBadRequest
@@ -102,12 +103,9 @@ func Get_session_data(r *http.Request, session_id string) http.Response {
 
 	error_status = db_sessions.Check_session_id(session_id)
 	if error_status != "OK" {
-		fmt.Println(prompts.Error + "soceng-ai/internals/server/handlers/api/sessions/sessions.go:Get_session_data():Error checking session ID: " + error_status)
-		return http.Response{
-			StatusCode: http.StatusNoContent,
-			Header:     http.Header{"Content-Type": []string{"application/json"}},
-			Body:       io.NopCloser(bytes.NewBuffer([]byte(`{"message": "Error checking session ID : ` + error_status + `"}`))),
-		}
+		prompts.Prompts_server(time.Now(), prompts.Error+"soceng-ai/internals/server/handlers/api/sessions/sessions.go:Get_session_data():Error checking session ID: "+error_status)
+		payload = []byte(`{"message": "Error checking session ID : ` + error_status + `"}`)
+		status_code = http.StatusBadRequest
 	}
 	if session_id == "" {
 		fmt.Println(prompts.Error + "soceng-ai/internals/server/handlers/api/sessions/sessions.go:Get_session_data():Error: session ID is empty")
@@ -123,6 +121,8 @@ func Get_session_data(r *http.Request, session_id string) http.Response {
 		}
 	}
 
+	session_data = swap_all_apostrophes(session_data)
+
 	payload, err := json.Marshal(session_data)
 	if err != nil {
 		prompts.Prompts_server(time.Now(), prompts.Error+"soceng-ai/internals/server/handlers/api/sessions/sessions.go:Get_session_data():Error marshalling session data: "+err.Error())
@@ -130,10 +130,11 @@ func Get_session_data(r *http.Request, session_id string) http.Response {
 		status_code = http.StatusInternalServerError
 	}
 
-	return http.Response{
-		StatusCode: status_code,
-		Header:     http.Header{"Content-Type": []string{"application/json"}},
-		Body:       io.NopCloser(bytes.NewBuffer(payload)),
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status_code)
+	json.NewEncoder(w).Encode(session_data)
+	if status_code != http.StatusOK {
+		prompts.Prompts_server(time.Now(), prompts.Error+"soceng-ai/internals/server/handlers/api/sessions/sessions.go:Get_session_data():Error retrieving session data: "+string(payload))
 	}
 }
 
@@ -230,4 +231,18 @@ func Post_session_data(r *http.Request, session_key string) http.Response {
 		Header:     http.Header{"Content-Type": []string{"application/json"}},
 		Body:       io.NopCloser(bytes.NewBuffer(payload)),
 	}
+}
+
+func swap_all_apostrophes(session_data db_sessions_structs.Session) db_sessions_structs.Session {
+	for i := range session_data.Characters {
+		session_data.Characters[i].Name = strings.ReplaceAll(session_data.Characters[i].Name, "’", "'")
+		session_data.Characters[i].Title = strings.ReplaceAll(session_data.Characters[i].Title, "’", "'")
+		session_data.Characters[i].Advice_to_user = strings.ReplaceAll(session_data.Characters[i].Advice_to_user, "’", "'")
+		session_data.Characters[i].OsintData = strings.ReplaceAll(session_data.Characters[i].OsintData, "’", "'")
+	}
+	for i := range session_data.Hints {
+		session_data.Hints[i].Title = strings.ReplaceAll(session_data.Hints[i].Title, "’", "'")
+		session_data.Hints[i].Text = strings.ReplaceAll(session_data.Hints[i].Text, "’", "'")
+	}
+	return session_data
 }

@@ -5,6 +5,7 @@ const readline = require('readline').createInterface({
 });
 const axios = require('axios');
 const { start } = require('repl');
+const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))
 // const { read } = require('fs');
 
 let socengai_username_cookie_value = '';
@@ -39,7 +40,12 @@ function main() {
         const response = await axios.get(url);
 
         if (response.data === "Hello, World !") {
+
           console.log('Serveur distant fonctionnel !');
+          await sleep(2000);
+          console.clear();
+
+
           break;
         } else {
           console.log('Réponse inattendue du serveur. Veuillez réessayer.');
@@ -83,12 +89,13 @@ function main() {
 
   async function seConnecter() {
     let cookies_exist = false;
-    let socengai_username_cookie_value = '';
     username_cookie = await check_cookies();
     if (username_cookie !== '') {
+      await sleep(1000);
+      console.clear();
       console.log('Session existante détectée.');
       let reponse = await new Promise((resolve) => {
-        readline.question('Une session est déjà active, au nom de : ' + username_cookie + '. Voulez-vous utiliser cette session ? (O/N)', (input) => {
+        readline.question('Une session est déjà active, au nom de : ' + username_cookie + '. Voulez-vous utiliser cette session ? (O/N) : ', (input) => {
           resolve(input.trim().toUpperCase());
         });
       });
@@ -183,10 +190,13 @@ function main() {
 
   async function menuChallenges() {
     while (true) {
-      console.log('Menu des challenges :');
+      await sleep(1000);
+      console.clear();
+      let choix = 0;
+      console.log('Menu challenges :');
       console.log('1. Choisir un challenge');
       console.log('2. Quitter le menu des challenges');
-      let choix = await new Promise((resolve) => {
+      choix = await new Promise((resolve) => {
         readline.question('Entrez votre choix : ', (input) => {
           resolve(input.trim());
         });
@@ -206,7 +216,10 @@ function main() {
   async function lister_challenges() {
     const url = `http://${host}:${port}/api/dashboard`;
     let challenges = [];
+    let choix = '';
     try {
+      await sleep(1000);
+      console.clear();
       const response = await axios.get(url, {
         headers: {
           'Cookie': `${socengai_username_cookie_value}; ${socengai_auth_cookie_value}`
@@ -232,7 +245,7 @@ function main() {
     }
 
     // Demande à l'utilisateur de choisir un challenge
-    const choix = await new Promise((resolve) => {
+    choix = await new Promise((resolve) => {
       readline.question('Entrez le numéro du challenge à rejoindre : ', (input) => {
         resolve(input.trim());
       });
@@ -245,16 +258,19 @@ function main() {
     const challenge = challenges[challengeIndex];
     console.log(`Vous avez rejoint le challenge : ${challenge.name}`);
     // Si le challenge a une session_key, demander si il veut recommencer la session ou reprendre la session
+    choix = '';
     if (challenge.session_key) {
-      const reponse = await new Promise((resolve) => {
+      await sleep(1000);
+      console.clear();
+      choix = await new Promise((resolve) => {
         readline.question('Voulez-vous reprendre la session existante (1) ou en créer une nouvelle ? (2) : ', (input) => {
           resolve(input.trim().toUpperCase());
         });
       });
-      if (reponse === '1') {
-        play_challenge(challenge);
-      } else if (reponse === '2') {
-        console.log(`Création d'une nouvelle session pour le challenge : ${challenge.name}`);
+      if (choix === '1') {
+        await play_challenge(challenge);
+      } else if (choix === '2') {
+        console.log(`\nCréation d'une nouvelle session pour le challenge : ${challenge.name}`);
         start_challenge(challenge);
       } else {
         console.log('Choix invalide. Veuillez réessayer.');
@@ -265,12 +281,221 @@ function main() {
     }
   }
 
-  async function play_challenge(challenge) {}
+  async function play_challenge(challenge) {
+    let index = 0;
+    session_data = await get_challenge_data(challenge);
+
+    // énumère les différents personnages du challenge (name - title - advice_to_user)
+    if (session_data && session_data.characters) {
+      console.log(`Personnages disponibles pour le challenge ${challenge.name} :`);
+      session_data.characters.forEach((character) => {
+        if (character.is_accessible) {
+          index++;
+          console.log(`${index}. ${character.name} - ${character.title} - ${character.advice_to_user}`);
+        }
+      });
+    } else {
+      console.log('Aucun personnage disponible pour ce challenge.');
+      return;
+    }
+    // énumère les différents indices du challenge (title - text)
+    if (session_data && session_data.hints) {
+      session_data.hints.forEach((hint) => {
+        if (hint.is_available) {
+          index++;
+          console.log(`${index}. ${hint.title} - ${hint.text}`);
+        }
+      });
+    } else {
+      console.log('Aucun indice disponible pour ce challenge.');
+      return;
+    }
+
+    let choix = await new Promise((resolve) => {
+      readline.question('Entrez l\'index du personnage à contacter ou de l\'indice à détailler, ou 0 pour quitter la session : ', (input) => {
+        resolve(input.trim());
+      });
+    });
+    const choiceIndex = parseInt(choix) - 1;
+    if (parseInt(choix) === 0) {
+      console.clear();
+      console.log('Vous avez quitté la session.');
+      await new Promise((resolve) => {
+        readline.question('Appuyez sur "entrée" pour retourner au menu des challenges...', resolve);
+      });
+      console.clear();
+      await dashboard_menu();
+    }
+    if (isNaN(choiceIndex) || choiceIndex < 0 || choiceIndex >= index) {
+      console.log('Choix invalide. Veuillez réessayer.');
+      return;
+    }
+    let selectedItem;
+    if (choiceIndex < session_data.characters.length) {
+      selectedItem = session_data.characters[choiceIndex];
+      await chat_with_character(selectedItem, challenge, session_data);
+    } else {
+      selectedItem = session_data.hints[choiceIndex - session_data.characters.length];
+      show_hint_details(selectedItem);
+      return;
+    }
+  }
+
+  async function chat_with_character(character, challenge, session_data) {
+    // sleep
+    // clear
+    // Afficher le nom du personnage, son titre et son conseil
+    // Afficher son niveau de suspicion
+    // affiche son dernier message
+    await sleep(1000);
+    console.clear();
+    console.log(`${character.name} - ${character.title} - ${character.advice_to_user}`);
+    console.log(`Niveau de suspicion : ${character.current_suspicion}`);
+
+    session_data = await get_challenge_data(challenge);
+    let previous_message = get_last_message(character, session_data);
+
+    if (previous_message !== '') {
+      console.log(`«` + previous_message + `»`);
+    } else {
+      console.log('[Débutez la conversation avec ce personnage]');
+    }
+    // Demander à l'utilisateur de taper un message, ou EXIT pour quitter
+    let message = await new Promise((resolve) => {
+      readline.question('Entrez votre message (ou EXIT pour quitter la conversation) : ', (input) => {
+        resolve(input.trim());
+      });
+    });
+    if (message.toUpperCase() === 'EXIT') {
+      console.clear();
+      console.log('Vous avez quitté la session.');
+      await new Promise((resolve) => {
+        readline.question('Appuyez sur "entrée" pour retourner au menu du challenge...', resolve);
+      });
+      console.clear();
+      play_challenge(challenge);
+      return;
+    }
+    // Envoyer le message au serveur
+    const url = `http://${host}:${port}/api/sessions/${challenge.session_key}`;
+    try {
+      const response = await axios.post(url, 
+        JSON.stringify({
+          character_name: character.name,
+          message: message
+        }), 
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Cookie': `${socengai_username_cookie_value}; ${socengai_auth_cookie_value}`
+          }
+        }
+      );
+      if (response.status === 200) {
+        session_data = await get_challenge_data(challenge);
+        await chat_with_character(character, challenge, session_data);
+      } else {
+        console.log('Erreur lors de l\'envoi du message :', response.data);
+        console.log(response);
+        console.log(url);
+        console.log(JSON.stringify({
+          character_name: character.name,
+          message: message
+        }));
+
+        //bloquer le programme jusqu'à ce que l'utilisateur appuie sur "entrée"
+        await new Promise((resolve) => {
+          readline.question('Appuyez sur "entrée" pour continuer...', resolve);
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      console.error(`Erreur lors de l'envoi du message : ${error.message}`);
+      //bloquer le programme jusqu'à ce que l'utilisateur appuie sur "entrée"
+      await new Promise((resolve) => {
+        readline.question('Appuyez sur "entrée" pour continuer...', resolve);
+      });
+    }
+  }
+
+  function get_last_message(character, session_data) {
+    // Récupère le dernier message du personnage dans session_data.messages. Récupère le message dont le sender est 'character' et dont l'id est le plus élevé.
+    // Itération
+    let last_message = '';
+    let current_highest_id = -1;
+    if (session_data && session_data.messages) {
+      for (let message of session_data.messages) {
+        if (message.sender === 'character') {
+          if (message.id > current_highest_id) {
+              last_message = message.message;
+              current_highest_id = message.id;
+          } else {
+            continue;
+          }
+        } else {
+          continue;
+        }
+      }
+    }
+    return last_message;
+  }
+
+
+  async function get_challenge_data(challenge) {
+    let data;
+    const url = `http://${host}:${port}/api/sessions/${challenge.session_key}`;
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          'Cookie': `${socengai_username_cookie_value}; ${socengai_auth_cookie_value}`
+        }
+      });
+      if (response.status === 200) {
+        data = response.data;
+        // Récupère le json dans data
+        if (typeof data === 'string') {
+          try {
+            // Retire tout ce qui se trouve avant la première accolade ouvrante
+            const jsonStartIndex = data.indexOf('{');
+            if (jsonStartIndex !== -1) {
+              data = data.substring(jsonStartIndex);
+            } else {
+              console.error('Aucune donnée JSON trouvée dans la réponse.');
+              return null;
+            }
+            // Retire tout ce qui se trouve après la dernière accolade fermante
+            const jsonEndIndex = data.lastIndexOf('}');
+            if (jsonEndIndex !== -1) {
+              data = data.substring(0, jsonEndIndex + 1);
+            } else {
+              console.error('Aucune donnée JSON trouvée dans la réponse.');
+              return null;
+            }
+            data = JSON.parse(data);
+          } catch (error) {
+            console.error(`Erreur lors de la conversion des données en JSON : ${error.message}`);
+            return null;
+          }
+        }
+      }
+
+      return data;
+    }
+    catch (error) {
+      console.error(`Erreur lors de la récupération des données du challenge : ${error.message}`);
+      return null;
+    }
+    
+  }
+
+  
 
   async function dashboard_menu() {
     while (true) {
+      sleep(1000);
+      console.clear();
       let choix = 0;
-      console.log('Menu du tableau de bord :');
+      console.log('Menu principal :');
       console.log('1. Afficher les informations de l\'utilisateur');
       console.log('2. Modifier les informations de l\'utilisateur');
       console.log('3. Menu challenges');
@@ -310,12 +535,19 @@ function main() {
   async function afficherInformationsUtilisateur() {
     const url = `http://${host}:${port}/api/user-info`;
     try {
+      await sleep(1000);
+      console.clear();
       const response = await axios.get(url, {
         headers: {
           'Cookie': `${socengai_username_cookie_value}; ${socengai_auth_cookie_value}`
         }
       });
       console.log('Informations de l\'utilisateur :', response.data);
+
+      // Attend que l'utilisateur appuie sur "entrée" pour continuer
+      await new Promise((resolve) => {
+        readline.question('Appuyez sur "entrée" pour retourner au menu principal...', resolve);
+      });
     } catch (error) {
       console.error(`Erreur lors de la récupération des informations de l'utilisateur : ${error.message}`);
     }

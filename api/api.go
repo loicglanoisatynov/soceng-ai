@@ -10,6 +10,7 @@ import (
 	"soceng-ai/database/tables/db_sessions"
 	"soceng-ai/internals/server/handlers/api/sessions/sessions_structs"
 	"soceng-ai/internals/utils/prompts"
+	"strconv"
 	"time"
 )
 
@@ -85,6 +86,9 @@ Renvoie le bloc suivant sans le moindre ajout :
 }
 
 func Send_message_to_ai(session_key string, character_name string, message string) (sessions_structs.Chall_message, string) {
+	var document_id int
+	var contact_id int
+
 	url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=%s", apiKey)
 
 	challenge_id, error_status := db_challenges.Get_challenge_id_from_session_key(session_key)
@@ -103,6 +107,17 @@ func Send_message_to_ai(session_key string, character_name string, message strin
 
 	challenge, error_status := db_challenges.Get_challenge_data(challenge_id)
 
+	if character.Holds_hint != "" {
+		document_id, _ = strconv.Atoi(character.Holds_hint)
+	} else {
+		document_id = 0
+	}
+	if character.Knows_contact_of != "" {
+		contact_id, _ = strconv.Atoi(character.Knows_contact_of)
+	} else {
+		contact_id = 0
+	}
+
 	data := PersoData{
 		Nom:                character_name,
 		Titre:              character.Title,
@@ -110,13 +125,16 @@ func Send_message_to_ai(session_key string, character_name string, message strin
 		Psychologie:        character.Traits,
 		Suspicion:          character_session_data.Suspicion,
 		Osint:              character.Osint_data,
-		Document:           character.Holds_hint,
-		Contact:            character.Knows_contact_of,
+		Document:           db_challenges.Get_document_title_by_id(document_id),
+		Contact:            db_challenges.Get_contact_name_by_id(contact_id),
 		MessagePrecedent:   db_sessions.Get_previous_character_message(session_key, character_name),
 		MessageUtilisateur: message,
 	}
 
 	prompt := GeneratePrompt(data)
+
+	// Affiche le prompt généré pour débogage
+	prompts.Prompts_server(time.Now(), "soceng-ai/internals/server/handlers/api/sessions/sessions.go:Send_message_to_ai():Generated prompt\n"+prompt)
 
 	// Création du corps de la requête API
 	requestBody := RequestBody{
@@ -171,6 +189,8 @@ func Send_message_to_ai(session_key string, character_name string, message strin
 		fmt.Println(prompts.Error + "soceng-ai/internals/server/handlers/api/sessions/sessions.go:Send_message_to_ai():No candidates in response from AI")
 		return sessions_structs.Chall_message{}, "No candidates in response from AI"
 	}
+
+	prompts.Prompts_server(time.Now(), "soceng-ai/internals/server/handlers/api/sessions/sessions.go:Send_message_to_ai():AI response\n"+geminiResp.Candidates[0].Content.Parts[0].Text)
 
 	responseMessage := geminiResp.Candidates[0].Content.Parts[0].Text
 	challMessage := sessions_structs.Chall_message{

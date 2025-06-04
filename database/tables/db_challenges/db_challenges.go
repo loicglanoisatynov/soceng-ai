@@ -503,25 +503,38 @@ func Get_challenge_data(challenge_id int) (db_challenges_structs.Challenge, stri
 	return challenge, "OK"
 }
 
-/*
-type Challenge struct {
-	ID                    int    `json:"id"`
-	Name                  string `json:"name"`
-	Description           string `json:"description"`
-	Illustration_filename string `json:"illustration_filename"`
-	Status                string `json:"status"`
+func Get_document_title_by_id(document_id int) string {
+	if document_id == 0 {
+		return "No document"
+	}
+	db := database.Get_DB()
+	var document_title string
+	query := "SELECT hint_title FROM hints WHERE id = ?"
+	err := db.QueryRow(query, document_id).Scan(&document_title)
+	if err != nil && err.Error() == "sql: no rows in result set" {
+		return "Document not found"
+	}
+	if err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_challenges/db_challenges.go:Get_document_title_by_id():Error getting document title: " + err.Error())
+		return "Error getting document title: " + err.Error()
+	}
+	return document_title
 }
 
-CREATE TABLE challenges (
-    id SERIAL PRIMARY KEY,
-    title VARCHAR(100) NOT NULL,
-    lore_for_player TEXT NOT NULL,
-    lore_for_ai TEXT NOT NULL,
-    difficulty INT NOT NULL CHECK (difficulty BETWEEN 1 AND 5),
-    illustration VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    validated BOOLEAN DEFAULT FALSE,
-    osint_data TEXT
-);
-*/
+func Get_contact_name_by_id(contact_id int) string {
+	if contact_id == 0 {
+		return "No contact"
+	}
+	db := database.Get_DB()
+	var contact_name string
+	query := "SELECT character_name FROM characters WHERE id = ?"
+	err := db.QueryRow(query, contact_id).Scan(&contact_name)
+	if err != nil && err.Error() == "sql: no rows in result set" {
+		return "Contact not found"
+	}
+	if err != nil {
+		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_challenges/db_challenges.go:Get_contact_name_by_id():Error getting contact name: " + err.Error())
+		return "Error getting contact name: " + err.Error()
+	}
+	return contact_name
+}

@@ -483,19 +483,16 @@ func Get_session_character_by_session_id(session_key string) (db_sessions_struct
 func Get_previous_character_message(session_key string, character_name string) string {
 	db := database.Get_DB()
 	var previous_message string
-	fmt.Println(prompts.Info + "soceng-ai/database/tables/db_sessions/db_session.go:Get_previous_character_message():Getting previous message for character " + character_name + " in session " + session_key)
 
 	err := db.QueryRow("SELECT message FROM session_messages WHERE session_character_id = (SELECT id FROM session_characters WHERE session_id = (SELECT id FROM game_sessions WHERE session_key = $1) AND character_id = (SELECT id FROM characters WHERE character_name = $2)) ORDER BY timestamp DESC LIMIT 1", session_key, character_name).Scan(&previous_message)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			fmt.Println(prompts.Info + "soceng-ai/database/tables/db_sessions/db_session.go:Get_previous_character_message():No previous message found for character " + character_name + " in session " + session_key)
 			return ""
 		}
 		fmt.Println(prompts.Error + "soceng-ai/database/tables/db_sessions/db_session.go:Get_previous_character_message():Error getting previous character message: " + err.Error())
 		return "Error getting previous character message: " + err.Error()
 	}
 
-	fmt.Println(prompts.Info + "soceng-ai/database/tables/db_sessions/db_session.go:Get_previous_character_message():Previous message for character " + character_name + ": " + previous_message)
 	return previous_message
 }
 
@@ -770,16 +767,13 @@ func extract_concessions_from_ai_response(ai_response string, session_id int) (b
 	gave_hint := strings.EqualFold(ai_response_hint, "oui") || strings.EqualFold(ai_response_hint, "yes") || strings.EqualFold(ai_response_hint, "true")
 	gave_contact := strings.EqualFold(ai_response_contact, "oui") || strings.EqualFold(ai_response_contact, "yes") || strings.EqualFold(ai_response_contact, "true")
 	if gave_hint {
-		fmt.Println(prompts.Info + "db_session.go:extract_concessions_from_ai_response():AI gave a hint")
 		update_hint_availability(gave_hint, ai_response_hint, session_id)
 	} else {
-		fmt.Println(prompts.Info + "db_session.go:extract_concessions_from_ai_response():AI did not give a hint")
 	}
 	if gave_contact {
-		fmt.Println(prompts.Info + "db_session.go:extract_concessions_from_ai_response():AI gave a contact")
 		update_contact_availability(gave_contact, ai_response_contact, session_id)
 	} else {
-		fmt.Println(prompts.Info + "db_session.go:extract_concessions_from_ai_response():AI did not give a contact")
+
 	}
 	return gave_hint, gave_contact
 }

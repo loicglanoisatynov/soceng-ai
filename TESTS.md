@@ -83,7 +83,7 @@ Se logger (et récupérer le cookie de session) :
 ```bash
 curl -X POST http://localhost:80/login \
 -H "Content-Type: application/json" \
--d '{"username": "lglanois", "password": "very_solid_password"}' \
+-d '{"username": "lglanois", "password": "Password0!"}' \
 -c cookie.txt
 ```
 
